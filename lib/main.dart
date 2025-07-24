@@ -10,7 +10,7 @@ import 'package:wealth_app/controllers/filter_controller.dart';
 import 'package:wealth_app/controllers/income_controller.dart';
 import 'package:wealth_app/controllers/profile_image_controller.dart';
 import 'package:wealth_app/screens/Authentication/login_screen.dart';
-import 'package:wealth_app/screens/mainscreens/dashboard.dart';
+import 'package:wealth_app/screens/mainscreens/dashboard_screen.dart';
 import 'package:wealth_app/screens/mainscreens/income_overview.dart';
 import 'package:wealth_app/screens/mainscreens/my_asset_investment_screen.dart';
 import 'package:wealth_app/screens/mainscreens/my_expenses_screen.dart';

@@ -7,7 +7,7 @@ import 'package:wealth_app/constants/colors.dart';
 import 'package:wealth_app/constants/text_styles.dart';
 import 'package:wealth_app/controllers/auth_controller.dart';
 import 'package:wealth_app/screens/Authentication/login_screen.dart';
-import 'package:wealth_app/screens/mainscreens/dashboard.dart';
+import 'package:wealth_app/screens/mainscreens/dashboard_screen.dart';
 import 'package:wealth_app/widgets/dot_loader.dart';
 
 class SplashScreen extends StatefulWidget {
