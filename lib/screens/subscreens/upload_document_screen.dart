@@ -123,7 +123,7 @@ class _UploadDocumentScreenState extends State<UploadDocumentScreen> {
 
             const SizedBox(height: 10),
 
-            // Sample record UI
+            // Sample record 
             Container(
               height: height,
               width: width,
