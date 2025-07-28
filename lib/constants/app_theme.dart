@@ -1,33 +1,42 @@
 import 'package:flutter/material.dart';
+import 'colors.dart';
 
 class AppTheme {
-  static final ThemeData lightTheme = ThemeData(
+  static ThemeData lightTheme = ThemeData(
+    fontFamily: 'Roboto',
+    useMaterial3: true,
     brightness: Brightness.light,
-    scaffoldBackgroundColor: Colors.white,
-    appBarTheme: const AppBarTheme(
-      backgroundColor: Colors.white,
-      elevation: 0,
-      iconTheme: IconThemeData(color: Colors.black),
-      titleTextStyle: TextStyle(color: Colors.black, fontSize: 20),
+    scaffoldBackgroundColor: AppColors.scaffoldLight,
+    hintColor: AppColors.hintLight,
+    dividerColor: AppColors.dividerLight,
+    inputDecorationTheme: InputDecorationTheme(
+      fillColor: AppColors.fieldLight,
     ),
-    colorScheme: ColorScheme.fromSwatch(
-      primarySwatch: Colors.deepPurple,
-    ).copyWith(secondary: Colors.deepPurpleAccent),
-    textTheme: const TextTheme(bodyMedium: TextStyle(color: Colors.black)),
+    cardColor: AppColors.cardLight,
+    colorScheme: ColorScheme.light(
+      primary: AppColors.buttonLight,
+      onPrimary: AppColors.buttonTextLight,
+      secondaryContainer: AppColors.successLight,
+      error: AppColors.errorLight,
+    ),
   );
 
-  static final ThemeData darkTheme = ThemeData(
+  static ThemeData darkTheme = ThemeData(
+    fontFamily: 'Roboto',
+    useMaterial3: true,
     brightness: Brightness.dark,
-    scaffoldBackgroundColor: const Color(0xFF121212),
-    appBarTheme: const AppBarTheme(
-      backgroundColor: Color(0xFF1E1E1E),
-      elevation: 0,
-      iconTheme: IconThemeData(color: Colors.white),
-      titleTextStyle: TextStyle(color: Colors.white, fontSize: 20),
+    scaffoldBackgroundColor: AppColors.scaffoldDark,
+    hintColor: AppColors.hintDark,
+    dividerColor: AppColors.dividerDark,
+    inputDecorationTheme: InputDecorationTheme(
+      fillColor: AppColors.fieldDark,
     ),
-    colorScheme: ColorScheme.fromSwatch(
-      brightness: Brightness.dark,
-    ).copyWith(secondary: Colors.deepPurpleAccent),
-    textTheme: const TextTheme(bodyMedium: TextStyle(color: Colors.white)),
+    cardColor: AppColors.cardDark,
+    colorScheme: ColorScheme.dark(
+      primary: AppColors.buttonDark,
+      onPrimary: AppColors.buttonTextDark,
+      secondaryContainer: AppColors.successDark,
+      error: AppColors.errorDark,
+    ),
   );
 }

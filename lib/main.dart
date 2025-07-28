@@ -2,7 +2,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
-import 'package:wealth_app/constants/colors.dart';
+import 'package:wealth_app/constants/app_theme.dart';
 import 'package:wealth_app/controllers/asset_controller.dart';
 import 'package:wealth_app/controllers/auth_controller.dart';
 import 'package:wealth_app/controllers/dashboard_controller.dart';
@@ -38,20 +38,21 @@ class MyApp extends StatelessWidget {
 
     final shouldExit = await showDialog<bool>(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Exit App'),
-        content: const Text('Are you sure you want to exit?'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(false),
-            child: const Text('Cancel'),
+      builder:
+          (context) => AlertDialog(
+            title: const Text('Exit App'),
+            content: const Text('Are you sure you want to exit?'),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(false),
+                child: const Text('Cancel'),
+              ),
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(true),
+                child: const Text('OK'),
+              ),
+            ],
           ),
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(true),
-            child: const Text('OK'),
-          ),
-        ],
-      ),
     );
 
     if (shouldExit == true) {
@@ -74,42 +75,8 @@ class MyApp extends StatelessWidget {
       child: Obx(
         () => GetMaterialApp(
           debugShowCheckedModeBanner: false,
-          theme: ThemeData(
-            fontFamily: 'Roboto',
-            useMaterial3: true,
-            brightness: Brightness.light,
-            scaffoldBackgroundColor: AppColors.scaffoldLight,
-            hintColor: AppColors.hintLight,
-            dividerColor: AppColors.dividerLight,
-            inputDecorationTheme: InputDecorationTheme(
-              fillColor: AppColors.fieldLight,
-            ),
-            cardColor: AppColors.cardLight,
-            colorScheme: ColorScheme.light(
-              primary: AppColors.buttonLight,
-              onPrimary: AppColors.buttonTextLight,
-              secondaryContainer: AppColors.successLight,
-              error: AppColors.errorLight,
-            ),
-          ),
-          darkTheme: ThemeData(
-            fontFamily: 'Roboto',
-            useMaterial3: true,
-            brightness: Brightness.dark,
-            scaffoldBackgroundColor: AppColors.scaffoldDark,
-            hintColor: AppColors.hintDark,
-            dividerColor: AppColors.dividerDark,
-            inputDecorationTheme: InputDecorationTheme(
-              fillColor: AppColors.fieldDark,
-            ),
-            cardColor: AppColors.cardDark,
-            colorScheme: ColorScheme.dark(
-              primary: AppColors.buttonDark,
-              onPrimary: AppColors.buttonTextDark,
-              secondaryContainer: AppColors.successDark,
-              error: AppColors.errorDark,
-            ),
-          ),
+          theme: AppTheme.lightTheme,
+          darkTheme: AppTheme.darkTheme,
           themeMode: themeController.themeMode.value,
           initialRoute: '/consent',
           getPages: AppRoutes.routes,
