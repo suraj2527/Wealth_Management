@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:wealth_app/constants/colors.dart';
+import 'package:wealth_app/extension/theme_extension.dart';
 
 class DotLoader extends StatefulWidget {
   const DotLoader({super.key});
@@ -67,7 +67,7 @@ class _DotLoaderState extends State<DotLoader> with TickerProviderStateMixin {
                   width: 6,
                   height: 6,
                   decoration: BoxDecoration(
-                    color: AppColors.buttonColor,
+                    color: context.buttonColor, // using theme extension
                     shape: BoxShape.circle,
                   ),
                 ),

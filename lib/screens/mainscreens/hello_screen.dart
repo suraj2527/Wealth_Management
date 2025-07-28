@@ -2,7 +2,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
-import 'package:wealth_app/constants/colors.dart';
+// import 'package:wealth_app/constants/colors.dart';
 import 'package:wealth_app/constants/text_styles.dart';
 import 'package:wealth_app/controllers/auth_controller.dart';
 
@@ -91,7 +91,7 @@ class _HelloScreenState extends State<HelloScreen>
                       children: [
                         Text(
                           'Thank you, ',
-                          style: TextStyle(color: AppColors.buttonColor, fontWeight: AppTextStyle.mediumWeight),
+                          style: TextStyle(color: context.theme.colorScheme.primary, fontWeight: AppTextStyle.mediumWeight),
                         ),
                         Text(
                           'You are a part of us now.',

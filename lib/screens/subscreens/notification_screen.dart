@@ -1,7 +1,6 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
-import 'package:wealth_app/constants/colors.dart';
-
+import 'package:wealth_app/extension/theme_extension.dart';
 void showNotificationDialog(BuildContext context) {
   final List<Map<String, String>> notifications = List.generate(
     12,
@@ -24,6 +23,7 @@ void showNotificationDialog(BuildContext context) {
     transitionDuration: const Duration(milliseconds: 200),
     pageBuilder: (context, anim1, anim2) {
       final media = MediaQuery.of(context).size;
+
       return Scaffold(
         backgroundColor: Colors.transparent,
         body: Stack(
@@ -37,15 +37,14 @@ void showNotificationDialog(BuildContext context) {
                 color: Colors.transparent,
                 child: Container(
                   width: media.width * 0.92,
-
-                  height: MediaQuery.of(context).size.height * 0.6,
+                  height: media.height * 0.6,
                   margin: const EdgeInsets.only(top: 10),
                   padding: const EdgeInsets.all(16),
                   constraints: BoxConstraints(maxHeight: media.height * 0.85),
                   decoration: BoxDecoration(
-                    color: Colors.white,
+                    color: Theme.of(context).cardColor,
                     borderRadius: BorderRadius.circular(20),
-                    border: Border.all(color: Colors.grey.shade300),
+                    border: Border.all(color: context.borderColor.withOpacity(0.2)),
                   ),
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
@@ -74,8 +73,8 @@ void showNotificationDialog(BuildContext context) {
                           trackVisibility: true,
                           thickness: 2,
                           radius: const Radius.circular(10),
-                          thumbColor: AppColors.buttonColor,
-                          trackColor: AppColors.fieldcolor,
+                          thumbColor: context.buttonColor,
+                          trackColor: context.fieldColor,
                           child: ListView.builder(
                             controller: scrollController,
                             itemCount: notifications.length,
@@ -84,10 +83,10 @@ void showNotificationDialog(BuildContext context) {
                               return Container(
                                 margin: const EdgeInsets.symmetric(vertical: 8),
                                 decoration: BoxDecoration(
-                                  color: AppColors.fieldcolor,
+                                  color: context.fieldColor,
                                   borderRadius: BorderRadius.circular(12),
                                   border: Border.all(
-                                    color: Colors.grey.shade300,
+                                    color: context.borderColor.withOpacity(0.2),
                                   ),
                                 ),
                                 padding: const EdgeInsets.all(14.0),
@@ -95,8 +94,7 @@ void showNotificationDialog(BuildContext context) {
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     Row(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.spaceBetween,
+                                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                       children: [
                                         Expanded(
                                           child: Text(
@@ -107,9 +105,9 @@ void showNotificationDialog(BuildContext context) {
                                             ),
                                           ),
                                         ),
-                                        const Icon(
+                                        Icon(
                                           Icons.circle,
-                                          color: AppColors.buttonColor,
+                                          color: context.buttonColor,
                                           size: 10,
                                         ),
                                       ],
@@ -117,9 +115,9 @@ void showNotificationDialog(BuildContext context) {
                                     const SizedBox(height: 4),
                                     Text(
                                       notification["time"]!,
-                                      style: const TextStyle(
+                                      style: TextStyle(
                                         fontSize: 12,
-                                        color: Colors.grey,
+                                        color: Colors.grey.shade600,
                                       ),
                                     ),
                                     const SizedBox(height: 10),
@@ -130,9 +128,9 @@ void showNotificationDialog(BuildContext context) {
                                     const SizedBox(height: 10),
                                     Text(
                                       notification["ago"]!,
-                                      style: const TextStyle(
+                                      style: TextStyle(
                                         fontSize: 12,
-                                        color: Colors.grey,
+                                        color: Colors.grey.shade600,
                                       ),
                                     ),
                                   ],

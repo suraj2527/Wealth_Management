@@ -2,10 +2,11 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
-import 'package:wealth_app/constants/colors.dart';
+// import 'package:wealth_app/constants/colors.dart';
 import 'package:wealth_app/constants/font_sizes.dart';
 import 'package:wealth_app/constants/text_styles.dart';
 import 'package:wealth_app/controllers/dashboard_controller.dart';
+import 'package:wealth_app/extension/theme_extension.dart';
 import 'package:wealth_app/widgets/projection_graph.dart';
 import 'package:wealth_app/widgets/summary_card.dart';
 import 'package:wealth_app/widgets/universal_scaffold.dart';
@@ -15,33 +16,35 @@ class DashboardScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final DashboardController dashboardController =
-        Get.find<DashboardController>();
+    final DashboardController dashboardController = Get.find<DashboardController>();
     final mediaWidth = MediaQuery.of(context).size.width;
 
     return PopScope(
       canPop: false,
-      // ignore: deprecated_member_use
       onPopInvoked: (didPop) async {
         if (!didPop) {
           final shouldExit = await showDialog<bool>(
             context: context,
             builder: (context) => AlertDialog(
-              title: const Text('Exit App',style: TextStyle(fontWeight: AppTextStyle.mediumWeight),),
+              backgroundColor: context.fieldColor,
+              title: const Text(
+                'Exit App',
+                style: TextStyle(fontWeight: AppTextStyle.mediumWeight),
+              ),
               content: const Text('Are you sure you want to exit the app?'),
               actions: [
                 TextButton(
                   onPressed: () => Navigator.of(context).pop(false),
-                  child: const Text(
+                  child: Text(
                     'Cancel',
-                    style: TextStyle(color: AppColors.mainFontColor),
+                    style: TextStyle(color: context.mainFontColor),
                   ),
                 ),
                 TextButton(
                   onPressed: () => Navigator.of(context).pop(true),
-                  child: const Text(
+                  child: Text(
                     'Exit',
-                    style: TextStyle(color: AppColors.buttonColor),
+                    style: TextStyle(color: context.theme.colorScheme.primary),
                   ),
                 ),
               ],
@@ -63,139 +66,78 @@ class DashboardScreen extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text(
+              Text(
                 'Wealth Summary',
                 style: TextStyle(
                   fontWeight: AppTextStyle.bold,
                   fontSize: FontSizes.heading,
+                  color: context.mainFontColor,
                 ),
               ),
               const SizedBox(height: 6),
-              // const Text(
-              //   // 'Here is a quick glance at your financial status.',
-              //   // style: TextStyle(color: Colors.grey, fontSize: FontSizes.body),
-              // ),
-              const SizedBox(height: 20),
 
+              const SizedBox(height: 20),
               Obx(() {
                 return Wrap(
                   spacing: 16,
                   runSpacing: 16,
                   children: [
-                    // Total Net Worth
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Text(
-                          'Total Net Worth',
-                          style: TextStyle(
-                             fontWeight: AppTextStyle.mediumWeight,
-                            fontSize: FontSizes.heading2,
-                            color: AppColors.mainFontColor,
-                          ),
-                        ),
-                        const SizedBox(height: 6),
-                        SummaryCard(
-                          amount: dashboardController.netWorth.value,
-                          width: mediaWidth > 600
-                              ? mediaWidth / 2 - 28
-                              : double.infinity,
-                        ),
-                      ],
+                    _buildSummaryItem(
+                      context,
+                      title: 'Total Net Worth',
+                      amount: dashboardController.netWorth.value,
+                      width: mediaWidth > 600 ? mediaWidth / 2 - 28 : double.infinity,
                     ),
-
-                    // Total Income
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Text(
-                          'Total Income',
-                          style: TextStyle(
-                              fontWeight: AppTextStyle.mediumWeight,
-                            fontSize: FontSizes.heading2,
-                            color: AppColors.mainFontColor,
-                          ),
-                        ),
-                        const SizedBox(height: 6),
-                        SummaryCard(
-                          amount: dashboardController.totalIncome.value,
-                          width: mediaWidth > 600
-                              ? mediaWidth / 2 - 28
-                              : double.infinity,
-                        ),
-                      ],
+                    _buildSummaryItem(
+                      context,
+                      title: 'Total Income',
+                      amount: dashboardController.totalIncome.value,
+                      width: mediaWidth > 600 ? mediaWidth / 2 - 28 : double.infinity,
                     ),
-
-                    // Total Investment
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Text(
-                          'Total Investment',
-                          style: TextStyle(
-                            fontWeight: AppTextStyle.mediumWeight,
-                            fontSize: FontSizes.heading2,
-                            color: AppColors.mainFontColor,
-                          ),
-                        ),
-                        const SizedBox(height: 6),
-                        SummaryCard(
-                          amount: dashboardController.totalInvestment.value,
-                          width: mediaWidth > 600
-                              ? mediaWidth / 2 - 28
-                              : double.infinity,
-                        ),
-                      ],
+                    _buildSummaryItem(
+                      context,
+                      title: 'Total Investment',
+                      amount: dashboardController.totalInvestment.value,
+                      width: mediaWidth > 600 ? mediaWidth / 2 - 28 : double.infinity,
                     ),
-
-                    // Total Expense
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Text(
-                          'Total Expense',
-                          style: TextStyle(
-                              fontWeight: AppTextStyle.mediumWeight,
-                            fontSize: FontSizes.heading2,
-                            color: AppColors.mainFontColor,
-                          ),
-                        ),
-                        const SizedBox(height: 6),
-                        SummaryCard(
-                          amount: dashboardController.totalExpense.value,
-                          width: mediaWidth > 600
-                              ? mediaWidth / 2 - 28
-                              : double.infinity,
-                        ),
-                      ],
+                    _buildSummaryItem(
+                      context,
+                      title: 'Total Expense',
+                      amount: dashboardController.totalExpense.value,
+                      width: mediaWidth > 600 ? mediaWidth / 2 - 28 : double.infinity,
                     ),
                   ],
                 );
               }),
 
               const SizedBox(height: 30),
-              const Divider(color: AppColors.linecolor, thickness: 0.4),
+              Divider(color: context.lineColor, thickness: 0.4),
               const SizedBox(height: 20),
 
-              const Text(
+              Text(
                 'Wealth Projection',
                 style: TextStyle(
                   fontWeight: AppTextStyle.bold,
                   fontSize: FontSizes.heading1,
+                  color: context.mainFontColor,
                 ),
               ),
               const SizedBox(height: 6),
-              const Text(
+              Text(
                 'Based on current data trends',
-                style: TextStyle(color: Colors.grey, fontSize: FontSizes.body),
+                style: TextStyle(
+                  color: context.placeholderColor,
+                  fontSize: FontSizes.body,
+                ),
               ),
               const SizedBox(height: 24),
 
-              const Text(
+              Text(
                 'Your Net Worth Projection',
                 style: TextStyle(
                   fontWeight: AppTextStyle.semiBold,
                   fontSize: FontSizes.heading1,
+                  color: context.mainFontColor,
                 ),
               ),
               const SizedBox(height: 12),
@@ -208,11 +150,12 @@ class DashboardScreen extends StatelessWidget {
               ),
 
               const SizedBox(height: 24),
-              const Text(
+              Text(
                 'Your Income Projection',
                 style: TextStyle(
                   fontWeight: AppTextStyle.semiBold,
                   fontSize: FontSizes.heading1,
+                  color: context.mainFontColor,
                 ),
               ),
               const SizedBox(height: 12),
@@ -225,10 +168,13 @@ class DashboardScreen extends StatelessWidget {
               ),
 
               const SizedBox(height: 30),
-              const Center(
+              Center(
                 child: Text(
                   '@2023 Dynamics Monk All Rights Reserved.',
-                  style: TextStyle(color: Colors.grey, fontSize: 14),
+                  style: TextStyle(
+                    color: context.placeholderColor,
+                    fontSize: 14,
+                  ),
                 ),
               ),
               const SizedBox(height: 10),
@@ -236,6 +182,28 @@ class DashboardScreen extends StatelessWidget {
           ),
         ),
       ),
+    );
+  }
+
+  Widget _buildSummaryItem(BuildContext context,
+      {required String title, required String amount, required double width}) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          title,
+          style: TextStyle(
+            fontWeight: AppTextStyle.mediumWeight,
+            fontSize: FontSizes.heading2,
+            color: context.mainFontColor,
+          ),
+        ),
+        const SizedBox(height: 6),
+        SummaryCard(
+          amount: amount,
+          width: width,
+        ),
+      ],
     );
   }
 }

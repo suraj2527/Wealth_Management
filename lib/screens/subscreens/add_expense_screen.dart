@@ -1,11 +1,11 @@
 import 'package:dropdown_button2/dropdown_button2.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:wealth_app/constants/colors.dart';
 import 'package:wealth_app/constants/text_styles.dart';
 import 'package:wealth_app/controllers/auth_controller.dart';
 import 'package:wealth_app/widgets/calendar_input_field.dart';
 import 'package:wealth_app/widgets/universal_scaffold.dart';
+import 'package:wealth_app/extension/theme_extension.dart'; 
 import '../../models/expense_model.dart';
 import '../../controllers/expense_controller.dart';
 
@@ -51,8 +51,7 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
   final TextEditingController _customSubCategoryController =
       TextEditingController();
 
-final userId = Get.find<AuthController>().userId.value;
-
+  final userId = Get.find<AuthController>().userId.value;
   final ExpenseController expenseController = Get.find<ExpenseController>();
 
   Future<void> _submitExpense() async {
@@ -81,7 +80,6 @@ final userId = Get.find<AuthController>().userId.value;
       );
 
       if (result['success']) {
-        // Reset form
         _amountController.clear();
         _yearController.text = DateTime.now().year.toString();
         _dateController.text = DateTime.now().toString().substring(0, 10);
@@ -99,7 +97,7 @@ final userId = Get.find<AuthController>().userId.value;
           "Success",
           "Expense added successfully!",
           snackPosition: SnackPosition.BOTTOM,
-          backgroundColor: AppColors.successcolor,
+          backgroundColor: context.successColor,
           colorText: Colors.white,
         );
       } else {
@@ -107,7 +105,7 @@ final userId = Get.find<AuthController>().userId.value;
           "Error",
           result['message'] ?? "Failed to add expense.",
           snackPosition: SnackPosition.BOTTOM,
-          backgroundColor: AppColors.failedcolor,
+          backgroundColor: context.failedColor,
           colorText: Colors.white,
         );
       }
@@ -122,22 +120,18 @@ final userId = Get.find<AuthController>().userId.value;
       data: Theme.of(context).copyWith(
         inputDecorationTheme: InputDecorationTheme(
           filled: true,
-          fillColor: AppColors.fieldcolor,
+          fillColor: context.fieldColor,
           border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(8),
-            borderSide: BorderSide(
-              color: AppColors.bordercolor.withOpacity(0.1),
-            ),
+            borderSide: BorderSide(color: context.borderColor.withOpacity(0.1)),
           ),
           enabledBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(8),
-            borderSide: BorderSide(
-              color: AppColors.bordercolor.withOpacity(0.1),
-            ),
+            borderSide: BorderSide(color: context.borderColor.withOpacity(0.1)),
           ),
           focusedBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(8),
-            borderSide: BorderSide(color: AppColors.buttonColor),
+            borderSide: BorderSide(color: context.buttonColor),
           ),
         ),
       ),
@@ -170,7 +164,7 @@ final userId = Get.find<AuthController>().userId.value;
                     child: ElevatedButton(
                       onPressed: _submitExpense,
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColors.buttonColor,
+                        backgroundColor: context.buttonColor,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(10),
                         ),
@@ -179,8 +173,8 @@ final userId = Get.find<AuthController>().userId.value;
                         "Submit",
                         style: TextStyle(
                           color: Colors.white,
-                          fontWeight: AppTextStyle.mediumWeight,
-                          fontSize: 20,
+                          // fontWeight: AppTextStyle.mediumWeight,
+                          // fontSize: 20,
                         ),
                       ),
                     ),
@@ -196,18 +190,23 @@ final userId = Get.find<AuthController>().userId.value;
 
   List<Widget> _formFields(BuildContext context) {
     final mediaHeight = MediaQuery.of(context).size.height;
+
     return [
       Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          const Text(
+          Text(
             "Add Expense",
-            style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+            style: TextStyle(
+              fontSize: 22,
+              fontWeight: FontWeight.bold,
+              color: context.mainFontColor,
+            ),
           ),
           ElevatedButton(
             onPressed: () => Navigator.pop(context),
             style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.buttonColor,
+              backgroundColor: context.buttonColor,
               foregroundColor: Colors.white,
               padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 10),
               shape: RoundedRectangleBorder(
@@ -219,45 +218,53 @@ final userId = Get.find<AuthController>().userId.value;
         ],
       ),
       SizedBox(height: mediaHeight * 0.02),
+
       _label("Year"),
       _textField(_yearController, "Enter year", isNumber: true),
       SizedBox(height: mediaHeight * 0.015),
+
       _label("Expense Type"),
       _dropdownField(_expenseTypes, _selectedType, (val) {
         setState(() => _selectedType = val);
-      }),
+      }, context),
       if (_selectedType == 'Other') ...[
         SizedBox(height: mediaHeight * 0.01),
         _textField(_customTypeController, "Enter custom expense type"),
       ],
+
       SizedBox(height: mediaHeight * 0.015),
       _label("Sub-Category"),
       _dropdownField(_subCategories, _selectedSubCategory, (val) {
         setState(() => _selectedSubCategory = val);
-      }),
+      }, context),
       if (_selectedSubCategory == 'Other') ...[
         SizedBox(height: mediaHeight * 0.01),
         _textField(_customSubCategoryController, "Enter custom sub-category"),
       ],
+
       SizedBox(height: mediaHeight * 0.015),
       _label("Period"),
       _dropdownField(_periods, _selectedPeriod, (val) {
         setState(() => _selectedPeriod = val);
-      }),
+      }, context),
+
       SizedBox(height: mediaHeight * 0.015),
       _label("Nature Type"),
       _dropdownField(_natureTypes, _selectedNature, (val) {
         setState(() => _selectedNature = val);
-      }),
+      }, context),
+
       SizedBox(height: mediaHeight * 0.015),
       _label("Amount"),
       _textField(_amountController, "Enter amount", isNumber: true),
       SizedBox(height: mediaHeight * 0.015),
+
       CalendarInputField(
         label: "Date",
         controller: _dateController,
         onChanged: (val) {},
       ),
+
       SizedBox(height: mediaHeight * 0.03),
     ];
   }
@@ -283,11 +290,17 @@ final userId = Get.find<AuthController>().userId.value;
     List<String> items,
     String? currentValue,
     void Function(String?) onChanged,
+    BuildContext context,
   ) {
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+
     return DropdownButtonFormField2<String>(
       value: currentValue,
       isExpanded: true,
-      style: const TextStyle(fontSize: 16, color: Colors.black),
+      style: TextStyle(
+        fontSize: 16,
+        color: isDarkMode ? context.mainFontColor : Colors.black,
+      ),
       decoration: const InputDecoration(
         isDense: true,
         contentPadding: EdgeInsets.symmetric(horizontal: -4, vertical: 16),
@@ -296,7 +309,7 @@ final userId = Get.find<AuthController>().userId.value;
         maxHeight: 250,
         elevation: 3,
         decoration: BoxDecoration(
-          color: AppColors.fieldcolor,
+          color: context.fieldColor,
           borderRadius: BorderRadius.circular(8),
           boxShadow: const [
             BoxShadow(
@@ -310,7 +323,15 @@ final userId = Get.find<AuthController>().userId.value;
       items:
           items
               .map(
-                (val) => DropdownMenuItem<String>(value: val, child: Text(val)),
+                (val) => DropdownMenuItem<String>(
+                  value: val,
+                  child: Text(
+                    val,
+                    style: TextStyle(
+                      color: isDarkMode ? context.mainFontColor : Colors.black,
+                    ),
+                  ),
+                ),
               )
               .toList(),
       onChanged: onChanged,

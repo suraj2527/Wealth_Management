@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:wealth_app/constants/colors.dart';
+import 'package:wealth_app/extension/theme_extension.dart';
 
 class CalendarInputField extends StatefulWidget {
   final String label;
@@ -41,8 +41,7 @@ class _CalendarInputFieldState extends State<CalendarInputField> {
     );
 
     if (picked != null) {
-      final formatted =
-          "${picked.day.toString().padLeft(2, '0')}-"
+      final formatted = "${picked.day.toString().padLeft(2, '0')}-"
           "${picked.month.toString().padLeft(2, '0')}-"
           "${picked.year}";
       widget.controller.text = formatted;
@@ -66,7 +65,7 @@ class _CalendarInputFieldState extends State<CalendarInputField> {
           validator: (val) => val == null || val.isEmpty ? "Required" : null,
           decoration: InputDecoration(
             filled: true,
-            fillColor: AppColors.fieldcolor,
+            fillColor: context.fieldColor,
             hintText: "dd-mm-yyyy",
             suffixIcon: Padding(
               padding: const EdgeInsets.all(12),
@@ -74,12 +73,14 @@ class _CalendarInputFieldState extends State<CalendarInputField> {
                 "assets/icons/calendar.svg",
                 height: 16,
                 colorFilter: ColorFilter.mode(
-                  isFilled ? AppColors.buttonColor : AppColors.buttonColor,
+                  isFilled ? context.buttonColor : context.buttonColor,
                   BlendMode.srcIn,
                 ),
               ),
             ),
-            border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(8),
+            ),
           ),
         ),
       ],
@@ -124,7 +125,9 @@ class _CalendarSheetState extends State<_CalendarSheet> {
 
           Theme(
             data: Theme.of(context).copyWith(
-              colorScheme: ColorScheme.light(primary: AppColors.buttonColor),
+              colorScheme: Theme.of(context).colorScheme.copyWith(
+                    primary: context.buttonColor,
+                  ),
             ),
             child: CalendarDatePicker(
               initialDate: tempDate,
@@ -147,7 +150,7 @@ class _CalendarSheetState extends State<_CalendarSheet> {
               ),
               ElevatedButton(
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.buttonColor,
+                  backgroundColor: context.buttonColor,
                   padding: const EdgeInsets.symmetric(horizontal: 24),
                 ),
                 child: const Text("OK", style: TextStyle(color: Colors.white)),

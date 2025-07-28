@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:wealth_app/constants/text_styles.dart';
+import 'package:wealth_app/extension/theme_extension.dart';
 
 class CustomTextField extends StatelessWidget {
   final TextEditingController controller;
@@ -26,13 +27,15 @@ class CustomTextField extends StatelessWidget {
       decoration: InputDecoration(
         labelText: labelText,
         hintText: hintText,
-        hintStyle: const TextStyle(color: Color.fromARGB(255, 170, 170, 170)),
-        labelStyle: const TextStyle(
-          color: Colors.black,
+        hintStyle: TextStyle(
+          color: context.hintColor,
+        ),
+        labelStyle: TextStyle(
+          color: context.mainFontColor,
           fontWeight: AppTextStyle.mediumWeight,
         ),
         filled: true,
-        fillColor: Color.fromARGB(255, 245, 245, 245),
+        fillColor: context.fieldColor,
         contentPadding: const EdgeInsets.symmetric(
           horizontal: 16,
           vertical: 14,

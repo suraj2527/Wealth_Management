@@ -4,10 +4,10 @@ import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:wealth_app/constants/text_styles.dart';
+import 'package:wealth_app/extension/theme_extension.dart';
 import 'package:wealth_app/screens/mainscreens/splash_screen.dart';
 import 'package:wealth_app/widgets/consent_dialog.dart';
 import 'package:wealth_app/widgets/dot_loader.dart';
-import 'package:wealth_app/constants/colors.dart';
 
 class ConsentGatekeeper extends StatefulWidget {
   const ConsentGatekeeper({super.key});
@@ -47,7 +47,7 @@ class _ConsentGatekeeperState extends State<ConsentGatekeeper> {
         agreeText: 'I consent',
         disagreeText: 'I do not consent',
         onAgree: () {
-          Get.back(); 
+          Get.back();
           _showConsent2();
         },
         onDisagree: () => _exitApp(),
@@ -67,7 +67,7 @@ class _ConsentGatekeeperState extends State<ConsentGatekeeper> {
         onAgree: () async {
           final prefs = await SharedPreferences.getInstance();
           await prefs.setBool('consent_accepted', true);
-          Get.back(); 
+          Get.back();
           _navigateToLogin();
         },
         onDisagree: () => _exitApp(),
@@ -79,12 +79,18 @@ class _ConsentGatekeeperState extends State<ConsentGatekeeper> {
   void _exitApp() {
     Get.dialog(
       AlertDialog(
-        title: const Text('Consent Required',style: TextStyle(fontWeight: AppTextStyle.mediumWeight)),
+        title: const Text(
+          'Consent Required',
+          style: TextStyle(fontWeight: AppTextStyle.mediumWeight),
+        ),
         content: const Text('You must accept both consents to proceed.'),
         actions: [
           TextButton(
             onPressed: () => Get.back(),
-            child: const Text('OK',style: TextStyle(color: AppColors.buttonColor),),
+            child: Text(
+              'OK',
+              style: TextStyle(color: context.buttonColor),
+            ),
           ),
         ],
       ),
@@ -95,21 +101,24 @@ class _ConsentGatekeeperState extends State<ConsentGatekeeper> {
     final shouldExit = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Exit App',style: TextStyle(fontWeight: AppTextStyle.mediumWeight),),
+        title: const Text(
+          'Exit App',
+          style: TextStyle(fontWeight: AppTextStyle.mediumWeight),
+        ),
         content: const Text('Are you sure you want to exit the app?'),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(false),
-            child: const Text(
+            child: Text(
               'Cancel',
-              style: TextStyle(color: AppColors.mainFontColor),
+              style: TextStyle(color: context.mainFontColor),
             ),
           ),
           TextButton(
             onPressed: () => Navigator.of(context).pop(true),
-            child: const Text(
+            child: Text(
               'Exit',
-              style: TextStyle(color: AppColors.buttonColor),
+              style: TextStyle(color: context.buttonColor),
             ),
           ),
         ],
@@ -137,9 +146,7 @@ class _ConsentGatekeeperState extends State<ConsentGatekeeper> {
         }
       },
       child: const Scaffold(
-        body: Center(
-          child: DotLoader(), 
-        ),
+        body: Center(child: DotLoader()),
       ),
     );
   }

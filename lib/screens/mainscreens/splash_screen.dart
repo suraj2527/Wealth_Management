@@ -1,14 +1,13 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
-// import 'package:shared_preferences/shared_preferences.dart';
-import 'dart:async';
-import 'package:wealth_app/constants/colors.dart';
 import 'package:wealth_app/constants/text_styles.dart';
 import 'package:wealth_app/controllers/auth_controller.dart';
 import 'package:wealth_app/screens/Authentication/login_screen.dart';
 import 'package:wealth_app/screens/mainscreens/dashboard_screen.dart';
 import 'package:wealth_app/widgets/dot_loader.dart';
+import 'package:wealth_app/extension/theme_extension.dart'; // add this import
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -17,9 +16,9 @@ class SplashScreen extends StatefulWidget {
   State<SplashScreen> createState() => _SplashScreenState();
 }
 
-class _SplashScreenState extends State<SplashScreen>
-    with TickerProviderStateMixin {
+class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMixin {
   final AuthController authController = Get.put(AuthController());
+
   final String fullText = 'Wealth Management';
   String animatedText = '';
   int charIndex = 0;
@@ -64,16 +63,18 @@ class _SplashScreenState extends State<SplashScreen>
       textFadeIn = true;
     });
   }
-void checkLoginStatus() async {
-   await Future.delayed(const Duration(seconds: 3));
-  bool success = await authController.trySilentLogin();
 
-  if (success) {
-    Get.offAll(() => DashboardScreen());
-  } else {
-    Get.offAll(() => LoginScreen());
+  void checkLoginStatus() async {
+    await Future.delayed(const Duration(seconds: 3));
+    bool success = await authController.trySilentLogin();
+
+    if (success) {
+      Get.offAll(() => const DashboardScreen());
+    } else {
+      Get.offAll(() => const LoginScreen());
+    }
   }
-}
+
   @override
   void dispose() {
     _logoController.dispose();
@@ -83,7 +84,7 @@ void checkLoginStatus() async {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: context.backgroundColor,
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -103,10 +104,10 @@ void checkLoginStatus() async {
                 children: [
                   Text(
                     animatedText,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 26,
                       fontWeight: AppTextStyle.bold,
-                      color: AppColors.mainFontColor,
+                      color: context.mainFontColor,
                     ),
                   ),
                   const SizedBox(height: 20),

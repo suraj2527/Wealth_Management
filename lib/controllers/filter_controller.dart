@@ -21,7 +21,7 @@ class FilterController extends GetxController {
   var originalAssetList = <AssetModel>[].obs;
   var filteredAssetList = <AssetModel>[].obs;
 
-  /// ---------------- INCOME ----------------
+  // ---------------- INCOME ---------------- //
   void setIncomeData(List<IncomeModel> incomes) {
     originalIncomeList.assignAll(incomes);
     applyIncomeFilter();
@@ -36,26 +36,30 @@ class FilterController extends GetxController {
     final filter = incomeFilterType.value;
     final now = DateTime.now();
 
-    List<IncomeModel> sortedList = originalIncomeList.where((income) {
-      final date = DateTime.tryParse(income.date);
-      if (date == null) return false;
+    List<IncomeModel> sortedList =
+        originalIncomeList.where((income) {
+          final date = DateTime.tryParse(income.date);
+          if (date == null) return false;
 
-      switch (filter) {
-        case FilterType.lastMonth:
-          final lastMonth = DateTime(now.year, now.month - 1);
-          return date.year == lastMonth.year && date.month == lastMonth.month;
-        case FilterType.lastYear:
-          return date.year == now.year - 1;
-        case FilterType.recentlyAdded:
-          return true;
-      }
-    }).toList();
+          switch (filter) {
+            case FilterType.lastMonth:
+              final lastMonth = DateTime(now.year, now.month - 1);
+              return date.year == lastMonth.year &&
+                  date.month == lastMonth.month;
+            case FilterType.lastYear:
+              return date.year == now.year - 1;
+            case FilterType.recentlyAdded:
+              return true;
+          }
+        }).toList();
 
-    sortedList.sort((a, b) => DateTime.parse(b.date).compareTo(DateTime.parse(a.date)));
+    sortedList.sort(
+      (a, b) => DateTime.parse(b.date).compareTo(DateTime.parse(a.date)),
+    );
     filteredIncomeList.assignAll(sortedList);
   }
 
-  /// ---------------- EXPENSE ----------------
+  // ---------------- EXPENSE ---------------- //
   void setExpenseData(List<ExpenseModel> expenses) {
     originalExpenseList.assignAll(expenses);
     applyExpenseFilter();
@@ -70,26 +74,30 @@ class FilterController extends GetxController {
     final filter = expenseFilterType.value;
     final now = DateTime.now();
 
-    List<ExpenseModel> sortedList = originalExpenseList.where((expense) {
-      final date = DateTime.tryParse(expense.date);
-      if (date == null) return false;
+    List<ExpenseModel> sortedList =
+        originalExpenseList.where((expense) {
+          final date = DateTime.tryParse(expense.date);
+          if (date == null) return false;
 
-      switch (filter) {
-        case FilterType.lastMonth:
-          final lastMonth = DateTime(now.year, now.month - 1);
-          return date.year == lastMonth.year && date.month == lastMonth.month;
-        case FilterType.lastYear:
-          return date.year == now.year - 1;
-        case FilterType.recentlyAdded:
-          return true;
-      }
-    }).toList();
+          switch (filter) {
+            case FilterType.lastMonth:
+              final lastMonth = DateTime(now.year, now.month - 1);
+              return date.year == lastMonth.year &&
+                  date.month == lastMonth.month;
+            case FilterType.lastYear:
+              return date.year == now.year - 1;
+            case FilterType.recentlyAdded:
+              return true;
+          }
+        }).toList();
 
-    sortedList.sort((a, b) => DateTime.parse(b.date).compareTo(DateTime.parse(a.date)));
+    sortedList.sort(
+      (a, b) => DateTime.parse(b.date).compareTo(DateTime.parse(a.date)),
+    );
     filteredExpenseList.assignAll(sortedList);
   }
 
-  /// ---------------- ASSET ----------------
+  // ---------------- ASSET ---------------- //
   void setAssetData(List<AssetModel> assets) {
     originalAssetList.assignAll(assets);
     applyAssetFilter();
@@ -104,20 +112,22 @@ class FilterController extends GetxController {
     final filter = assetFilterType.value;
     final now = DateTime.now();
 
-    List<AssetModel> sortedList = originalAssetList.where((asset) {
-      final startDate = DateTime.tryParse(asset.startDate);
-      if (startDate == null) return false;
+    List<AssetModel> sortedList =
+        originalAssetList.where((asset) {
+          final startDate = DateTime.tryParse(asset.startDate);
+          if (startDate == null) return false;
 
-      switch (filter) {
-        case FilterType.lastMonth:
-          final lastMonth = DateTime(now.year, now.month - 1);
-          return startDate.year == lastMonth.year && startDate.month == lastMonth.month;
-        case FilterType.lastYear:
-          return startDate.year == now.year - 1;
-        case FilterType.recentlyAdded:
-          return true;
-      }
-    }).toList();
+          switch (filter) {
+            case FilterType.lastMonth:
+              final lastMonth = DateTime(now.year, now.month - 1);
+              return startDate.year == lastMonth.year &&
+                  startDate.month == lastMonth.month;
+            case FilterType.lastYear:
+              return startDate.year == now.year - 1;
+            case FilterType.recentlyAdded:
+              return true;
+          }
+        }).toList();
 
     sortedList.sort((a, b) {
       final aDate = DateTime.tryParse(a.startDate);
@@ -129,7 +139,7 @@ class FilterController extends GetxController {
     filteredAssetList.assignAll(sortedList);
   }
 
-  /// Label for Dropdown etc.
+  // Dropdown
   String getFilterLabel(FilterType type) {
     switch (type) {
       case FilterType.recentlyAdded:

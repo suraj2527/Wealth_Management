@@ -7,7 +7,10 @@ class AssetController extends GetxController {
   final RxList<AssetModel> assetList = <AssetModel>[].obs;
   final String _apiUrl = 'http://localhost:7173/api/asset';
 
-  Future<Map<String, dynamic>> submitAssetToServer(String userId, AssetModel asset) async {
+  Future<Map<String, dynamic>> submitAssetToServer(
+    String userId,
+    AssetModel asset,
+  ) async {
     final fullAssetJson = asset.toJson()..addAll({'userId': userId});
 
     try {
@@ -23,13 +26,13 @@ class AssetController extends GetxController {
       } else {
         return {
           'success': false,
-          'message': 'Failed to submit asset (Status: ${response.statusCode})'
+          'message': 'Failed to submit asset (Status: ${response.statusCode})',
         };
       }
     } catch (e) {
       return {
         'success': false,
-        'message': 'Something went wrong while submitting asset.'
+        'message': 'Something went wrong while submitting asset.',
       };
     }
   }
@@ -40,18 +43,20 @@ class AssetController extends GetxController {
 
       if (response.statusCode == 200) {
         final List<dynamic> data = jsonDecode(response.body);
-        assetList.assignAll(data.map((json) => AssetModel.fromJson(json)).toList());
+        assetList.assignAll(
+          data.map((json) => AssetModel.fromJson(json)).toList(),
+        );
         return {'success': true};
       } else {
         return {
           'success': false,
-          'message': 'Failed to fetch assets (Status: ${response.statusCode})'
+          'message': 'Failed to fetch assets (Status: ${response.statusCode})',
         };
       }
     } catch (e) {
       return {
         'success': false,
-        'message': 'Something went wrong while fetching assets.'
+        'message': 'Something went wrong while fetching assets.',
       };
     }
   }

@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:wealth_app/constants/colors.dart';
-// import 'package:wealth_app/constants/font_sizes.dart';
 import 'package:wealth_app/constants/text_styles.dart';
+import 'package:wealth_app/extension/theme_extension.dart';
 
 class SummaryCard extends StatelessWidget {
   final String amount;
@@ -20,19 +19,22 @@ class SummaryCard extends StatelessWidget {
       padding: const EdgeInsets.all(16),
       margin: const EdgeInsets.only(bottom: 16),
       decoration: BoxDecoration(
-        color: AppColors.fieldcolor,
-        border: Border.all(color: AppColors.bordercolor.withOpacity(0.01)),
+        color: context.fieldColor,
+        border: Border.all(color: context.borderColor.withOpacity(0.01)),
         borderRadius: BorderRadius.circular(10),
         boxShadow: [
-          BoxShadow(color: Colors.grey.withOpacity(0.3), blurRadius: 8),
+          BoxShadow(
+            color: Colors.grey.withOpacity(0.3),
+            blurRadius: 8,
+          ),
         ],
       ),
       child: Text(
         '₹ $amount',
-        style: const TextStyle(
-          fontWeight:AppTextStyle.semiBold,
+        style: TextStyle(
+          fontWeight: AppTextStyle.semiBold,
           fontSize: 20,
-          color: AppColors.mainFontColor,
+          color: context.mainFontColor,
         ),
       ),
     );

@@ -7,25 +7,26 @@ class DashboardController extends GetxController {
   var totalInvestment = '0'.obs;
   var totalExpense = '0'.obs;
 
-  RxList<FlSpot> netWorthGraphData = <FlSpot>[
-    FlSpot(0, 3),
-    FlSpot(4, 0),
-    FlSpot(2, 0),
-    FlSpot(5, 0),
-    FlSpot(8, 0),
-    FlSpot(6, 0),
-  ].obs;
+  RxList<FlSpot> netWorthGraphData =
+      <FlSpot>[
+        FlSpot(0, 3),
+        FlSpot(4, 0),
+        FlSpot(2, 0),
+        FlSpot(5, 0),
+        FlSpot(8, 0),
+        FlSpot(6, 0),
+      ].obs;
 
-  RxList<FlSpot> incomeGraphData = <FlSpot>[
-    FlSpot(0, 50),
-    FlSpot(1, 150),
-    FlSpot(2, 250),
-    FlSpot(3, 350),
-    FlSpot(4, 450),
-    FlSpot(5, 600),
-  ].obs;
+  RxList<FlSpot> incomeGraphData =
+      <FlSpot>[
+        FlSpot(0, 50),
+        FlSpot(1, 150),
+        FlSpot(2, 250),
+        FlSpot(3, 350),
+        FlSpot(4, 450),
+        FlSpot(5, 600),
+      ].obs;
 
-  // You can add methods to update these variables as needed
   void updateNetWorth(String value) => netWorth.value = value;
   void updateTotalIncome(String value) => totalIncome.value = value;
   void updateTotalInvestment(String value) => totalInvestment.value = value;

@@ -5,7 +5,7 @@ import 'package:dotted_border/dotted_border.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
 import 'package:path_provider/path_provider.dart';
-import 'package:wealth_app/constants/colors.dart';
+import 'package:wealth_app/extension/theme_extension.dart';
 import 'package:wealth_app/widgets/universal_scaffold.dart';
 
 class UploadDocumentScreen extends StatefulWidget {
@@ -54,9 +54,9 @@ class _UploadDocumentScreenState extends State<UploadDocumentScreen> {
         actions: [
           TextButton(
             onPressed: () => Get.back(),
-            child: const Text(
+            child: Text(
               "Cancel",
-              style: TextStyle(color: AppColors.mainFontColor),
+              style: TextStyle(color: context.mainFontColor),
             ),
           ),
           TextButton(
@@ -66,7 +66,7 @@ class _UploadDocumentScreenState extends State<UploadDocumentScreen> {
               });
               Get.back();
             },
-            child: const Text("Delete", style: TextStyle(color: Colors.red)),
+            child: Text("Delete", style: TextStyle(color: context.failedColor)),
           ),
         ],
       ),
@@ -84,6 +84,7 @@ class _UploadDocumentScreenState extends State<UploadDocumentScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            // Header
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
@@ -94,7 +95,7 @@ class _UploadDocumentScreenState extends State<UploadDocumentScreen> {
                 ElevatedButton(
                   onPressed: () => Navigator.pop(context),
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.buttonColor,
+                    backgroundColor: context.buttonColor,
                     foregroundColor: Colors.white,
                     padding: const EdgeInsets.symmetric(
                       horizontal: 20,
@@ -108,24 +109,28 @@ class _UploadDocumentScreenState extends State<UploadDocumentScreen> {
                 ),
               ],
             ),
+
             const SizedBox(height: 30),
+
             Text(
               "Download Sample Record",
               style: TextStyle(
-                color: AppColors.mainFontColor,
+                color: context.mainFontColor,
                 fontSize: 18,
                 fontWeight: FontWeight.bold,
               ),
             ),
+
             const SizedBox(height: 10),
 
+            // Sample record UI
             Container(
               height: height,
               width: width,
               decoration: BoxDecoration(
-                border: Border.all(color: AppColors.linecolor),
+                border: Border.all(color: context.lineColor),
                 borderRadius: BorderRadius.circular(8),
-                color: AppColors.fieldcolor,
+                color: context.fieldColor,
               ),
               child: Row(
                 children: [
@@ -139,9 +144,9 @@ class _UploadDocumentScreenState extends State<UploadDocumentScreen> {
                   Container(
                     height: double.infinity,
                     width: 50,
-                    decoration: const BoxDecoration(
-                      color: AppColors.buttonColor,
-                      borderRadius: BorderRadius.only(
+                    decoration: BoxDecoration(
+                      color: context.buttonColor,
+                      borderRadius: const BorderRadius.only(
                         topRight: Radius.circular(8),
                         bottomRight: Radius.circular(8),
                       ),
@@ -169,15 +174,16 @@ class _UploadDocumentScreenState extends State<UploadDocumentScreen> {
 
             const SizedBox(height: 24),
 
+            // Excel Upload UI
             DottedBorder(
               borderType: BorderType.RRect,
               radius: const Radius.circular(12),
               dashPattern: const [6, 3],
-              color: AppColors.linecolor,
+              color: context.lineColor,
               strokeWidth: 1,
               child: Container(
                 decoration: BoxDecoration(
-                  color: AppColors.fieldcolor,
+                  color: context.fieldColor,
                   borderRadius: BorderRadius.circular(12),
                 ),
                 height: MediaQuery.of(context).size.height * 0.2,
@@ -194,14 +200,12 @@ class _UploadDocumentScreenState extends State<UploadDocumentScreen> {
                       ),
                     ),
                     const SizedBox(height: 10),
-                    Text(
-                      selectedFile?.path.split("/").last ?? "No file selected",
-                    ),
+                    Text(selectedFile?.path.split("/").last ?? "No file selected"),
                     const SizedBox(height: 12),
                     ElevatedButton(
                       onPressed: pickExcelFile,
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColors.buttonColor,
+                        backgroundColor: context.buttonColor,
                         padding: const EdgeInsets.symmetric(
                           horizontal: 20,
                           vertical: 5,
@@ -223,28 +227,25 @@ class _UploadDocumentScreenState extends State<UploadDocumentScreen> {
 
             const SizedBox(height: 26),
 
+            // Save Button
             ElevatedButton(
               onPressed: selectedFile != null ? saveSelectedFile : null,
               style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.buttonColor,
-                disabledBackgroundColor: Colors.grey[400],
+                backgroundColor: selectedFile != null ? context.buttonColor : Colors.grey[400],
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(8),
                 ),
               ),
-              child: const Text(
+              child: Text(
                 "Save your Data",
-                style: TextStyle(color: AppColors.buttonTextColor),
+                style: TextStyle(color: context.buttonTextColor),
               ),
             ),
 
             const SizedBox(height: 20),
 
             if (savedFiles.isNotEmpty)
-              const Text(
-                "Saved Files:",
-                style: TextStyle(fontWeight: FontWeight.bold),
-              ),
+              const Text("Saved Files:", style: TextStyle(fontWeight: FontWeight.bold)),
 
             if (savedFiles.isNotEmpty)
               Expanded(
@@ -262,10 +263,7 @@ class _UploadDocumentScreenState extends State<UploadDocumentScreen> {
                             const Center(child: CircularProgressIndicator()),
                             barrierDismissible: false,
                           );
-
-                          await Future.delayed(
-                            const Duration(milliseconds: 300),
-                          );
+                          await Future.delayed(const Duration(milliseconds: 300));
                           // await Get.to(() => ExcelViewerScreen(file: file));
                           Get.back();
                         },
@@ -273,9 +271,9 @@ class _UploadDocumentScreenState extends State<UploadDocumentScreen> {
                           height: height,
                           width: width,
                           decoration: BoxDecoration(
-                            border: Border.all(color: AppColors.linecolor),
+                            border: Border.all(color: context.lineColor),
                             borderRadius: BorderRadius.circular(8),
-                            color: AppColors.fieldcolor,
+                            color: context.fieldColor,
                           ),
                           child: Row(
                             children: [
@@ -291,17 +289,12 @@ class _UploadDocumentScreenState extends State<UploadDocumentScreen> {
                               Expanded(
                                 child: Text(
                                   fileName,
-                                  style: TextStyle(
-                                    color: AppColors.mainFontColor,
-                                  ),
+                                  style: TextStyle(color: context.mainFontColor),
                                   overflow: TextOverflow.ellipsis,
                                 ),
                               ),
                               IconButton(
-                                icon: const Icon(
-                                  Icons.delete_outline,
-                                  color: AppColors.failedcolor,
-                                ),
+                                icon: Icon(Icons.delete_outline, color: context.failedColor),
                                 onPressed: () => showDeleteConfirmation(index),
                               ),
                             ],

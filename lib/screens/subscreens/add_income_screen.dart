@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:dropdown_button2/dropdown_button2.dart';
-import 'package:wealth_app/constants/colors.dart';
 import 'package:wealth_app/constants/font_sizes.dart';
 import 'package:wealth_app/constants/text_styles.dart';
 import 'package:wealth_app/controllers/auth_controller.dart';
@@ -9,6 +8,7 @@ import 'package:wealth_app/controllers/income_controller.dart';
 import 'package:wealth_app/models/income_model.dart';
 import 'package:wealth_app/widgets/income_graph.dart';
 import 'package:wealth_app/widgets/universal_scaffold.dart';
+import 'package:wealth_app/extension/theme_extension.dart';
 
 class AddIncomeScreen extends StatefulWidget {
   const AddIncomeScreen({super.key});
@@ -35,21 +35,19 @@ class _AddIncomeScreenState extends State<AddIncomeScreen> {
     'Other',
   ];
 
-final userId = Get.find<AuthController>().userId.value;
+  final userId = Get.find<AuthController>().userId.value;
 
   Future<void> _submitIncome() async {
     FocusScope.of(context).unfocus();
 
-    if (!_formKey.currentState!.validate()) {
-      return;
-    }
+    if (!_formKey.currentState!.validate()) return;
 
     if (_selectedIncomeCategory == null) {
       Get.snackbar(
         'Error',
         'Please select an income source',
         snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: AppColors.failedcolor,
+        backgroundColor: context.failedColor,
         colorText: Colors.white,
       );
       return;
@@ -61,7 +59,7 @@ final userId = Get.find<AuthController>().userId.value;
         'Error',
         'Please enter a valid amount',
         snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: AppColors.failedcolor,
+        backgroundColor: context.failedColor,
         colorText: Colors.white,
       );
       return;
@@ -97,7 +95,7 @@ final userId = Get.find<AuthController>().userId.value;
           'Success',
           'Income added successfully!',
           snackPosition: SnackPosition.BOTTOM,
-          backgroundColor: AppColors.successcolor,
+          backgroundColor: context.successColor,
           colorText: Colors.white,
         );
 
@@ -107,7 +105,7 @@ final userId = Get.find<AuthController>().userId.value;
           'Error',
           result['message'] ?? 'Failed to add income',
           snackPosition: SnackPosition.BOTTOM,
-          backgroundColor: AppColors.failedcolor,
+          backgroundColor: context.failedColor,
           colorText: Colors.white,
         );
       }
@@ -117,7 +115,7 @@ final userId = Get.find<AuthController>().userId.value;
         'Error',
         'Something went wrong',
         snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: AppColors.failedcolor,
+        backgroundColor: context.failedColor,
         colorText: Colors.white,
       );
     }
@@ -142,7 +140,6 @@ final userId = Get.find<AuthController>().userId.value;
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Header Row
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
@@ -156,7 +153,7 @@ final userId = Get.find<AuthController>().userId.value;
                       ElevatedButton(
                         onPressed: () => Navigator.pop(context),
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: AppColors.buttonColor,
+                          backgroundColor: context.buttonColor,
                           foregroundColor: Colors.white,
                           padding: EdgeInsets.symmetric(
                             horizontal: mediaWidth * 0.07,
@@ -171,21 +168,24 @@ final userId = Get.find<AuthController>().userId.value;
                     ],
                   ),
                   SizedBox(height: mediaHeight * 0.025),
-
-                  // Source dropdown
                   _label("Source"),
                   const SizedBox(height: 6),
                   DropdownButtonFormField2<String>(
                     value: _selectedIncomeCategory,
                     isExpanded: true,
-                    decoration: _inputDecoration("Select income source"),
+                    decoration: _inputDecoration(
+                      context,
+                      "Select income source",
+                    ),
                     items:
-                        _incomeCategories.map((String category) {
-                          return DropdownMenuItem<String>(
-                            value: category,
-                            child: Text(category),
-                          );
-                        }).toList(),
+                        _incomeCategories
+                            .map(
+                              (category) => DropdownMenuItem(
+                                value: category,
+                                child: Text(category),
+                              ),
+                            )
+                            .toList(),
                     onChanged: (val) {
                       setState(() {
                         _selectedIncomeCategory = val!;
@@ -199,21 +199,17 @@ final userId = Get.find<AuthController>().userId.value;
                     validator:
                         (val) => val == null || val.isEmpty ? "Required" : null,
                   ),
-
                   if (_selectedIncomeCategory == 'Other') ...[
                     const SizedBox(height: 12),
                     _textField(_sourceController, "Enter custom source"),
                   ],
-
                   const SizedBox(height: 16),
                   _label("Amount"),
                   const SizedBox(height: 6),
                   _textField(_amountController, "Enter amount", isNumber: true),
-
                   const SizedBox(height: 16),
                   _label("Period"),
                   const SizedBox(height: 6),
-
                   SizedBox(
                     height: 50,
                     child: Row(
@@ -231,24 +227,28 @@ final userId = Get.find<AuthController>().userId.value;
                                     shape: RoundedRectangleBorder(
                                       borderRadius: BorderRadius.circular(30),
                                     ),
+                                    side: BorderSide(
+                                      color: context.borderColor,
+                                    ),
                                     label: Text(
                                       type,
                                       style: TextStyle(
                                         color:
-                                            isSelected
+                                            Theme.of(context).brightness ==
+                                                    Brightness.dark
                                                 ? Colors.white
-                                                : Colors.black,
+                                                : (isSelected
+                                                    ? Colors.white
+                                                    : Colors.black),
                                       ),
                                     ),
-                                    avatar: null,
                                     selected: isSelected,
-                                    selectedColor: AppColors.buttonColor,
-                                    backgroundColor: AppColors.fieldcolor,
+                                    selectedColor: context.buttonColor,
+                                    backgroundColor: context.fieldColor,
                                     onSelected:
-                                        (_) => setState(
-                                          () => _selectedType = type,
-                                        ),
-                                    // materialTapTargetSize: MaterialTapTargetSize.padded
+                                        (_) => setState(() {
+                                          _selectedType = type;
+                                        }),
                                   ),
                                 ),
                               ),
@@ -256,17 +256,14 @@ final userId = Get.find<AuthController>().userId.value;
                           }).toList(),
                     ),
                   ),
-
                   const SizedBox(height: 30),
-
-                  // Submit button
                   SizedBox(
                     width: double.infinity,
                     height: 48,
                     child: ElevatedButton(
                       onPressed: _submitIncome,
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.deepPurple,
+                        backgroundColor: context.buttonColor,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(10),
                         ),
@@ -277,7 +274,6 @@ final userId = Get.find<AuthController>().userId.value;
                       ),
                     ),
                   ),
-
                   const SizedBox(height: 30),
                   Align(
                     alignment: Alignment.center,
@@ -307,25 +303,23 @@ final userId = Get.find<AuthController>().userId.value;
     return Text(text, style: const TextStyle(fontWeight: FontWeight.bold));
   }
 
-  InputDecoration _inputDecoration(String hint) {
+  InputDecoration _inputDecoration(BuildContext context, String hint) {
     return InputDecoration(
       filled: true,
-      
-      fillColor: AppColors.fieldcolor,
+      fillColor: context.fieldColor,
       hintText: hint,
-      alignLabelWithHint: true,
       contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
       border: OutlineInputBorder(
         borderRadius: BorderRadius.circular(8),
-        borderSide: BorderSide(color: AppColors.bordercolor.withOpacity(0.1)),
+        borderSide: BorderSide(color: context.borderColor.withOpacity(0.1)),
       ),
       enabledBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(8),
-        borderSide: BorderSide(color: AppColors.bordercolor.withOpacity(0.1)),
+        borderSide: BorderSide(color: context.borderColor.withOpacity(0.1)),
       ),
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(8),
-        borderSide: BorderSide(color: AppColors.bordercolor),
+        borderSide: BorderSide(color: context.borderColor),
       ),
     );
   }
@@ -333,21 +327,13 @@ final userId = Get.find<AuthController>().userId.value;
   Widget _textField(
     TextEditingController controller,
     String hint, {
-
     bool isNumber = false,
-    
   }) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        TextFormField(
-          controller: controller,
-          keyboardType: isNumber ? TextInputType.number : TextInputType.text,
-          validator: (val) => val == null || val.isEmpty ? "Required" : null,
-          decoration: _inputDecoration(hint),
-        ),
-        const SizedBox(height: 4),
-      ],
+    return TextFormField(
+      controller: controller,
+      keyboardType: isNumber ? TextInputType.number : TextInputType.text,
+      validator: (val) => val == null || val.isEmpty ? "Required" : null,
+      decoration: _inputDecoration(context, hint),
     );
   }
 }

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
-import 'package:wealth_app/constants/colors.dart';
+import 'package:wealth_app/extension/theme_extension.dart';
 
 class IncomeGraph extends StatelessWidget {
   const IncomeGraph({super.key});
@@ -8,13 +8,12 @@ class IncomeGraph extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      // height: screenHeight * 0.4,
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: AppColors.fieldcolor,
+        color: context.fieldColor,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppColors.bordercolor.withOpacity(0.01)),
-         boxShadow: [
+        border: Border.all(color: context.borderColor.withOpacity(0.01)),
+        boxShadow: [
           BoxShadow(color: Colors.grey.withOpacity(0.3), blurRadius: 8),
         ],
       ),
@@ -26,9 +25,9 @@ class IncomeGraph extends StatelessWidget {
           lineBarsData: [
             LineChartBarData(
               isCurved: true,
-              color: AppColors.graphcolor,
+              color: context.buttonColor, // previously AppColors.graphcolor
               belowBarData: BarAreaData(show: false),
-              spots: [
+              spots: const [
                 FlSpot(1, 2),
                 FlSpot(2, 3),
                 FlSpot(3, 4),
