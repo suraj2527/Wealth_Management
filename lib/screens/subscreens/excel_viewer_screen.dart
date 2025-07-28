@@ -17,7 +17,7 @@ class ExcelViewerScreen extends StatelessWidget {
       for (var row in excel.tables[table]!.rows) {
         rows.add(row.map((cell) => cell?.value.toString() ?? "").toList());
       }
-      break; 
+      break;
     }
 
     return rows;

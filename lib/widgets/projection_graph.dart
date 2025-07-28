@@ -31,19 +31,17 @@ class ProjectionGraph extends StatelessWidget {
         borderRadius: BorderRadius.circular(12),
         border: Border.all(color: context.borderColor.withOpacity(0.01)),
         boxShadow: [
-          BoxShadow(
-            color: Colors.grey.withOpacity(0.3),
-            blurRadius: 8,
-          ),
+          BoxShadow(color: Colors.grey.withOpacity(0.3), blurRadius: 8),
         ],
       ),
       child: Column(
         children: [
           Expanded(
             child: Obx(() {
-              final dataPoints = isIncomeGraph
-                  ? dashboardController.incomeGraphData
-                  : dashboardController.netWorthGraphData;
+              final dataPoints =
+                  isIncomeGraph
+                      ? dashboardController.incomeGraphData
+                      : dashboardController.netWorthGraphData;
 
               return LineChart(
                 LineChartData(
@@ -74,7 +72,10 @@ class ProjectionGraph extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 _legendDot(context.buttonColor, legendLeft ?? "Current"),
-                _legendDot(context.buttonColor.withOpacity(0.4), legendRight ?? "Projected"),
+                _legendDot(
+                  context.buttonColor.withOpacity(0.4),
+                  legendRight ?? "Projected",
+                ),
               ],
             ),
         ],

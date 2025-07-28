@@ -87,10 +87,7 @@ class _ConsentGatekeeperState extends State<ConsentGatekeeper> {
         actions: [
           TextButton(
             onPressed: () => Get.back(),
-            child: Text(
-              'OK',
-              style: TextStyle(color: context.buttonColor),
-            ),
+            child: Text('OK', style: TextStyle(color: context.buttonColor)),
           ),
         ],
       ),
@@ -100,29 +97,30 @@ class _ConsentGatekeeperState extends State<ConsentGatekeeper> {
   Future<bool> _confirmExitDialog() async {
     final shouldExit = await showDialog<bool>(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text(
-          'Exit App',
-          style: TextStyle(fontWeight: AppTextStyle.mediumWeight),
-        ),
-        content: const Text('Are you sure you want to exit the app?'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(false),
-            child: Text(
-              'Cancel',
-              style: TextStyle(color: context.mainFontColor),
+      builder:
+          (context) => AlertDialog(
+            title: const Text(
+              'Exit App',
+              style: TextStyle(fontWeight: AppTextStyle.mediumWeight),
             ),
+            content: const Text('Are you sure you want to exit the app?'),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(false),
+                child: Text(
+                  'Cancel',
+                  style: TextStyle(color: context.mainFontColor),
+                ),
+              ),
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(true),
+                child: Text(
+                  'Exit',
+                  style: TextStyle(color: context.buttonColor),
+                ),
+              ),
+            ],
           ),
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(true),
-            child: Text(
-              'Exit',
-              style: TextStyle(color: context.buttonColor),
-            ),
-          ),
-        ],
-      ),
     );
 
     if (shouldExit ?? false) {
@@ -145,9 +143,7 @@ class _ConsentGatekeeperState extends State<ConsentGatekeeper> {
           await _confirmExitDialog();
         }
       },
-      child: const Scaffold(
-        body: Center(child: DotLoader()),
-      ),
+      child: const Scaffold(body: Center(child: DotLoader())),
     );
   }
 }

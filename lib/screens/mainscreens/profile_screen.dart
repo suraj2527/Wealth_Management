@@ -1,4 +1,4 @@
-import  'dart:io';
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
@@ -19,7 +19,8 @@ class ProfileScreen extends StatefulWidget {
 
 class _ProfileScreenState extends State<ProfileScreen> {
   final AuthController authController = Get.find<AuthController>();
-  final ProfileImageController profileImageController = Get.find<ProfileImageController>();
+  final ProfileImageController profileImageController =
+      Get.find<ProfileImageController>();
 
   final TextEditingController _nameController = TextEditingController();
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
@@ -41,66 +42,82 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
     showDialog(
       context: context,
-      builder: (_) => AlertDialog(
-        title: const Text("Confirm Profile Picture"),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Image.file(pickedFile, height: 150),
-            const SizedBox(height: 12),
-            const Text("Set this as your profile picture?"),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: Text("Cancel", style: TextStyle(color: context.buttonColor)),
-          ),
-          TextButton(
-            onPressed: () async {
-              Navigator.pop(context);
-              final dir = await getApplicationDocumentsDirectory();
-              final saved = await pickedFile.copy('${dir.path}/profile_image.png');
+      builder:
+          (_) => AlertDialog(
+            title: const Text("Confirm Profile Picture"),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Image.file(pickedFile, height: 150),
+                const SizedBox(height: 12),
+                const Text("Set this as your profile picture?"),
+              ],
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: Text(
+                  "Cancel",
+                  style: TextStyle(color: context.buttonColor),
+                ),
+              ),
+              TextButton(
+                onPressed: () async {
+                  Navigator.pop(context);
+                  final dir = await getApplicationDocumentsDirectory();
+                  final saved = await pickedFile.copy(
+                    '${dir.path}/profile_image.png',
+                  );
 
-              imageCache.clear();
-              imageCache.clearLiveImages();
-              await profileImageController.setImagePath(saved.path);
-            },
-            child: Text("OK", style: TextStyle(color: context.buttonColor)),
+                  imageCache.clear();
+                  imageCache.clearLiveImages();
+                  await profileImageController.setImagePath(saved.path);
+                },
+                child: Text("OK", style: TextStyle(color: context.buttonColor)),
+              ),
+            ],
           ),
-        ],
-      ),
     );
   }
 
   void _showLogoutDialog(BuildContext context) {
     showDialog(
       context: context,
-      builder: (_) => AlertDialog(
-        backgroundColor: context.fieldColor,
-        title: Text("Logout", style: TextStyle(fontWeight: AppTextStyle.mediumWeight)),
-        content: const Text("Are you sure you want to logout?"),
-        actions: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
-            children: [
-              TextButton(
-                onPressed: () => Navigator.pop(context),
-                child: Text("Cancel", style: TextStyle(color: context.mainFontColor)),
-              ),
-              TextButton(
-                onPressed: () async {
-                  Navigator.pop(context);
-                  await Future.delayed(Duration(milliseconds: 300));
-                  await authController.logout();
-                  Get.offAllNamed('/login');
-                },
-                child: Text("Logout", style: TextStyle(color: context.buttonColor)),
+      builder:
+          (_) => AlertDialog(
+            backgroundColor: context.fieldColor,
+            title: Text(
+              "Logout",
+              style: TextStyle(fontWeight: AppTextStyle.mediumWeight),
+            ),
+            content: const Text("Are you sure you want to logout?"),
+            actions: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceAround,
+                children: [
+                  TextButton(
+                    onPressed: () => Navigator.pop(context),
+                    child: Text(
+                      "Cancel",
+                      style: TextStyle(color: context.mainFontColor),
+                    ),
+                  ),
+                  TextButton(
+                    onPressed: () async {
+                      Navigator.pop(context);
+                      await Future.delayed(Duration(milliseconds: 300));
+                      await authController.logout();
+                      Get.offAllNamed('/login');
+                    },
+                    child: Text(
+                      "Logout",
+                      style: TextStyle(color: context.buttonColor),
+                    ),
+                  ),
+                ],
               ),
             ],
           ),
-        ],
-      ),
     );
   }
 
@@ -140,12 +157,19 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         Get.isDarkMode ? Icons.dark_mode : Icons.light_mode,
                         color: context.buttonColor,
                       ),
-                      onPressed: () => Get.find<ThemeController>().toggleTheme(),
+                      onPressed:
+                          () => Get.find<ThemeController>().toggleTheme(),
                     ),
                   ],
                 ),
                 const SizedBox(height: 4),
-                Text("These details are from Azure", style: TextStyle(fontSize: 14, color: context.placeholderColor)),
+                Text(
+                  "These details are from Azure",
+                  style: TextStyle(
+                    fontSize: 14,
+                    color: context.placeholderColor,
+                  ),
+                ),
                 const SizedBox(height: 24),
 
                 // Profile Picture
@@ -160,10 +184,16 @@ class _ProfileScreenState extends State<ProfileScreen> {
                             key: ValueKey(path),
                             radius: 50,
                             backgroundColor: context.fieldColor,
-                            backgroundImage: path != null ? FileImage(File(path)) : null,
-                            child: path == null
-                                ? Icon(Icons.person, size: 50, color: context.placeholderColor)
-                                : null,
+                            backgroundImage:
+                                path != null ? FileImage(File(path)) : null,
+                            child:
+                                path == null
+                                    ? Icon(
+                                      Icons.person,
+                                      size: 50,
+                                      color: context.placeholderColor,
+                                    )
+                                    : null,
                           );
                         }),
                         Positioned(
@@ -176,7 +206,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
                               shape: BoxShape.circle,
                               border: Border.all(color: Colors.white, width: 2),
                             ),
-                            child: const Icon(Icons.edit, size: 16, color: Colors.white),
+                            child: const Icon(
+                              Icons.edit,
+                              size: 16,
+                              color: Colors.white,
+                            ),
                           ),
                         ),
                       ],
@@ -187,43 +221,60 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 const SizedBox(height: 30),
 
                 // Name Field
-                Text("Name", style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14, color: context.mainFontColor)),
+                Text(
+                  "Name",
+                  style: TextStyle(
+                    fontWeight: FontWeight.w600,
+                    fontSize: 14,
+                    color: context.mainFontColor,
+                  ),
+                ),
                 const SizedBox(height: 8),
                 AnimatedSwitcher(
                   duration: const Duration(milliseconds: 300),
-                  child: _isEditing
-                      ? Form(
-                          key: _formKey,
-                          child: Container(
-                            key: const ValueKey("editing"),
-                            padding: const EdgeInsets.all(12),
-                            decoration: _fieldDecoration(context),
-                            child: TextFormField(
-                              controller: _nameController,
-                              autofocus: true,
-                              validator: (value) => value == null || value.trim().isEmpty ? "Name cannot be empty" : null,
-                              decoration: const InputDecoration.collapsed(hintText: "Enter your name"),
+                  child:
+                      _isEditing
+                          ? Form(
+                            key: _formKey,
+                            child: Container(
+                              key: const ValueKey("editing"),
+                              padding: const EdgeInsets.all(12),
+                              decoration: _fieldDecoration(context),
+                              child: TextFormField(
+                                controller: _nameController,
+                                autofocus: true,
+                                validator:
+                                    (value) =>
+                                        value == null || value.trim().isEmpty
+                                            ? "Name cannot be empty"
+                                            : null,
+                                decoration: const InputDecoration.collapsed(
+                                  hintText: "Enter your name",
+                                ),
+                              ),
+                            ),
+                          )
+                          : GestureDetector(
+                            key: const ValueKey("displaying"),
+                            onTap: () => setState(() => _isEditing = true),
+                            child: Container(
+                              width: double.infinity,
+                              padding: const EdgeInsets.all(12),
+                              decoration: _fieldDecoration(context),
+                              child: Obx(() {
+                                final name = authController.fullName.value;
+                                return Text(
+                                  name.isEmpty ? "Enter your name" : name,
+                                  style: TextStyle(
+                                    color:
+                                        name.isEmpty
+                                            ? context.placeholderColor
+                                            : context.mainFontColor,
+                                  ),
+                                );
+                              }),
                             ),
                           ),
-                        )
-                      : GestureDetector(
-                          key: const ValueKey("displaying"),
-                          onTap: () => setState(() => _isEditing = true),
-                          child: Container(
-                            width: double.infinity,
-                            padding: const EdgeInsets.all(12),
-                            decoration: _fieldDecoration(context),
-                            child: Obx(() {
-                              final name = authController.fullName.value;
-                              return Text(
-                                name.isEmpty ? "Enter your name" : name,
-                                style: TextStyle(
-                                  color: name.isEmpty ? context.placeholderColor : context.mainFontColor,
-                                ),
-                              );
-                            }),
-                          ),
-                        ),
                 ),
 
                 if (_isEditing)
@@ -233,10 +284,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       child: ElevatedButton(
                         onPressed: () {
                           if (_formKey.currentState!.validate()) {
-                            authController.updateName(_nameController.text.trim());
+                            authController.updateName(
+                              _nameController.text.trim(),
+                            );
                             setState(() => _isEditing = false);
                             ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(content: Text("Name updated successfully")),
+                              const SnackBar(
+                                content: Text("Name updated successfully"),
+                              ),
                             );
                           }
                         },
@@ -250,7 +305,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   ),
 
                 const SizedBox(height: 24),
-                _labeledStaticField(context, "Email", authController.email.value),
+                _labeledStaticField(
+                  context,
+                  "Email",
+                  authController.email.value,
+                ),
                 const SizedBox(height: 12),
                 const SizedBox(height: 32),
 
@@ -278,21 +337,37 @@ class _ProfileScreenState extends State<ProfileScreen> {
       color: context.fieldColor,
       borderRadius: BorderRadius.circular(10),
       border: Border.all(color: context.borderColor.withOpacity(0.1)),
-      boxShadow: [BoxShadow(color: Colors.grey.withOpacity(0.3), blurRadius: 5)],
+      boxShadow: [
+        BoxShadow(color: Colors.grey.withOpacity(0.3), blurRadius: 5),
+      ],
     );
   }
 
-  Widget _labeledStaticField(BuildContext context, String label, String? value) {
+  Widget _labeledStaticField(
+    BuildContext context,
+    String label,
+    String? value,
+  ) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(label, style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14, color: context.mainFontColor)),
+        Text(
+          label,
+          style: TextStyle(
+            fontWeight: FontWeight.w600,
+            fontSize: 14,
+            color: context.mainFontColor,
+          ),
+        ),
         const SizedBox(height: 8),
         Container(
           width: double.infinity,
           padding: const EdgeInsets.all(12),
           decoration: _fieldDecoration(context),
-          child: Text(value ?? 'Not Available', style: TextStyle(color: context.mainFontColor)),
+          child: Text(
+            value ?? 'Not Available',
+            style: TextStyle(color: context.mainFontColor),
+          ),
         ),
       ],
     );

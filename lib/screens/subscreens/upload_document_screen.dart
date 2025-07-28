@@ -123,7 +123,7 @@ class _UploadDocumentScreenState extends State<UploadDocumentScreen> {
 
             const SizedBox(height: 10),
 
-            // Sample record 
+            // Sample record UI
             Container(
               height: height,
               width: width,
@@ -200,7 +200,9 @@ class _UploadDocumentScreenState extends State<UploadDocumentScreen> {
                       ),
                     ),
                     const SizedBox(height: 10),
-                    Text(selectedFile?.path.split("/").last ?? "No file selected"),
+                    Text(
+                      selectedFile?.path.split("/").last ?? "No file selected",
+                    ),
                     const SizedBox(height: 12),
                     ElevatedButton(
                       onPressed: pickExcelFile,
@@ -231,7 +233,10 @@ class _UploadDocumentScreenState extends State<UploadDocumentScreen> {
             ElevatedButton(
               onPressed: selectedFile != null ? saveSelectedFile : null,
               style: ElevatedButton.styleFrom(
-                backgroundColor: selectedFile != null ? context.buttonColor : Colors.grey[400],
+                backgroundColor:
+                    selectedFile != null
+                        ? context.buttonColor
+                        : Colors.grey[400],
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(8),
                 ),
@@ -245,7 +250,10 @@ class _UploadDocumentScreenState extends State<UploadDocumentScreen> {
             const SizedBox(height: 20),
 
             if (savedFiles.isNotEmpty)
-              const Text("Saved Files:", style: TextStyle(fontWeight: FontWeight.bold)),
+              const Text(
+                "Saved Files:",
+                style: TextStyle(fontWeight: FontWeight.bold),
+              ),
 
             if (savedFiles.isNotEmpty)
               Expanded(
@@ -263,7 +271,9 @@ class _UploadDocumentScreenState extends State<UploadDocumentScreen> {
                             const Center(child: CircularProgressIndicator()),
                             barrierDismissible: false,
                           );
-                          await Future.delayed(const Duration(milliseconds: 300));
+                          await Future.delayed(
+                            const Duration(milliseconds: 300),
+                          );
                           // await Get.to(() => ExcelViewerScreen(file: file));
                           Get.back();
                         },
@@ -289,12 +299,17 @@ class _UploadDocumentScreenState extends State<UploadDocumentScreen> {
                               Expanded(
                                 child: Text(
                                   fileName,
-                                  style: TextStyle(color: context.mainFontColor),
+                                  style: TextStyle(
+                                    color: context.mainFontColor,
+                                  ),
                                   overflow: TextOverflow.ellipsis,
                                 ),
                               ),
                               IconButton(
-                                icon: Icon(Icons.delete_outline, color: context.failedColor),
+                                icon: Icon(
+                                  Icons.delete_outline,
+                                  color: context.failedColor,
+                                ),
                                 onPressed: () => showDeleteConfirmation(index),
                               ),
                             ],

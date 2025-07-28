@@ -55,7 +55,9 @@ class _MyExpensesScreenState extends State<MyExpensesScreen> {
               final totalAmount = expenses
                   .where((e) => e.date.contains(currentYear))
                   .fold<double>(
-                      0.0, (sum, e) => sum + (double.tryParse(e.amount) ?? 0.0));
+                    0.0,
+                    (sum, e) => sum + (double.tryParse(e.amount) ?? 0.0),
+                  );
 
               return Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -119,15 +121,19 @@ class _MyExpensesScreenState extends State<MyExpensesScreen> {
             OutlinedButton.icon(
               onPressed: _fetchData,
               icon: Icon(Icons.refresh, color: context.buttonColor),
-              label:
-                  Text("Refresh", style: TextStyle(color: context.buttonColor)),
+              label: Text(
+                "Refresh",
+                style: TextStyle(color: context.buttonColor),
+              ),
               style: OutlinedButton.styleFrom(
                 side: BorderSide(color: context.buttonColor),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(8),
                 ),
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 10,
+                ),
               ),
             ),
             const SizedBox(height: 8),
@@ -143,13 +149,18 @@ class _MyExpensesScreenState extends State<MyExpensesScreen> {
                 style: ElevatedButton.styleFrom(
                   backgroundColor: context.buttonColor,
                   foregroundColor: context.buttonTextColor,
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 13, vertical: 10),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 13,
+                    vertical: 10,
+                  ),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(8),
                   ),
                 ),
-                child: const Text("Add Expense", style: TextStyle(fontSize: 14)),
+                child: const Text(
+                  "Add Expense",
+                  style: TextStyle(fontSize: 14),
+                ),
               ),
             ),
           ],
@@ -165,16 +176,19 @@ class _MyExpensesScreenState extends State<MyExpensesScreen> {
         Text(
           "Expense List",
           style: TextStyle(
-              fontWeight: AppTextStyle.semiBold,
-              fontSize: 18,
-              color: context.mainFontColor),
+            fontWeight: AppTextStyle.semiBold,
+            fontSize: 18,
+            color: context.mainFontColor,
+          ),
         ),
         InkWell(
           onTap: () => _showFilterBottomSheet(context),
           child: Row(
             children: [
-              Text("Expense Filter",
-                  style: TextStyle(color: context.buttonColor)),
+              Text(
+                "Expense Filter",
+                style: TextStyle(color: context.buttonColor),
+              ),
               const SizedBox(width: 8),
               SvgPicture.asset('assets/icons/filter.svg', height: 14),
             ],
@@ -196,28 +210,32 @@ class _MyExpensesScreenState extends State<MyExpensesScreen> {
           child: Obx(() {
             return Column(
               mainAxisSize: MainAxisSize.min,
-              children: FilterType.values.map((type) {
-                final selected =
-                    filterController.expenseFilterType.value == type;
-                return ListTile(
-                  leading: Icon(
-                    selected ? Icons.check_circle : Icons.circle_outlined,
-                    color: selected ? context.buttonColor : context.borderColor,
-                  ),
-                  title: Text(
-                    filterController.getFilterLabel(type),
-                    style: TextStyle(
-                      color: context.mainFontColor,
-                      fontWeight:
-                          selected ? FontWeight.bold : FontWeight.normal,
-                    ),
-                  ),
-                  onTap: () {
-                    filterController.updateExpenseFilter(type);
-                    Navigator.pop(context);
-                  },
-                );
-              }).toList(),
+              children:
+                  FilterType.values.map((type) {
+                    final selected =
+                        filterController.expenseFilterType.value == type;
+                    return ListTile(
+                      leading: Icon(
+                        selected ? Icons.check_circle : Icons.circle_outlined,
+                        color:
+                            selected
+                                ? context.buttonColor
+                                : context.borderColor,
+                      ),
+                      title: Text(
+                        filterController.getFilterLabel(type),
+                        style: TextStyle(
+                          color: context.mainFontColor,
+                          fontWeight:
+                              selected ? FontWeight.bold : FontWeight.normal,
+                        ),
+                      ),
+                      onTap: () {
+                        filterController.updateExpenseFilter(type);
+                        Navigator.pop(context);
+                      },
+                    );
+                  }).toList(),
             );
           }),
         );
@@ -242,87 +260,99 @@ class _MyExpensesScreenState extends State<MyExpensesScreen> {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text("Category", style: TextStyle(color: context.mainFontColor)),
+                Text(
+                  "Category",
+                  style: TextStyle(color: context.mainFontColor),
+                ),
                 Text("Amount", style: TextStyle(color: context.mainFontColor)),
               ],
             ),
           ),
           const SizedBox(height: 8),
           Expanded(
-            child: expenses.isEmpty
-                ? Center(
-                    child: Text("No expense found",
-                        style: TextStyle(color: context.mainFontColor)),
-                  )
-                : ListView.builder(
-                    itemCount: expenses.length,
-                    itemBuilder: (context, index) {
-                      final expense = expenses[index];
-                      final isSelected = index == selectedIndex;
+            child:
+                expenses.isEmpty
+                    ? Center(
+                      child: Text(
+                        "No expense found",
+                        style: TextStyle(color: context.mainFontColor),
+                      ),
+                    )
+                    : ListView.builder(
+                      itemCount: expenses.length,
+                      itemBuilder: (context, index) {
+                        final expense = expenses[index];
+                        final isSelected = index == selectedIndex;
 
-                      return GestureDetector(
-                        onTap: () => setState(() => selectedIndex = index),
-                        child: Container(
-                          margin: const EdgeInsets.only(bottom: 8),
-                          decoration: BoxDecoration(
-                            color: isSelected
-                                ? context.buttonColor
-                                : context.fieldColor,
-                            borderRadius: BorderRadius.circular(10),
-                            border:
-                                Border.all(color: context.borderColor),
+                        return GestureDetector(
+                          onTap: () => setState(() => selectedIndex = index),
+                          child: Container(
+                            margin: const EdgeInsets.only(bottom: 8),
+                            decoration: BoxDecoration(
+                              color:
+                                  isSelected
+                                      ? context.buttonColor
+                                      : context.fieldColor,
+                              borderRadius: BorderRadius.circular(10),
+                              border: Border.all(color: context.borderColor),
+                            ),
+                            child: ListTile(
+                              leading: SvgPicture.asset(
+                                'assets/icons/rupee.svg',
+                                height: 20,
+                                colorFilter: ColorFilter.mode(
+                                  isSelected
+                                      ? Colors.white
+                                      : context.buttonColor,
+                                  BlendMode.srcIn,
+                                ),
+                              ),
+                              title: Text(
+                                "${expense.type} (${expense.natureType})",
+                                style: TextStyle(
+                                  fontWeight:
+                                      isSelected
+                                          ? FontWeight.bold
+                                          : FontWeight.normal,
+                                  color:
+                                      isSelected
+                                          ? Colors.white
+                                          : context.mainFontColor,
+                                ),
+                              ),
+                              subtitle: Text(
+                                expense.date,
+                                style: TextStyle(
+                                  color:
+                                      isSelected
+                                          ? Colors.white70
+                                          : context.placeholderColor,
+                                ),
+                              ),
+                              trailing: Text(
+                                "₹${expense.amount}",
+                                style: TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 15,
+                                  color:
+                                      isSelected
+                                          ? Colors.white
+                                          : context.mainFontColor,
+                                ),
+                              ),
+                            ),
                           ),
-                          child: ListTile(
-                            leading: SvgPicture.asset(
-                              'assets/icons/rupee.svg',
-                              height: 20,
-                              colorFilter: ColorFilter.mode(
-                                isSelected
-                                    ? Colors.white
-                                    : context.buttonColor,
-                                BlendMode.srcIn,
-                              ),
-                            ),
-                            title: Text(
-                              "${expense.type} (${expense.natureType})",
-                              style: TextStyle(
-                                fontWeight: isSelected
-                                    ? FontWeight.bold
-                                    : FontWeight.normal,
-                                color: isSelected
-                                    ? Colors.white
-                                    : context.mainFontColor,
-                              ),
-                            ),
-                            subtitle: Text(
-                              expense.date,
-                              style: TextStyle(
-                                color: isSelected
-                                    ? Colors.white70
-                                    : context.placeholderColor,
-                              ),
-                            ),
-                            trailing: Text(
-                              "₹${expense.amount}",
-                              style: TextStyle(
-                                fontWeight: FontWeight.bold,
-                                fontSize: 15,
-                                color: isSelected
-                                    ? Colors.white
-                                    : context.mainFontColor,
-                              ),
-                            ),
-                          ),
-                        ),
-                      );
-                    },
-                  ),
+                        );
+                      },
+                    ),
           ),
           Center(
             child: TextButton(
               onPressed: () {},
-              child: Text("View More",
-                  style: TextStyle(color: context.buttonColor)),
+              child: Text(
+                "View More",
+                style: TextStyle(color: context.buttonColor),
+              ),
             ),
           ),
         ],

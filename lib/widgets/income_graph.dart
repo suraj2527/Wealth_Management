@@ -25,7 +25,7 @@ class IncomeGraph extends StatelessWidget {
           lineBarsData: [
             LineChartBarData(
               isCurved: true,
-              color: context.buttonColor, // previously AppColors.graphcolor
+              color: context.buttonColor, 
               belowBarData: BarAreaData(show: false),
               spots: const [
                 FlSpot(1, 2),

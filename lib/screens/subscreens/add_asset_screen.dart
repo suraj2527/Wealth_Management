@@ -4,7 +4,7 @@ import 'package:get/get.dart';
 import 'package:wealth_app/controllers/auth_controller.dart';
 import 'package:wealth_app/widgets/calendar_input_field.dart';
 import 'package:wealth_app/widgets/universal_scaffold.dart';
-import 'package:wealth_app/extension/theme_extension.dart'; 
+import 'package:wealth_app/extension/theme_extension.dart';
 
 import '../../models/asset_model.dart';
 import '../../controllers/asset_controller.dart';
@@ -23,8 +23,10 @@ class _AddAssetScreenState extends State<AddAssetScreen> {
   final TextEditingController _endDateController = TextEditingController();
   final TextEditingController _fundNameController = TextEditingController();
   final TextEditingController _amountController = TextEditingController();
-  final TextEditingController _customCategoryController = TextEditingController();
-  final TextEditingController _customSubCategoryController = TextEditingController();
+  final TextEditingController _customCategoryController =
+      TextEditingController();
+  final TextEditingController _customSubCategoryController =
+      TextEditingController();
 
   final List<String> _categories = [
     'Mutual funds',
@@ -62,12 +64,14 @@ class _AddAssetScreenState extends State<AddAssetScreen> {
         year: DateTime.now().year.toString(),
         startDate: _startDateController.text,
         endDate: _endDateController.text,
-        category: _selectedCategory == 'Others'
-            ? _customCategoryController.text.trim()
-            : _selectedCategory,
-        subCategory: _selectedSubCategory == 'Others'
-            ? _customSubCategoryController.text.trim()
-            : _selectedSubCategory,
+        category:
+            _selectedCategory == 'Others'
+                ? _customCategoryController.text.trim()
+                : _selectedCategory,
+        subCategory:
+            _selectedSubCategory == 'Others'
+                ? _customSubCategoryController.text.trim()
+                : _selectedSubCategory,
         fundName: _fundNameController.text.trim(),
         amount: _amountController.text.trim(),
       );
@@ -81,7 +85,7 @@ class _AddAssetScreenState extends State<AddAssetScreen> {
 
       final result = await assetController.submitAssetToServer(userId, asset);
 
-      Get.back(); 
+      Get.back();
 
       if (result['success']) {
         Get.back();
@@ -156,7 +160,10 @@ class _AddAssetScreenState extends State<AddAssetScreen> {
                                 style: ElevatedButton.styleFrom(
                                   backgroundColor: context.buttonColor,
                                   foregroundColor: Colors.white,
-                                  padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 10),
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 30,
+                                    vertical: 10,
+                                  ),
                                   shape: RoundedRectangleBorder(
                                     borderRadius: BorderRadius.circular(8),
                                   ),
@@ -167,10 +174,16 @@ class _AddAssetScreenState extends State<AddAssetScreen> {
                           ),
                           const SizedBox(height: 20),
 
-                          CalendarInputField(label: "Enter Start Date", controller: _startDateController),
+                          CalendarInputField(
+                            label: "Enter Start Date",
+                            controller: _startDateController,
+                          ),
                           const SizedBox(height: 16),
 
-                          CalendarInputField(label: "Enter End Date", controller: _endDateController),
+                          CalendarInputField(
+                            label: "Enter End Date",
+                            controller: _endDateController,
+                          ),
                           const SizedBox(height: 16),
 
                           _label("Investment Category"),
@@ -180,42 +193,64 @@ class _AddAssetScreenState extends State<AddAssetScreen> {
                               if (_selectedCategory != 'Others') {
                                 _customCategoryController.clear();
                               } else {
-                                Future.delayed(const Duration(milliseconds: 300), () {
-                                  _scrollController.animateTo(
-                                    _scrollController.position.maxScrollExtent,
-                                    duration: const Duration(milliseconds: 400),
-                                    curve: Curves.easeOut,
-                                  );
-                                });
+                                Future.delayed(
+                                  const Duration(milliseconds: 300),
+                                  () {
+                                    _scrollController.animateTo(
+                                      _scrollController
+                                          .position
+                                          .maxScrollExtent,
+                                      duration: const Duration(
+                                        milliseconds: 400,
+                                      ),
+                                      curve: Curves.easeOut,
+                                    );
+                                  },
+                                );
                               }
                             });
-                          },context),
+                          }, context),
                           if (_selectedCategory == 'Others') ...[
                             const SizedBox(height: 10),
-                            _textField(_customCategoryController, "Enter custom category"),
+                            _textField(
+                              _customCategoryController,
+                              "Enter custom category",
+                            ),
                           ],
                           const SizedBox(height: 16),
 
                           _label("Investment Sub-Category"),
-                          _dropdownField(_subCategories, _selectedSubCategory, (val) {
+                          _dropdownField(_subCategories, _selectedSubCategory, (
+                            val,
+                          ) {
                             setState(() {
                               _selectedSubCategory = val!;
                               if (_selectedSubCategory != 'Others') {
                                 _customSubCategoryController.clear();
                               } else {
-                                Future.delayed(const Duration(milliseconds: 300), () {
-                                  _scrollController.animateTo(
-                                    _scrollController.position.maxScrollExtent,
-                                    duration: const Duration(milliseconds: 400),
-                                    curve: Curves.easeOut,
-                                  );
-                                });
+                                Future.delayed(
+                                  const Duration(milliseconds: 300),
+                                  () {
+                                    _scrollController.animateTo(
+                                      _scrollController
+                                          .position
+                                          .maxScrollExtent,
+                                      duration: const Duration(
+                                        milliseconds: 400,
+                                      ),
+                                      curve: Curves.easeOut,
+                                    );
+                                  },
+                                );
                               }
                             });
-                          },context),
+                          }, context),
                           if (_selectedSubCategory == 'Others') ...[
                             const SizedBox(height: 10),
-                            _textField(_customSubCategoryController, "Enter custom sub-category"),
+                            _textField(
+                              _customSubCategoryController,
+                              "Enter custom sub-category",
+                            ),
                           ],
                           const SizedBox(height: 16),
 
@@ -224,7 +259,11 @@ class _AddAssetScreenState extends State<AddAssetScreen> {
                           const SizedBox(height: 16),
 
                           _label("Enter Amount"),
-                          _textField(_amountController, "Enter Amount", isNumber: true),
+                          _textField(
+                            _amountController,
+                            "Enter Amount",
+                            isNumber: true,
+                          ),
                           const SizedBox(height: 16),
                         ],
                       ),
@@ -232,7 +271,10 @@ class _AddAssetScreenState extends State<AddAssetScreen> {
                   ),
                 ),
                 Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 12,
+                  ),
                   child: SizedBox(
                     width: double.infinity,
                     height: 50,
@@ -244,7 +286,10 @@ class _AddAssetScreenState extends State<AddAssetScreen> {
                           borderRadius: BorderRadius.circular(10),
                         ),
                       ),
-                      child: const Text("Submit", style: TextStyle(color: Colors.white)),
+                      child: const Text(
+                        "Submit",
+                        style: TextStyle(color: Colors.white),
+                      ),
                     ),
                   ),
                 ),
@@ -274,55 +319,55 @@ class _AddAssetScreenState extends State<AddAssetScreen> {
   }
 
   Widget _dropdownField(
-  List<String> items,
-  String? currentValue,
-  void Function(String?) onChanged,
-  BuildContext context,
-) {
-  final bool isDarkMode = Theme.of(context).brightness == Brightness.dark;
+    List<String> items,
+    String? currentValue,
+    void Function(String?) onChanged,
+    BuildContext context,
+  ) {
+    final bool isDarkMode = Theme.of(context).brightness == Brightness.dark;
 
-  return DropdownButtonFormField2<String>(
-    value: currentValue,
-    isExpanded: true,
-    style: TextStyle(
-      fontSize: 16,
-      color: isDarkMode ? context.mainFontColor : Colors.black,
-    ),
-    decoration: const InputDecoration(
-      isDense: true,
-      contentPadding: EdgeInsets.symmetric(horizontal: -4, vertical: 16),
-    ),
-    dropdownStyleData: DropdownStyleData(
-      maxHeight: 250,
-      elevation: 3,
-      decoration: BoxDecoration(
-        color: context.fieldColor,
-        borderRadius: BorderRadius.circular(8),
-        boxShadow: const [
-          BoxShadow(
-            color: Colors.black26,
-            blurRadius: 8,
-            offset: Offset(0, 4),
-          ),
-        ],
+    return DropdownButtonFormField2<String>(
+      value: currentValue,
+      isExpanded: true,
+      style: TextStyle(
+        fontSize: 16,
+        color: isDarkMode ? context.mainFontColor : Colors.black,
       ),
-    ),
-    items: items
-        .map(
-          (val) => DropdownMenuItem<String>(
-            value: val,
-            child: Text(
-              val,
-              style: TextStyle(
-                color: isDarkMode ? context.mainFontColor : Colors.black,
-              ),
+      decoration: const InputDecoration(
+        isDense: true,
+        contentPadding: EdgeInsets.symmetric(horizontal: -4, vertical: 16),
+      ),
+      dropdownStyleData: DropdownStyleData(
+        maxHeight: 250,
+        elevation: 3,
+        decoration: BoxDecoration(
+          color: context.fieldColor,
+          borderRadius: BorderRadius.circular(8),
+          boxShadow: const [
+            BoxShadow(
+              color: Colors.black26,
+              blurRadius: 8,
+              offset: Offset(0, 4),
             ),
-          ),
-        )
-        .toList(),
-    onChanged: onChanged,
-    validator: (val) => val == null || val.isEmpty ? "Required" : null,
-  );
-}
-
+          ],
+        ),
+      ),
+      items:
+          items
+              .map(
+                (val) => DropdownMenuItem<String>(
+                  value: val,
+                  child: Text(
+                    val,
+                    style: TextStyle(
+                      color: isDarkMode ? context.mainFontColor : Colors.black,
+                    ),
+                  ),
+                ),
+              )
+              .toList(),
+      onChanged: onChanged,
+      validator: (val) => val == null || val.isEmpty ? "Required" : null,
+    );
+  }
 }

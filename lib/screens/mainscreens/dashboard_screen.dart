@@ -15,7 +15,8 @@ class DashboardScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final DashboardController dashboardController = Get.find<DashboardController>();
+    final DashboardController dashboardController =
+        Get.find<DashboardController>();
     final mediaWidth = MediaQuery.of(context).size.width;
 
     return PopScope(
@@ -24,30 +25,33 @@ class DashboardScreen extends StatelessWidget {
         if (!didPop) {
           final shouldExit = await showDialog<bool>(
             context: context,
-            builder: (context) => AlertDialog(
-              backgroundColor: context.fieldColor,
-              title: const Text(
-                'Exit App',
-                style: TextStyle(fontWeight: AppTextStyle.mediumWeight),
-              ),
-              content: const Text('Are you sure you want to exit the app?'),
-              actions: [
-                TextButton(
-                  onPressed: () => Navigator.of(context).pop(false),
-                  child: Text(
-                    'Cancel',
-                    style: TextStyle(color: context.mainFontColor),
+            builder:
+                (context) => AlertDialog(
+                  backgroundColor: context.fieldColor,
+                  title: const Text(
+                    'Exit App',
+                    style: TextStyle(fontWeight: AppTextStyle.mediumWeight),
                   ),
+                  content: const Text('Are you sure you want to exit the app?'),
+                  actions: [
+                    TextButton(
+                      onPressed: () => Navigator.of(context).pop(false),
+                      child: Text(
+                        'Cancel',
+                        style: TextStyle(color: context.mainFontColor),
+                      ),
+                    ),
+                    TextButton(
+                      onPressed: () => Navigator.of(context).pop(true),
+                      child: Text(
+                        'Exit',
+                        style: TextStyle(
+                          color: context.theme.colorScheme.primary,
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
-                TextButton(
-                  onPressed: () => Navigator.of(context).pop(true),
-                  child: Text(
-                    'Exit',
-                    style: TextStyle(color: context.theme.colorScheme.primary),
-                  ),
-                ),
-              ],
-            ),
           );
 
           if (shouldExit ?? false) {
@@ -85,25 +89,37 @@ class DashboardScreen extends StatelessWidget {
                       context,
                       title: 'Total Net Worth',
                       amount: dashboardController.netWorth.value,
-                      width: mediaWidth > 600 ? mediaWidth / 2 - 28 : double.infinity,
+                      width:
+                          mediaWidth > 600
+                              ? mediaWidth / 2 - 28
+                              : double.infinity,
                     ),
                     _buildSummaryItem(
                       context,
                       title: 'Total Income',
                       amount: dashboardController.totalIncome.value,
-                      width: mediaWidth > 600 ? mediaWidth / 2 - 28 : double.infinity,
+                      width:
+                          mediaWidth > 600
+                              ? mediaWidth / 2 - 28
+                              : double.infinity,
                     ),
                     _buildSummaryItem(
                       context,
                       title: 'Total Investment',
                       amount: dashboardController.totalInvestment.value,
-                      width: mediaWidth > 600 ? mediaWidth / 2 - 28 : double.infinity,
+                      width:
+                          mediaWidth > 600
+                              ? mediaWidth / 2 - 28
+                              : double.infinity,
                     ),
                     _buildSummaryItem(
                       context,
                       title: 'Total Expense',
                       amount: dashboardController.totalExpense.value,
-                      width: mediaWidth > 600 ? mediaWidth / 2 - 28 : double.infinity,
+                      width:
+                          mediaWidth > 600
+                              ? mediaWidth / 2 - 28
+                              : double.infinity,
                     ),
                   ],
                 );
@@ -184,8 +200,12 @@ class DashboardScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildSummaryItem(BuildContext context,
-      {required String title, required String amount, required double width}) {
+  Widget _buildSummaryItem(
+    BuildContext context, {
+    required String title,
+    required String amount,
+    required double width,
+  }) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -198,10 +218,7 @@ class DashboardScreen extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 6),
-        SummaryCard(
-          amount: amount,
-          width: width,
-        ),
+        SummaryCard(amount: amount, width: width),
       ],
     );
   }

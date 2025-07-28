@@ -41,7 +41,8 @@ class _CalendarInputFieldState extends State<CalendarInputField> {
     );
 
     if (picked != null) {
-      final formatted = "${picked.day.toString().padLeft(2, '0')}-"
+      final formatted =
+          "${picked.day.toString().padLeft(2, '0')}-"
           "${picked.month.toString().padLeft(2, '0')}-"
           "${picked.year}";
       widget.controller.text = formatted;
@@ -78,9 +79,7 @@ class _CalendarInputFieldState extends State<CalendarInputField> {
                 ),
               ),
             ),
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8),
-            ),
+            border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
           ),
         ),
       ],
@@ -125,9 +124,9 @@ class _CalendarSheetState extends State<_CalendarSheet> {
 
           Theme(
             data: Theme.of(context).copyWith(
-              colorScheme: Theme.of(context).colorScheme.copyWith(
-                    primary: context.buttonColor,
-                  ),
+              colorScheme: Theme.of(
+                context,
+              ).colorScheme.copyWith(primary: context.buttonColor),
             ),
             child: CalendarDatePicker(
               initialDate: tempDate,

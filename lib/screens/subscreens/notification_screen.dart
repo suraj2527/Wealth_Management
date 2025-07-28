@@ -1,6 +1,7 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:wealth_app/extension/theme_extension.dart';
+
 void showNotificationDialog(BuildContext context) {
   final List<Map<String, String>> notifications = List.generate(
     12,
@@ -44,7 +45,9 @@ void showNotificationDialog(BuildContext context) {
                   decoration: BoxDecoration(
                     color: Theme.of(context).cardColor,
                     borderRadius: BorderRadius.circular(20),
-                    border: Border.all(color: context.borderColor.withOpacity(0.2)),
+                    border: Border.all(
+                      color: context.borderColor.withOpacity(0.2),
+                    ),
                   ),
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
@@ -94,7 +97,8 @@ void showNotificationDialog(BuildContext context) {
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     Row(
-                                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceBetween,
                                       children: [
                                         Expanded(
                                           child: Text(

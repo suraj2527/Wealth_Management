@@ -27,9 +27,7 @@ class CustomTextField extends StatelessWidget {
       decoration: InputDecoration(
         labelText: labelText,
         hintText: hintText,
-        hintStyle: TextStyle(
-          color: context.hintColor,
-        ),
+        hintStyle: TextStyle(color: context.hintColor),
         labelStyle: TextStyle(
           color: context.mainFontColor,
           fontWeight: AppTextStyle.mediumWeight,

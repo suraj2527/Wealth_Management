@@ -71,7 +71,10 @@ class _IncomeOverviewScreenState extends State<IncomeOverviewScreen> {
                         const SizedBox(height: 4),
                         Text(
                           "Your complete income summary",
-                          style: TextStyle(fontSize: 12, color: context.placeholderColor),
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: context.placeholderColor,
+                          ),
                         ),
                         const SizedBox(height: 40),
                         Text(
@@ -85,7 +88,10 @@ class _IncomeOverviewScreenState extends State<IncomeOverviewScreen> {
                         const SizedBox(height: 4),
                         Text(
                           "Your Current Income",
-                          style: TextStyle(fontSize: 12, color: context.placeholderColor),
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: context.placeholderColor,
+                          ),
                         ),
                       ],
                     ),
@@ -95,11 +101,19 @@ class _IncomeOverviewScreenState extends State<IncomeOverviewScreen> {
                         OutlinedButton.icon(
                           onPressed: _fetchData,
                           icon: Icon(Icons.refresh, color: context.buttonColor),
-                          label: Text("Refresh", style: TextStyle(color: context.buttonColor)),
+                          label: Text(
+                            "Refresh",
+                            style: TextStyle(color: context.buttonColor),
+                          ),
                           style: OutlinedButton.styleFrom(
                             side: BorderSide(color: context.buttonColor),
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 12,
+                              vertical: 10,
+                            ),
                           ),
                         ),
                         const SizedBox(height: 8),
@@ -107,14 +121,21 @@ class _IncomeOverviewScreenState extends State<IncomeOverviewScreen> {
                           onPressed: () {
                             Navigator.push(
                               context,
-                              MaterialPageRoute(builder: (_) => const AddIncomeScreen()),
+                              MaterialPageRoute(
+                                builder: (_) => const AddIncomeScreen(),
+                              ),
                             );
                           },
                           style: ElevatedButton.styleFrom(
                             backgroundColor: context.buttonColor,
                             foregroundColor: context.buttonTextColor,
-                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 11),
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 12,
+                              vertical: 11,
+                            ),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(8),
+                            ),
                           ),
                           child: const Text("Add Income"),
                         ),
@@ -148,7 +169,10 @@ class _IncomeOverviewScreenState extends State<IncomeOverviewScreen> {
                             style: TextStyle(color: context.buttonColor),
                           ),
                           const SizedBox(width: 8),
-                          SvgPicture.asset('assets/icons/filter.svg', height: 14),
+                          SvgPicture.asset(
+                            'assets/icons/filter.svg',
+                            height: 14,
+                          ),
                         ],
                       ),
                     ),
@@ -163,7 +187,9 @@ class _IncomeOverviewScreenState extends State<IncomeOverviewScreen> {
                   height: mediaHeight * 0.5,
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
-                    border: Border.all(color: context.borderColor.withOpacity(0.1)),
+                    border: Border.all(
+                      color: context.borderColor.withOpacity(0.1),
+                    ),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Obx(() {
@@ -171,7 +197,10 @@ class _IncomeOverviewScreenState extends State<IncomeOverviewScreen> {
 
                     if (incomeList.isEmpty) {
                       return Center(
-                        child: Text("No Income available", style: TextStyle(color: context.mainFontColor)),
+                        child: Text(
+                          "No Income available",
+                          style: TextStyle(color: context.mainFontColor),
+                        ),
                       );
                     }
 
@@ -182,8 +211,14 @@ class _IncomeOverviewScreenState extends State<IncomeOverviewScreen> {
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              Text("Income's", style: TextStyle(color: context.mainFontColor)),
-                              Text("Amount", style: TextStyle(color: context.mainFontColor)),
+                              Text(
+                                "Income's",
+                                style: TextStyle(color: context.mainFontColor),
+                              ),
+                              Text(
+                                "Amount",
+                                style: TextStyle(color: context.mainFontColor),
+                              ),
                             ],
                           ),
                         ),
@@ -196,34 +231,51 @@ class _IncomeOverviewScreenState extends State<IncomeOverviewScreen> {
                               final isSelected = index == selectedIndex;
 
                               return GestureDetector(
-                                onTap: () => setState(() => selectedIndex = index),
+                                onTap:
+                                    () => setState(() => selectedIndex = index),
                                 child: Container(
                                   margin: const EdgeInsets.only(bottom: 8),
                                   decoration: BoxDecoration(
-                                    color: isSelected ? context.buttonColor : context.fieldColor,
+                                    color:
+                                        isSelected
+                                            ? context.buttonColor
+                                            : context.fieldColor,
                                     borderRadius: BorderRadius.circular(10),
-                                    border: Border.all(color: Colors.grey.shade300),
+                                    border: Border.all(
+                                      color: Colors.grey.shade300,
+                                    ),
                                   ),
                                   child: ListTile(
                                     leading: SvgPicture.asset(
                                       'assets/icons/rupee.svg',
                                       height: 20,
                                       colorFilter: ColorFilter.mode(
-                                        isSelected ? Colors.white : context.buttonColor,
+                                        isSelected
+                                            ? Colors.white
+                                            : context.buttonColor,
                                         BlendMode.srcIn,
                                       ),
                                     ),
                                     title: Text(
                                       "${income.source} (${income.type})",
                                       style: TextStyle(
-                                        fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-                                        color: isSelected ? Colors.white : context.mainFontColor,
+                                        fontWeight:
+                                            isSelected
+                                                ? FontWeight.bold
+                                                : FontWeight.normal,
+                                        color:
+                                            isSelected
+                                                ? Colors.white
+                                                : context.mainFontColor,
                                       ),
                                     ),
                                     subtitle: Text(
                                       income.date,
                                       style: TextStyle(
-                                        color: isSelected ? Colors.white : context.mainFontColor,
+                                        color:
+                                            isSelected
+                                                ? Colors.white
+                                                : context.mainFontColor,
                                       ),
                                     ),
                                     trailing: Text(
@@ -231,7 +283,10 @@ class _IncomeOverviewScreenState extends State<IncomeOverviewScreen> {
                                       style: TextStyle(
                                         fontWeight: FontWeight.bold,
                                         fontSize: 15,
-                                        color: isSelected ? Colors.white : context.mainFontColor,
+                                        color:
+                                            isSelected
+                                                ? Colors.white
+                                                : context.mainFontColor,
                                       ),
                                     ),
                                   ),
@@ -243,7 +298,10 @@ class _IncomeOverviewScreenState extends State<IncomeOverviewScreen> {
                         Center(
                           child: TextButton(
                             onPressed: () {},
-                            child: Text("View More", style: TextStyle(color: context.buttonColor)),
+                            child: Text(
+                              "View More",
+                              style: TextStyle(color: context.buttonColor),
+                            ),
                           ),
                         ),
                       ],
@@ -270,7 +328,9 @@ class _IncomeOverviewScreenState extends State<IncomeOverviewScreen> {
         color: context.fieldColor,
         border: Border.all(color: context.borderColor.withOpacity(0.01)),
         borderRadius: BorderRadius.circular(10),
-        boxShadow: [BoxShadow(color: Colors.grey.withOpacity(0.3), blurRadius: 8)],
+        boxShadow: [
+          BoxShadow(color: Colors.grey.withOpacity(0.3), blurRadius: 8),
+        ],
       ),
       child: Align(
         alignment: Alignment.centerLeft,
@@ -299,23 +359,28 @@ class _IncomeOverviewScreenState extends State<IncomeOverviewScreen> {
           child: Obx(() {
             return Column(
               mainAxisSize: MainAxisSize.min,
-              children: FilterType.values.map((type) {
-                final selected = filterController.incomeFilterType.value == type;
-                return ListTile(
-                  leading: Icon(
-                    selected ? Icons.check_circle : Icons.circle_outlined,
-                    color: selected ? context.buttonColor : context.placeholderColor,
-                  ),
-                  title: Text(
-                    filterController.getFilterLabel(type),
-                    style: TextStyle(color: context.mainFontColor),
-                  ),
-                  onTap: () {
-                    filterController.updateIncomeFilter(type);
-                    Navigator.pop(context);
-                  },
-                );
-              }).toList(),
+              children:
+                  FilterType.values.map((type) {
+                    final selected =
+                        filterController.incomeFilterType.value == type;
+                    return ListTile(
+                      leading: Icon(
+                        selected ? Icons.check_circle : Icons.circle_outlined,
+                        color:
+                            selected
+                                ? context.buttonColor
+                                : context.placeholderColor,
+                      ),
+                      title: Text(
+                        filterController.getFilterLabel(type),
+                        style: TextStyle(color: context.mainFontColor),
+                      ),
+                      onTap: () {
+                        filterController.updateIncomeFilter(type);
+                        Navigator.pop(context);
+                      },
+                    );
+                  }).toList(),
             );
           }),
         );

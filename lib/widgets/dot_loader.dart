@@ -24,14 +24,14 @@ class _DotLoaderState extends State<DotLoader> with TickerProviderStateMixin {
       ),
     );
 
-    _animations = _controllers
-        .map((controller) => Tween<double>(begin: 0.3, end: 1.0).animate(
-              CurvedAnimation(
-                parent: controller,
-                curve: Curves.easeInOut,
+    _animations =
+        _controllers
+            .map(
+              (controller) => Tween<double>(begin: 0.3, end: 1.0).animate(
+                CurvedAnimation(parent: controller, curve: Curves.easeInOut),
               ),
-            ))
-        .toList();
+            )
+            .toList();
 
     for (int i = 0; i < _controllers.length; i++) {
       _startAnimation(i);

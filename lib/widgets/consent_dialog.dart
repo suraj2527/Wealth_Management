@@ -32,11 +32,12 @@ class _ConsentDialogState extends State<ConsentDialog> {
 
   final ScrollController _scrollController = ScrollController();
 
-  final String dummyText = List.generate(
-    40,
-    (index) =>
-        "This is a sample consent paragraph for Testing. It ensures scrollbar and scroll interaction work properly.\n\n",
-  ).join();
+  final String dummyText =
+      List.generate(
+        40,
+        (index) =>
+            "This is a sample consent paragraph for Testing. It ensures scrollbar and scroll interaction work properly.\n\n",
+      ).join();
 
   @override
   void initState() {
@@ -78,32 +79,41 @@ class _ConsentDialogState extends State<ConsentDialog> {
                 onPressed: () {
                   showDialog(
                     context: context,
-                    builder: (_) => AlertDialog(
-                      backgroundColor: Colors.white,
-                      title: const Text("Exit App",
-                          style: TextStyle(fontWeight: AppTextStyle.semiBold)),
-                      content: const Text("Do you really want to exit?"),
-                      actions: [
-                        TextButton(
-                          onPressed: () => Navigator.of(context).pop(),
-                          child: Text("Cancel",
-                              style: TextStyle(color: context.mainFontColor)),
+                    builder:
+                        (_) => AlertDialog(
+                          backgroundColor: Colors.white,
+                          title: const Text(
+                            "Exit App",
+                            style: TextStyle(fontWeight: AppTextStyle.semiBold),
+                          ),
+                          content: const Text("Do you really want to exit?"),
+                          actions: [
+                            TextButton(
+                              onPressed: () => Navigator.of(context).pop(),
+                              child: Text(
+                                "Cancel",
+                                style: TextStyle(color: context.mainFontColor),
+                              ),
+                            ),
+                            TextButton(
+                              onPressed: () => exit(0),
+                              child: Text(
+                                "Exit",
+                                style: TextStyle(color: context.buttonColor),
+                              ),
+                            ),
+                          ],
                         ),
-                        TextButton(
-                          onPressed: () => exit(0),
-                          child: Text("Exit",
-                              style: TextStyle(color: context.buttonColor)),
-                        ),
-                      ],
-                    ),
                   );
                 },
               ),
             ),
             SvgPicture.asset('assets/images/main_logo.svg', height: 50),
             const SizedBox(height: 12),
-            Text(widget.title,
-                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 20)),
+            Text(
+              widget.title,
+              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
+            ),
             const SizedBox(height: 12),
             Expanded(
               child: RawScrollbar(
@@ -128,19 +138,20 @@ class _ConsentDialogState extends State<ConsentDialog> {
               children: [
                 Expanded(
                   child: ElevatedButton(
-                    onPressed: isScrolledToEnd
-                        ? () {
-                            setState(() => isAgreed = true);
-                            widget.onAgree();
-                          }
-                        : null,
+                    onPressed:
+                        isScrolledToEnd
+                            ? () {
+                              setState(() => isAgreed = true);
+                              widget.onAgree();
+                            }
+                            : null,
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: isScrolledToEnd
-                          ? context.buttonColor
-                          : Colors.grey[300],
-                      foregroundColor: isScrolledToEnd
-                          ? Colors.white
-                          : Colors.black87,
+                      backgroundColor:
+                          isScrolledToEnd
+                              ? context.buttonColor
+                              : Colors.grey[300],
+                      foregroundColor:
+                          isScrolledToEnd ? Colors.white : Colors.black87,
                       padding: const EdgeInsets.symmetric(vertical: 12),
                     ),
                     child: Text(widget.agreeText),
@@ -153,20 +164,30 @@ class _ConsentDialogState extends State<ConsentDialog> {
                       setState(() => isAgreed = false);
                       showDialog(
                         context: context,
-                        builder: (_) => AlertDialog(
-                          backgroundColor: Colors.white,
-                          title: const Text("Notice",
-                              style: TextStyle(
-                                  fontWeight: AppTextStyle.mediumWeight)),
-                          content: const Text("You must consent to proceed."),
-                          actions: [
-                            TextButton(
-                              onPressed: () => Navigator.pop(context),
-                              child: Text("OK",
-                                  style: TextStyle(color: context.buttonColor)),
+                        builder:
+                            (_) => AlertDialog(
+                              backgroundColor: Colors.white,
+                              title: const Text(
+                                "Notice",
+                                style: TextStyle(
+                                  fontWeight: AppTextStyle.mediumWeight,
+                                ),
+                              ),
+                              content: const Text(
+                                "You must consent to proceed.",
+                              ),
+                              actions: [
+                                TextButton(
+                                  onPressed: () => Navigator.pop(context),
+                                  child: Text(
+                                    "OK",
+                                    style: TextStyle(
+                                      color: context.buttonColor,
+                                    ),
+                                  ),
+                                ),
+                              ],
                             ),
-                          ],
-                        ),
                       );
                     },
                     style: ElevatedButton.styleFrom(

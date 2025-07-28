@@ -6,11 +6,7 @@ class SummaryCard extends StatelessWidget {
   final String amount;
   final double? width;
 
-  const SummaryCard({
-    super.key,
-    required this.amount,
-    this.width,
-  });
+  const SummaryCard({super.key, required this.amount, this.width});
 
   @override
   Widget build(BuildContext context) {
@@ -23,10 +19,7 @@ class SummaryCard extends StatelessWidget {
         border: Border.all(color: context.borderColor.withOpacity(0.01)),
         borderRadius: BorderRadius.circular(10),
         boxShadow: [
-          BoxShadow(
-            color: Colors.grey.withOpacity(0.3),
-            blurRadius: 8,
-          ),
+          BoxShadow(color: Colors.grey.withOpacity(0.3), blurRadius: 8),
         ],
       ),
       child: Text(
