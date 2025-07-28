@@ -7,7 +7,7 @@ import 'package:wealth_app/controllers/auth_controller.dart';
 import 'package:wealth_app/screens/Authentication/login_screen.dart';
 import 'package:wealth_app/screens/mainscreens/dashboard_screen.dart';
 import 'package:wealth_app/widgets/dot_loader.dart';
-import 'package:wealth_app/extension/theme_extension.dart'; 
+import 'package:wealth_app/extension/theme_extension.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -16,7 +16,8 @@ class SplashScreen extends StatefulWidget {
   State<SplashScreen> createState() => _SplashScreenState();
 }
 
-class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMixin {
+class _SplashScreenState extends State<SplashScreen>
+    with TickerProviderStateMixin {
   final AuthController authController = Get.put(AuthController());
 
   final String fullText = 'Wealth Management';
