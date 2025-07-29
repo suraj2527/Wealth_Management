@@ -140,7 +140,7 @@ class AuthController extends GetxController {
       }
 
       debugPrint("🟢 Found refreshToken. Forcing silent login...");
-      final TokenResponse? result = await _appAuth.token(
+      final TokenResponse result = await _appAuth.token(
         TokenRequest(
           _clientId,
           _redirectUri,
@@ -151,7 +151,7 @@ class AuthController extends GetxController {
         ),
       );
 
-      if (result != null && result.accessToken != null) {
+      if (result.accessToken != null) {
         debugPrint("✅ Silent login success!");
 
         final storedEmail = prefs.getString('userEmail') ?? '';

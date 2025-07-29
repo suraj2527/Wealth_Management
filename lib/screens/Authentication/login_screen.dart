@@ -37,7 +37,7 @@ class _LoginScreenState extends State<LoginScreen> {
               shouldExit = false;
               Navigator.of(context).pop();
             },
-            child: Text("No", style: TextStyle(color: context.mainFontColor)), // updated
+            child: Text("No", style: TextStyle(color: context.mainFontColor)), 
           ),
           TextButton(
             onPressed: () {
@@ -85,7 +85,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         style: TextStyle(
                           fontSize: 24,
                           fontWeight: FontWeight.bold,
-                          color: context.mainFontColor, // updated
+                          color: context.mainFontColor, 
                         ),
                       ),
                       const SizedBox(height: 40),
@@ -115,7 +115,8 @@ class _LoginScreenState extends State<LoginScreen> {
                                       "Login Cancelled",
                                       "Please try again.",
                                       snackPosition: SnackPosition.BOTTOM,
-                                      colorText: context.mainFontColor, // updated
+                                      // ignore: use_build_context_synchronously
+                                      colorText: context.mainFontColor, 
                                     );
                                   } finally {
                                     if (mounted) {
@@ -134,7 +135,7 @@ class _LoginScreenState extends State<LoginScreen> {
             ),
             if (_isLoading)
               Container(
-                color: Theme.of(context).scaffoldBackgroundColor.withOpacity(0.4), // updated
+                color: Theme.of(context).scaffoldBackgroundColor.withOpacity(0.4), 
                 child: const Center(
                   child: Column(
                     mainAxisSize: MainAxisSize.min,

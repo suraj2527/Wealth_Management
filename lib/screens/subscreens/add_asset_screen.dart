@@ -23,10 +23,8 @@ class _AddAssetScreenState extends State<AddAssetScreen> {
   final TextEditingController _endDateController = TextEditingController();
   final TextEditingController _fundNameController = TextEditingController();
   final TextEditingController _amountController = TextEditingController();
-  final TextEditingController _customCategoryController =
-      TextEditingController();
-  final TextEditingController _customSubCategoryController =
-      TextEditingController();
+  final TextEditingController _customCategoryController = TextEditingController();
+  final TextEditingController _customSubCategoryController = TextEditingController();
 
   final List<String> _categories = [
     'Mutual funds',

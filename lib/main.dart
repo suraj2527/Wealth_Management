@@ -70,6 +70,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     final themeController = Get.find<ThemeController>();
 
+    // ignore: deprecated_member_use
     return WillPopScope(
       onWillPop: () => _onWillPop(context),
       child: Obx(
