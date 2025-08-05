@@ -42,9 +42,7 @@ class _CalendarInputFieldState extends State<CalendarInputField> {
 
     if (picked != null) {
       final formatted =
-          "${picked.day.toString().padLeft(2, '0')}-"
-          "${picked.month.toString().padLeft(2, '0')}-"
-          "${picked.year}";
+          "${picked.year.toString()}-${picked.month.toString().padLeft(2, '0')}-${picked.day.toString().padLeft(2, '0')}";
       widget.controller.text = formatted;
       if (widget.onChanged != null) widget.onChanged!(formatted);
     }

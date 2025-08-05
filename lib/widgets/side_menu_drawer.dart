@@ -20,6 +20,16 @@ class SideMenuDrawer extends StatelessWidget {
     );
   }
 
+  void navigateWithTransition(String route) {
+    Get.back();
+    Future.delayed(const Duration(milliseconds: 300), () {
+      Get.toNamed(
+        route,
+       
+      );
+    });
+  }
+
   Widget buildMenuTile({
     required String title,
     required String route,
@@ -29,22 +39,23 @@ class SideMenuDrawer extends StatelessWidget {
   }) {
     final String currentRoute = Get.currentRoute;
     final bool isActive = currentRoute == route;
+
     return ListTile(
       title: Text(
         title,
         style: TextStyle(
           fontSize: fontSize,
           fontWeight: isActive ? AppTextStyle.bold : FontWeight.normal,
-          color:
-              isActive
-                  ? context.buttonColor
-                  : (isDarkMode ? context.mainFontColor : context.buttonColor),
+          color: isActive
+              ? context.buttonColor
+              : (isDarkMode ? context.mainFontColor : context.buttonColor),
         ),
       ),
       onTap: () {
-        Get.back();
         if (!isActive) {
-          Get.toNamed(route);
+          navigateWithTransition(route);
+        } else {
+          Get.back();
         }
       },
     );
@@ -88,6 +99,7 @@ class SideMenuDrawer extends StatelessWidget {
                     IconButton(
                       icon: Icon(Icons.close, color: context.mainFontColor),
                       onPressed: () => Get.back(),
+                      
                     ),
                   ],
                 ),
@@ -102,29 +114,27 @@ class SideMenuDrawer extends StatelessWidget {
                     ListTile(
                       leading: svgIcon(
                         'assets/icons/dashboard.svg',
-                        color:
-                            isDarkMode
-                                ? context.mainFontColor
-                                : context.buttonColor,
+                        color: isDarkMode
+                            ? context.mainFontColor
+                            : context.buttonColor,
                       ),
                       title: Text(
                         "Dashboard",
                         style: TextStyle(
                           fontSize: 18,
-                          fontWeight:
-                              currentRoute == '/dashboard'
-                                  ? AppTextStyle.bold
-                                  : AppTextStyle.mediumWeight,
-                          color:
-                              currentRoute == '/dashboard'
-                                  ? context.buttonColor
-                                  : context.mainFontColor,
+                          fontWeight: currentRoute == '/dashboard'
+                              ? AppTextStyle.bold
+                              : AppTextStyle.mediumWeight,
+                          color: currentRoute == '/dashboard'
+                              ? context.buttonColor
+                              : context.mainFontColor,
                         ),
                       ),
                       onTap: () {
-                        Get.back();
                         if (currentRoute != '/dashboard') {
-                          Get.toNamed('/dashboard');
+                          navigateWithTransition('/dashboard');
+                        } else {
+                          Get.back();
                         }
                       },
                     ),
@@ -133,10 +143,9 @@ class SideMenuDrawer extends StatelessWidget {
                     ExpansionTile(
                       leading: svgIcon(
                         'assets/icons/income.svg',
-                        color:
-                            isDarkMode
-                                ? context.mainFontColor
-                                : context.buttonColor,
+                        color: isDarkMode
+                            ? context.mainFontColor
+                            : context.buttonColor,
                       ),
                       title: Text(
                         "Manage Income",
@@ -163,10 +172,9 @@ class SideMenuDrawer extends StatelessWidget {
                     ExpansionTile(
                       leading: svgIcon(
                         'assets/icons/expenses.svg',
-                        color:
-                            isDarkMode
-                                ? context.mainFontColor
-                                : context.buttonColor,
+                        color: isDarkMode
+                            ? context.mainFontColor
+                            : context.buttonColor,
                       ),
                       title: Text(
                         "Manage Expenses",
@@ -193,10 +201,9 @@ class SideMenuDrawer extends StatelessWidget {
                     ExpansionTile(
                       leading: svgIcon(
                         'assets/icons/assets.svg',
-                        color:
-                            isDarkMode
-                                ? context.mainFontColor
-                                : context.buttonColor,
+                        color: isDarkMode
+                            ? context.mainFontColor
+                            : context.buttonColor,
                       ),
                       title: Text(
                         "Manage Assets/Investments",
@@ -223,10 +230,9 @@ class SideMenuDrawer extends StatelessWidget {
                     ExpansionTile(
                       leading: svgIcon(
                         'assets/icons/document_icon.svg',
-                        color:
-                            isDarkMode
-                                ? context.mainFontColor
-                                : context.buttonColor,
+                        color: isDarkMode
+                            ? context.mainFontColor
+                            : context.buttonColor,
                       ),
                       title: Text(
                         "Upload Document",

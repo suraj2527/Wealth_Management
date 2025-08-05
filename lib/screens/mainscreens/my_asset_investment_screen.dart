@@ -10,6 +10,7 @@ import 'package:wealth_app/controllers/filter_controller.dart';
 import 'package:wealth_app/extension/theme_extension.dart';
 import 'package:wealth_app/models/asset_model.dart';
 import 'package:wealth_app/screens/subscreens/add_asset_screen.dart';
+import 'package:wealth_app/widgets/network_widget.dart';
 import 'package:wealth_app/widgets/universal_scaffold.dart';
 
 class MyAssetsAndInvestmentsScreen extends StatefulWidget {
@@ -23,12 +24,13 @@ class MyAssetsAndInvestmentsScreen extends StatefulWidget {
 class _MyAssetsAndInvestmentsScreenState
     extends State<MyAssetsAndInvestmentsScreen> {
   int selectedIndex = -1;
+  bool showFullList = false;
 
-  final userId = Get.find<AuthController>().userId.value;
+  final userId = Get.find<AuthController>().dbUserId.value;
   final AssetController assetController = Get.put(AssetController());
   final FilterController filterController = Get.find<FilterController>();
 
-  final String apiUrl = 'http://localhost:7173/api/asset';
+  final String apiUrl = 'http://192.168.1.24:7173/api/investments/recent';
 
   @override
   void initState() {
@@ -36,19 +38,53 @@ class _MyAssetsAndInvestmentsScreenState
     _fetchData();
   }
 
-  Future<void> _fetchData() async {
-    try {
-      final response = await http.get(Uri.parse('$apiUrl/user/$userId'));
-      if (response.statusCode == 200) {
-        final List decoded = jsonDecode(response.body);
-        final assets = decoded.map((e) => AssetModel.fromJson(e)).toList();
-        assetController.setAssets(assets);
-        filterController.setAssetData(assets);
+  void _confirmDelete(BuildContext context, AssetModel asset) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder:
+          (_) => AlertDialog(
+            title: const Text("Delete Asset"),
+            content: const Text("Are you sure you want to delete this asset?"),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context, false),
+                child: const Text("Cancel"),
+              ),
+              ElevatedButton(
+                onPressed: () => Navigator.pop(context, true),
+                style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+                child: const Text("Delete"),
+              ),
+            ],
+          ),
+    );
+
+    if (confirmed == true) {
+      final result = await assetController.deleteAsset(asset.id, userId);
+      if (result['success']) {
+        setState(() => selectedIndex = -1);
+        await _fetchData();
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text("Asset deleted successfully"),
+            backgroundColor: Colors.green,
+          ),
+        );
       } else {
-        throw Exception('Failed to fetch assets');
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(result['message'] ?? "Deletion failed"),
+            backgroundColor: Colors.red,
+          ),
+        );
       }
-    } catch (e) {
-      debugPrint("❌ Error fetching assets: $e");
+    }
+  }
+
+  Future<void> _fetchData() async {
+    final result = await assetController.fetchAssets(userId);
+    if (result['success']) {
+      filterController.setAssetData(assetController.assetList);
     }
   }
 
@@ -71,37 +107,37 @@ class _MyAssetsAndInvestmentsScreenState
   @override
   Widget build(BuildContext context) {
     final mediaWidth = MediaQuery.of(context).size.width;
-    final currentYear = DateTime.now().year.toString();
 
-    return UniversalScaffold(
-      body: SafeArea(
-        child: RefreshIndicator(
-          onRefresh: _fetchData,
-          backgroundColor: context.fieldColor,
-          color: context.mainFontColor,
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-            physics: const BouncingScrollPhysics(),
-            child: Obx(() {
-              final assets = filterController.filteredAssetList;
-              final totalAmount = assets
-                  .where((a) => a.year == currentYear)
-                  .fold<double>(0.0,
-                      (sum, a) => sum + (double.tryParse(a.amount) ?? 0.0));
-
-              return Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  _buildTopSection(),
-                  const SizedBox(height: 16),
-                  _cardTile("₹${totalAmount.toStringAsFixed(2)}"),
-                  const SizedBox(height: 16),
-                  _buildHeaderWithFilter(),
-                  const SizedBox(height: 12),
-                  _buildAssetList(assets, mediaWidth),
-                ],
-              );
-            }),
+    return NetworkAwareWidget(
+      child: UniversalScaffold(
+        body: SafeArea(
+          child: RefreshIndicator(
+            onRefresh: _fetchData,
+            backgroundColor: context.fieldColor,
+            color: context.mainFontColor,
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              physics: const BouncingScrollPhysics(),
+              child: Obx(() {
+                final assets = filterController.filteredAssetList;
+                final totalAmount = assets
+                    .where((a) => a.amount != null)
+                    .fold<double>(0.0, (sum, a) => sum + a.amount);
+      
+                return Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _buildTopSection(),
+                    const SizedBox(height: 16),
+                    _cardTile("₹${totalAmount.toStringAsFixed(2)}"),
+                    const SizedBox(height: 16),
+                    _buildHeaderWithFilter(),
+                    const SizedBox(height: 12),
+                    _buildAssetList(assets, mediaWidth),
+                  ],
+                );
+              }),
+            ),
           ),
         ),
       ),
@@ -116,28 +152,41 @@ class _MyAssetsAndInvestmentsScreenState
         Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text("My Assets &",
-                style: TextStyle(
-                    fontSize: 22,
-                    fontWeight: AppTextStyle.bold,
-                    color: context.mainFontColor)),
-            Text("Investments",
-                style: TextStyle(
-                    fontSize: 22,
-                    fontWeight: AppTextStyle.bold,
-                    color: context.mainFontColor)),
+            Text(
+              "My Assets &",
+              style: TextStyle(
+                fontSize: 22,
+                fontWeight: AppTextStyle.bold,
+                color: context.mainFontColor,
+              ),
+            ),
+            Text(
+              "Investments",
+              style: TextStyle(
+                fontSize: 22,
+                fontWeight: AppTextStyle.bold,
+                color: context.mainFontColor,
+              ),
+            ),
             const SizedBox(height: 4),
-            Text("Your Overall Assets Summary",
-                style: TextStyle(fontSize: 12, color: context.placeholderColor)),
+            Text(
+              "Your Overall Assets Summary",
+              style: TextStyle(fontSize: 12, color: context.placeholderColor),
+            ),
             const SizedBox(height: 40),
-            Text("Current Year Investments",
-                style: TextStyle(
-                    fontWeight: AppTextStyle.semiBold,
-                    fontSize: 18,
-                    color: context.mainFontColor)),
+            Text(
+              "Current Year Investments",
+              style: TextStyle(
+                fontWeight: AppTextStyle.semiBold,
+                fontSize: 18,
+                color: context.mainFontColor,
+              ),
+            ),
             const SizedBox(height: 4),
-            Text("This Year Investments",
-                style: TextStyle(fontSize: 12, color: context.placeholderColor)),
+            Text(
+              "This Year Investments",
+              style: TextStyle(fontSize: 12, color: context.placeholderColor),
+            ),
           ],
         ),
         Column(
@@ -146,14 +195,19 @@ class _MyAssetsAndInvestmentsScreenState
             OutlinedButton.icon(
               onPressed: _fetchData,
               icon: Icon(Icons.refresh, color: context.buttonColor),
-              label:
-                  Text("Refresh", style: TextStyle(color: context.buttonColor)),
+              label: Text(
+                "Refresh",
+                style: TextStyle(color: context.buttonColor),
+              ),
               style: OutlinedButton.styleFrom(
                 side: BorderSide(color: context.buttonColor),
                 shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8)),
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 10,
+                ),
               ),
             ),
             const SizedBox(height: 8),
@@ -162,12 +216,18 @@ class _MyAssetsAndInvestmentsScreenState
               style: ElevatedButton.styleFrom(
                 backgroundColor: context.buttonColor,
                 foregroundColor: context.buttonTextColor,
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 13, vertical: 10),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 13,
+                  vertical: 10,
+                ),
                 shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8)),
+                  borderRadius: BorderRadius.circular(8),
+                ),
               ),
-              child: const Text("Add Investment", style: TextStyle(fontSize: 14)),
+              child: const Text(
+                "Add Investment",
+                style: TextStyle(fontSize: 14),
+              ),
             ),
           ],
         ),
@@ -179,17 +239,22 @@ class _MyAssetsAndInvestmentsScreenState
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Text("Assets List",
-            style: TextStyle(
-                fontWeight: AppTextStyle.semiBold,
-                fontSize: 18,
-                color: context.mainFontColor)),
+        Text(
+          "Assets List",
+          style: TextStyle(
+            fontWeight: AppTextStyle.semiBold,
+            fontSize: 18,
+            color: context.mainFontColor,
+          ),
+        ),
         InkWell(
           onTap: () => _showFilterBottomSheet(context),
           child: Row(
             children: [
-              Text("Asset Filter",
-                  style: TextStyle(color: context.buttonColor)),
+              Text(
+                "Asset Filter",
+                style: TextStyle(color: context.buttonColor),
+              ),
               const SizedBox(width: 8),
               SvgPicture.asset('assets/icons/filter.svg', height: 14),
             ],
@@ -206,48 +271,55 @@ class _MyAssetsAndInvestmentsScreenState
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
-      builder: (_) {
-        return SafeArea(
-          child: Obx(() {
-            return Padding(
-              padding: const EdgeInsets.symmetric(vertical: 10),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: FilterType.values.map((type) {
-                  final selected =
-                      filterController.assetFilterType.value == type;
-                  return ListTile(
-                    leading: Icon(
-                      selected ? Icons.check_circle : Icons.circle_outlined,
-                      color:
-                          selected ? context.buttonColor : context.borderColor,
-                    ),
-                    title: Text(
-                      filterController.getFilterLabel(type),
-                      style: TextStyle(
-                        color: context.mainFontColor,
-                        fontWeight:
-                            selected ? FontWeight.bold : FontWeight.normal,
-                      ),
-                    ),
-                    onTap: () {
-                      filterController.updateAssetFilter(type);
-                      Navigator.pop(context);
-                    },
-                  );
-                }).toList(),
+      builder:
+          (_) => SafeArea(
+            child: Obx(
+              () => Padding(
+                padding: const EdgeInsets.symmetric(vertical: 10),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children:
+                      FilterType.values.map((type) {
+                        final selected =
+                            filterController.assetFilterType.value == type;
+                        return ListTile(
+                          leading: Icon(
+                            selected
+                                ? Icons.check_circle
+                                : Icons.circle_outlined,
+                            color:
+                                selected
+                                    ? context.buttonColor
+                                    : context.borderColor,
+                          ),
+                          title: Text(
+                            filterController.getFilterLabel(type),
+                            style: TextStyle(
+                              color: context.mainFontColor,
+                              fontWeight:
+                                  selected
+                                      ? FontWeight.bold
+                                      : FontWeight.normal,
+                            ),
+                          ),
+                          onTap: () {
+                            filterController.updateAssetFilter(type);
+                            Navigator.pop(context);
+                          },
+                        );
+                      }).toList(),
+                ),
               ),
-            );
-          }),
-        );
-      },
+            ),
+          ),
     );
   }
 
   Widget _buildAssetList(List<AssetModel> assets, double mediaWidth) {
+    final visibleAssets = showFullList ? assets : assets.take(4).toList();
+
     return Container(
       width: mediaWidth * 0.93,
-      height: MediaQuery.of(context).size.height * 0.5,
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
         color: context.cardColor,
@@ -261,90 +333,216 @@ class _MyAssetsAndInvestmentsScreenState
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text("Category", style: TextStyle(color: context.mainFontColor)),
+                Text(
+                  "Category",
+                  style: TextStyle(color: context.mainFontColor),
+                ),
                 Text("Amount", style: TextStyle(color: context.mainFontColor)),
               ],
             ),
           ),
           const SizedBox(height: 8),
-          Expanded(
-            child: assets.isEmpty
-                ? Center(
-                    child: Text("No asset added yet",
-                        style: TextStyle(color: context.mainFontColor)))
-                : ListView.builder(
-                    itemCount: assets.length,
-                    itemBuilder: (context, index) {
-                      final asset = assets[index];
-                      final isSelected = index == selectedIndex;
-                      return GestureDetector(
-                        onTap: () => setState(() => selectedIndex = index),
-                        child: Container(
-                          margin: const EdgeInsets.only(bottom: 8),
-                          decoration: BoxDecoration(
-                            color: isSelected
-                                ? context.buttonColor
-                                : context.fieldColor,
-                            borderRadius: BorderRadius.circular(10),
-                            border:
-                                Border.all(color: context.borderColor),
-                          ),
-                          child: ListTile(
-                            leading: SvgPicture.asset(
-                              'assets/icons/asset_icon.svg',
-                              height: 20,
-                              colorFilter: ColorFilter.mode(
-                                isSelected
-                                    ? Colors.white
-                                    : context.buttonColor,
-                                BlendMode.srcIn,
-                              ),
-                            ),
-                            title: Text(
-                              "${asset.category} (${asset.year})",
-                              style: TextStyle(
-                                fontWeight: isSelected
-                                    ? FontWeight.bold
-                                    : FontWeight.normal,
-                                color: isSelected
-                                    ? Colors.white
-                                    : context.mainFontColor,
-                              ),
-                            ),
-                            subtitle: Text(
-                              asset.fundName,
-                              style: TextStyle(
-                                color: isSelected
-                                    ? Colors.white70
-                                    : context.placeholderColor,
-                              ),
-                            ),
-                            trailing: Text(
-                              "₹${asset.amount}",
-                              style: TextStyle(
-                                fontWeight: FontWeight.bold,
-                                fontSize: 15,
-                                color: isSelected
-                                    ? Colors.white
-                                    : context.mainFontColor,
-                              ),
-                            ),
+          AnimatedSize(
+            duration: const Duration(milliseconds: 300),
+            curve: Curves.easeInOut,
+            child: Column(
+              children:
+                  visibleAssets.isEmpty
+                      ? [
+                        Center(
+                          child: Text(
+                            "No asset added yet",
+                            style: TextStyle(color: context.mainFontColor),
                           ),
                         ),
-                      );
-                    },
-                  ),
-          ),
-          Center(
-            child: TextButton(
-              onPressed: () {},
-              child: Text("View More",
-                  style: TextStyle(color: context.buttonColor)),
+                      ]
+                      : visibleAssets.asMap().entries.map((entry) {
+                        final index = entry.key;
+                        final asset = entry.value;
+                        final isSelected = index == selectedIndex;
+
+                        return GestureDetector(
+                          onTap:
+                              () => setState(
+                                () => selectedIndex = isSelected ? -1 : index,
+                              ),
+                          child: AnimatedContainer(
+                            duration: const Duration(milliseconds: 300),
+                            margin: const EdgeInsets.only(bottom: 10),
+                            decoration: BoxDecoration(
+                              color:
+                                  isSelected
+                                      ? context.buttonColor
+                                      : context.fieldColor,
+                              borderRadius: BorderRadius.circular(10),
+                              border: Border.all(color: context.borderColor),
+                            ),
+                            child: Column(
+                              children: [
+                                Container(
+                                  padding: const EdgeInsets.symmetric(
+                                    vertical: 16,
+                                    horizontal: 16,
+                                  ),
+                                  child: Row(
+                                    children: [
+                                      SvgPicture.asset(
+                                        'assets/icons/asset_icon.svg',
+                                        height: 22,
+                                        colorFilter: ColorFilter.mode(
+                                          isSelected
+                                              ? Colors.white
+                                              : context.buttonColor,
+                                          BlendMode.srcIn,
+                                        ),
+                                      ),
+                                      const SizedBox(width: 12),
+                                      Expanded(
+                                        child: Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            Text(
+                                              "${asset.investmentCategory} - ${asset.investmentFundName}",
+                                              style: TextStyle(
+                                                fontWeight: FontWeight.w600,
+                                                fontSize: 15,
+                                                color:
+                                                    isSelected
+                                                        ? Colors.white
+                                                        : context.mainFontColor,
+                                              ),
+                                            ),
+                                            const SizedBox(height: 4),
+                                            Text(
+                                              "(${_getYear(asset.startDate)})",
+                                              style: TextStyle(
+                                                fontSize: 12,
+                                                color:
+                                                    isSelected
+                                                        ? Colors.white70
+                                                        : context
+                                                            .placeholderColor,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                      Text(
+                                        "₹${asset.amount.toStringAsFixed(2)}",
+                                        style: TextStyle(
+                                          fontWeight: FontWeight.w600,
+                                          fontSize: 15,
+                                          color:
+                                              isSelected
+                                                  ? Colors.white
+                                                  : context.mainFontColor,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                if (isSelected)
+                                  Container(
+                                    width: double.infinity,
+                                    padding: const EdgeInsets.all(12),
+                                    decoration: BoxDecoration(
+                                      color: context.backgroundColor,
+                                      borderRadius: const BorderRadius.vertical(
+                                        bottom: Radius.circular(10),
+                                      ),
+                                    ),
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        _infoRow(
+                                          "Fund Name",
+                                          asset.investmentFundName,
+                                          context,
+                                        ),
+                                        _infoRow(
+                                          "Start Date",
+                                          asset.startDate,
+                                          context,
+                                        ),
+                                        _infoRow(
+                                          "End Date",
+                                          asset.endDate,
+                                          context,
+                                        ),
+                                        _infoRow(
+                                          "Category",
+                                          asset.investmentCategory,
+                                          context,
+                                        ),
+                                        _infoRow(
+                                          "Sub-Category",
+                                          asset.investmentSubCategory,
+                                          context,
+                                        ),
+                                        _infoRow(
+                                          "Amount",
+                                          "₹${asset.amount.toStringAsFixed(2)}",
+                                          context,
+                                        ),
+                                        const SizedBox(height: 12),
+                                        Align(
+                                          alignment: Alignment.centerRight,
+                                          child: TextButton.icon(
+                                            onPressed:
+                                                () => _confirmDelete(
+                                                  context,
+                                                  asset,
+                                                ),
+                                            icon: const Icon(
+                                              Icons.delete_outline,
+                                              color: Colors.red,
+                                            ),
+                                            label: const Text(
+                                              "Delete",
+                                              style: TextStyle(
+                                                color: Colors.red,
+                                              ),
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                              ],
+                            ),
+                          ),
+                        );
+                      }).toList(),
             ),
           ),
+          if (assets.length > 4)
+            Center(
+              child: TextButton.icon(
+                onPressed: () => setState(() => showFullList = !showFullList),
+                icon: Icon(
+                  showFullList ? Icons.expand_less : Icons.expand_more,
+                  color: context.buttonColor,
+                ),
+                label: Text(
+                  showFullList ? "View Less" : "View More",
+                  style: TextStyle(color: context.buttonColor),
+                ),
+              ),
+            ),
         ],
       ),
     );
+  }
+
+  String _getYear(String startDate) {
+    try {
+      final date = DateTime.parse(startDate);
+      return date.year.toString();
+    } catch (e) {
+      return "";
+    }
   }
 
   Widget _cardTile(String amount) {
@@ -366,10 +564,32 @@ class _MyAssetsAndInvestmentsScreenState
       child: Text(
         amount,
         style: TextStyle(
-            fontSize: 20,
-            fontWeight: AppTextStyle.semiBold,
-            color: context.mainFontColor),
+          fontSize: 20,
+          fontWeight: AppTextStyle.semiBold,
+          color: context.mainFontColor,
+        ),
       ),
     );
   }
+}
+
+Widget _infoRow(String label, String value, BuildContext context) {
+  return Padding(
+    padding: const EdgeInsets.symmetric(vertical: 6),
+    child: Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          "$label: ",
+          style: TextStyle(
+            fontWeight: FontWeight.w600,
+            color: context.mainFontColor.withOpacity(0.7),
+          ),
+        ),
+        Expanded(
+          child: Text(value, style: TextStyle(color: context.mainFontColor)),
+        ),
+      ],
+    ),
+  );
 }

@@ -77,6 +77,8 @@ class UniversalAppBar extends StatelessWidget implements PreferredSizeWidget {
         Obx(() {
           final path = controller.imagePath.value;
           final profileImageFile = (path != null) ? File(path) : null;
+          final bool hasValidImage =
+              profileImageFile != null && profileImageFile.existsSync();
 
           return Padding(
             padding: EdgeInsets.only(right: paddingRight),
@@ -92,11 +94,17 @@ class UniversalAppBar extends StatelessWidget implements PreferredSizeWidget {
               },
               child: CircleAvatar(
                 radius: iconSize * 0.7,
+                backgroundColor: context.fieldColor,
                 backgroundImage:
-                    (profileImageFile != null && profileImageFile.existsSync())
-                        ? FileImage(profileImageFile)
-                        : const AssetImage("assets/images/profile.png")
-                            as ImageProvider,
+                    hasValidImage ? FileImage(profileImageFile) : null,
+                child:
+                    hasValidImage
+                        ? null
+                        : Icon(
+                          Icons.person,
+                          size: iconSize * 0.7,
+                          color: context.placeholderColor,
+                        ),
               ),
             ),
           );

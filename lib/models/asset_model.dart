@@ -1,42 +1,46 @@
 class AssetModel {
-  final String year;
+  final String userId;
   final String startDate;
   final String endDate;
-  final String category;
-  final String subCategory;
-  final String fundName;
-  final String amount;
+  final String investmentCategory;
+  final String investmentSubCategory;
+  final String investmentFundName;
+  final double amount;
+  final String id;
+  double get currentValue => amount;
 
   AssetModel({
-    required this.year,
+    required this.userId,
     required this.startDate,
     required this.endDate,
-    required this.category,
-    required this.subCategory,
-    required this.fundName,
+    required this.investmentCategory,
+    required this.investmentSubCategory,
+    required this.investmentFundName,
     required this.amount,
+    required this.id,
   });
 
   factory AssetModel.fromJson(Map<String, dynamic> json) {
     return AssetModel(
-      year: json['year'] ?? '',
+      userId: json['userId'] ?? '',
       startDate: json['startDate'] ?? '',
       endDate: json['endDate'] ?? '',
-      category: json['category'] ?? '',
-      subCategory: json['subCategory'] ?? '',
-      fundName: json['fundName'] ?? '',
-      amount: json['amount'] ?? '0',
+      investmentCategory: json['investmentCategory'] ?? '',
+      investmentSubCategory: json['investmentSubCategory'] ?? '',
+      investmentFundName: json['investmentFundName'] ?? '',
+      amount: (json['amount'] as num?)?.toDouble() ?? 0.0,
+      id: json['id'] ?? '',
     );
   }
 
   Map<String, dynamic> toJson() {
     return {
-      'year': year,
+      'userId': userId,
       'startDate': startDate,
       'endDate': endDate,
-      'category': category,
-      'subCategory': subCategory,
-      'fundName': fundName,
+      'investmentCategory': investmentCategory,
+      'investmentSubCategory': investmentSubCategory,
+      'investmentFundName': investmentFundName,
       'amount': amount,
     };
   }

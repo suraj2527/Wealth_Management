@@ -1,43 +1,60 @@
 class ExpenseModel {
-  final String year;
-  final String type;
+  final String userId;
+  final String Id;
+  final int year;
+  final String expenseType;
   final String subCategory;
   final String period;
   final String natureType;
-  final String amount;
-  final String date;
+  final double amount;
+  final double expectedAnnualIncrementPercentage;
+  final String startDate;
+  final bool isRecurring;
 
   ExpenseModel({
+    required this.userId,
     required this.year,
-    required this.type,
+    required this.expenseType,
     required this.subCategory,
     required this.period,
     required this.natureType,
     required this.amount,
-    required this.date,
+    required this.expectedAnnualIncrementPercentage,
+    required this.startDate,
+    required this.isRecurring,
+    required this.Id,
   });
 
   factory ExpenseModel.fromJson(Map<String, dynamic> json) {
     return ExpenseModel(
-      year: json['year'] ?? '',
-      type: json['type'] ?? '',
-      subCategory: json['subCategory'] ?? '',
-      period: json['period'] ?? '',
-      natureType: json['natureType'] ?? '',
-      amount: json['amount']?.toString() ?? '0',
-      date: json['date'] ?? '',
+      userId: json['userId'] ?? '',
+      year: json['Year'] ?? DateTime.now().year,
+      expenseType: json['ExpenseType'] ?? 'Null',
+      subCategory: json['SubCategory'] ?? 'Null',
+      period: json['Period'] ?? '',
+      natureType: json['NatureType'] ?? '',
+      amount: (json['Amount'] as num?)?.toDouble() ?? 0.0,
+      expectedAnnualIncrementPercentage:
+          (json['ExpectedAnnualIncrementPercentage'] as num?)?.toDouble() ??
+          0.0,
+      startDate: json['StartDate'] ?? '',
+      isRecurring: json['IsRecurring'] ?? false,
+      Id: json['Id']??'Null',
     );
   }
 
   Map<String, dynamic> toJson() {
     return {
+      'userId': userId,
       'year': year,
-      'type': type,
+      'expenseType': expenseType,
       'subCategory': subCategory,
       'period': period,
       'natureType': natureType,
       'amount': amount,
-      'date': date,
+      'expectedAnnualIncrementPercentage': expectedAnnualIncrementPercentage,
+      'startDate': startDate,
+      'isRecurring': isRecurring,
     };
   }
 }

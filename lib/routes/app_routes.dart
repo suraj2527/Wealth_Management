@@ -21,4 +21,5 @@ class AppRoutes {
     GetPage(name: '/upload', page: () => const UploadDocumentScreen()),
     GetPage(name: '/splash', page: () => const SplashScreen()),
   ];
+  
 }

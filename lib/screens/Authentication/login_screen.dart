@@ -8,6 +8,7 @@ import 'package:wealth_app/extension/theme_extension.dart';
 import 'package:wealth_app/screens/mainscreens/hello_screen.dart';
 import 'package:wealth_app/widgets/custom_button.dart';
 import 'package:wealth_app/widgets/dot_loader.dart';
+import 'package:wealth_app/widgets/network_widget.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -64,88 +65,90 @@ class _LoginScreenState extends State<LoginScreen> {
           }
         }
       },
-      child: Scaffold(
-        body: Stack(
-          children: [
-            SafeArea(
-              child: Center(
-                child: SizedBox(
-                  height: MediaQuery.of(context).size.height * 0.85,
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      SvgPicture.asset(
-                        'assets/images/main_logo.svg',
-                        height: 100,
-                        width: 100,
-                      ),
-                      const SizedBox(height: 40),
-                      Text(
-                        "Login",
-                        style: TextStyle(
-                          fontSize: 24,
-                          fontWeight: FontWeight.bold,
-                          color: context.mainFontColor, 
+      child: NetworkAwareWidget(
+        child: Scaffold(
+          body: Stack(
+            children: [
+              SafeArea(
+                child: Center(
+                  child: SizedBox(
+                    height: MediaQuery.of(context).size.height * 0.85,
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        SvgPicture.asset(
+                          'assets/images/main_logo.svg',
+                          height: 100,
+                          width: 100,
                         ),
-                      ),
-                      const SizedBox(height: 40),
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 32),
-                        child: CustomButton(
-                          text: "Login",
-                          onPressed: _isLoading
-                              ? null
-                              : () async {
-                                  setState(() {
-                                    _isLoading = true;
-                                  });
-                                  try {
-                                    await authController.login();
-                                    if (authController.isLoggedIn.value) {
-                                      Get.off(() => const HelloScreen());
-                                    } else {
+                        const SizedBox(height: 40),
+                        Text(
+                          "Login",
+                          style: TextStyle(
+                            fontSize: 24,
+                            fontWeight: FontWeight.bold,
+                            color: context.mainFontColor, 
+                          ),
+                        ),
+                        const SizedBox(height: 40),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 32),
+                          child: CustomButton(
+                            text: "Login",
+                            onPressed: _isLoading
+                                ? null
+                                : () async {
+                                    setState(() {
+                                      _isLoading = true;
+                                    });
+                                    try {
+                                      await authController.login();
+                                      if (authController.isLoggedIn.value) {
+                                        Get.off(() => const HelloScreen());
+                                      } else {
+                                        Get.snackbar(
+                                          "Login Failed",
+                                          "Please try again.",
+                                          snackPosition: SnackPosition.BOTTOM,
+                                        );
+                                      }
+                                    } catch (e) {
                                       Get.snackbar(
-                                        "Login Failed",
+                                        "Login Cancelled",
                                         "Please try again.",
                                         snackPosition: SnackPosition.BOTTOM,
+                                        // ignore: use_build_context_synchronously
+                                        colorText: context.mainFontColor, 
                                       );
+                                    } finally {
+                                      if (mounted) {
+                                        setState(() {
+                                          _isLoading = false;
+                                        });
+                                      }
                                     }
-                                  } catch (e) {
-                                    Get.snackbar(
-                                      "Login Cancelled",
-                                      "Please try again.",
-                                      snackPosition: SnackPosition.BOTTOM,
-                                      // ignore: use_build_context_synchronously
-                                      colorText: context.mainFontColor, 
-                                    );
-                                  } finally {
-                                    if (mounted) {
-                                      setState(() {
-                                        _isLoading = false;
-                                      });
-                                    }
-                                  }
-                                },
+                                  },
+                          ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
                 ),
               ),
-            ),
-            if (_isLoading)
-              Container(
-                color: Theme.of(context).scaffoldBackgroundColor.withOpacity(0.4), 
-                child: const Center(
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      DotLoader(),
-                    ],
+              if (_isLoading)
+                Container(
+                  color: Theme.of(context).scaffoldBackgroundColor.withOpacity(0.4), 
+                  child: const Center(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        DotLoader(),
+                      ],
+                    ),
                   ),
                 ),
-              ),
-          ],
+            ],
+          ),
         ),
       ),
     );

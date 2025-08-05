@@ -1,5 +1,3 @@
-// ignore_for_file: use_build_context_synchronously
-
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -9,6 +7,7 @@ import 'package:wealth_app/constants/text_styles.dart';
 import 'package:wealth_app/controllers/auth_controller.dart';
 import 'package:wealth_app/controllers/profile_image_controller.dart';
 import 'package:wealth_app/controllers/theme_controller.dart';
+import 'package:wealth_app/widgets/network_widget.dart';
 import 'package:wealth_app/widgets/universal_scaffold.dart';
 import 'package:wealth_app/extension/theme_extension.dart';
 
@@ -33,6 +32,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
     super.initState();
     _nameController.text = authController.fullName.value;
     profileImageController.loadImagePath();
+
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      await authController.fetchUserProfile();
+      _nameController.text = authController.fullName.value;
+      setState(() {});
+    });
   }
 
   Future<void> _pickImageDialog(BuildContext context) async {
@@ -70,7 +75,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   final saved = await pickedFile.copy(
                     '${dir.path}/profile_image.png',
                   );
-
                   imageCache.clear();
                   imageCache.clearLiveImages();
                   await profileImageController.setImagePath(saved.path);
@@ -107,7 +111,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   TextButton(
                     onPressed: () async {
                       Navigator.pop(context);
-                      await Future.delayed(Duration(milliseconds: 300));
+                      await Future.delayed(const Duration(milliseconds: 300));
                       await authController.logout();
                       Get.offAllNamed('/login');
                     },
@@ -125,208 +129,214 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return UniversalScaffold(
-      body: GestureDetector(
-        onTap: () => FocusScope.of(context).unfocus(),
-        behavior: HitTestBehavior.opaque,
-        child: RefreshIndicator(
-          onRefresh: () async {
-            imageCache.clear();
-            imageCache.clearLiveImages();
-            await profileImageController.loadImagePath();
-            setState(() {});
-          },
-          child: SingleChildScrollView(
-            physics: const AlwaysScrollableScrollPhysics(),
-            padding: const EdgeInsets.all(20),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Title & Theme Toggle
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      "Profile",
-                      style: TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                        color: context.mainFontColor,
+    return NetworkAwareWidget(
+      child: UniversalScaffold(
+        body: GestureDetector(
+          onTap: () => FocusScope.of(context).unfocus(),
+          behavior: HitTestBehavior.opaque,
+          child: RefreshIndicator(
+            onRefresh: () async {
+              imageCache.clear();
+              imageCache.clearLiveImages();
+              await profileImageController.loadImagePath();
+              await authController.fetchUserProfile();
+              _nameController.text = authController.fullName.value;
+              setState(() {});
+            },
+            child: SingleChildScrollView(
+              physics: const AlwaysScrollableScrollPhysics(),
+              padding: const EdgeInsets.all(20),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Header
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        "Profile",
+                        style: TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                          color: context.mainFontColor,
+                        ),
                       ),
-                    ),
-                    IconButton(
-                      icon: Icon(
-                        Get.isDarkMode ? Icons.dark_mode : Icons.light_mode,
-                        color: context.buttonColor,
+                      IconButton(
+                        icon: Icon(
+                          Get.isDarkMode ? Icons.dark_mode : Icons.light_mode,
+                          color: context.buttonColor,
+                        ),
+                        onPressed:
+                            () => Get.find<ThemeController>().toggleTheme(),
                       ),
-                      onPressed:
-                          () => Get.find<ThemeController>().toggleTheme(),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  "These details are from Azure",
-                  style: TextStyle(
-                    fontSize: 14,
-                    color: context.placeholderColor,
+                    ],
                   ),
-                ),
-                const SizedBox(height: 24),
-
-                // Profile Picture
-                Center(
-                  child: GestureDetector(
-                    onTap: () => _pickImageDialog(context),
-                    child: Stack(
-                      children: [
-                        Obx(() {
-                          final path = profileImageController.imagePath.value;
-                          return CircleAvatar(
-                            key: ValueKey(path),
-                            radius: 50,
-                            backgroundColor: context.fieldColor,
-                            backgroundImage:
-                                path != null ? FileImage(File(path)) : null,
-                            child:
-                                path == null
-                                    ? Icon(
-                                      Icons.person,
-                                      size: 50,
-                                      color: context.placeholderColor,
-                                    )
-                                    : null,
-                          );
-                        }),
-                        Positioned(
-                          bottom: 0,
-                          right: 0,
-                          child: Container(
-                            padding: const EdgeInsets.all(4),
-                            decoration: BoxDecoration(
-                              color: context.buttonColor,
-                              shape: BoxShape.circle,
-                              border: Border.all(color: Colors.white, width: 2),
-                            ),
-                            child: const Icon(
-                              Icons.edit,
-                              size: 16,
-                              color: Colors.white,
+                  const SizedBox(height: 4),
+                  Text(
+                    "These details are from Azure",
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: context.placeholderColor,
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+      
+                  // Profile Picture
+                  Center(
+                    child: GestureDetector(
+                      onTap: () => _pickImageDialog(context),
+                      child: Stack(
+                        children: [
+                          Obx(() {
+                            final path = profileImageController.imagePath.value;
+                            return CircleAvatar(
+                              key: ValueKey(path),
+                              radius: 50,
+                              backgroundColor: context.fieldColor,
+                              backgroundImage:
+                                  path != null ? FileImage(File(path)) : null,
+                              child:
+                                  path == null
+                                      ? Icon(
+                                        Icons.person,
+                                        size: 50,
+                                        color: context.placeholderColor,
+                                      )
+                                      : null,
+                            );
+                          }),
+                          Positioned(
+                            bottom: 0,
+                            right: 0,
+                            child: Container(
+                              padding: const EdgeInsets.all(4),
+                              decoration: BoxDecoration(
+                                color: context.buttonColor,
+                                shape: BoxShape.circle,
+                                border: Border.all(color: Colors.white, width: 2),
+                              ),
+                              child: const Icon(
+                                Icons.edit,
+                                size: 16,
+                                color: Colors.white,
+                              ),
                             ),
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
                   ),
-                ),
-
-                const SizedBox(height: 30),
-
-                // Name Field
-                Text(
-                  "Name",
-                  style: TextStyle(
-                    fontWeight: FontWeight.w600,
-                    fontSize: 14,
-                    color: context.mainFontColor,
+      
+                  const SizedBox(height: 30),
+      
+                  // Name Field
+                  Text(
+                    "Name",
+                    style: TextStyle(
+                      fontWeight: FontWeight.w600,
+                      fontSize: 14,
+                      color: context.mainFontColor,
+                    ),
                   ),
-                ),
-                const SizedBox(height: 8),
-                AnimatedSwitcher(
-                  duration: const Duration(milliseconds: 300),
-                  child:
-                      _isEditing
-                          ? Form(
-                            key: _formKey,
-                            child: Container(
-                              key: const ValueKey("editing"),
-                              padding: const EdgeInsets.all(12),
-                              decoration: _fieldDecoration(context),
-                              child: TextFormField(
-                                controller: _nameController,
-                                autofocus: true,
-                                validator:
-                                    (value) =>
-                                        value == null || value.trim().isEmpty
-                                            ? "Name cannot be empty"
-                                            : null,
-                                decoration: const InputDecoration.collapsed(
-                                  hintText: "Enter your name",
+                  const SizedBox(height: 8),
+                  AnimatedSwitcher(
+                    duration: const Duration(milliseconds: 300),
+                    child:
+                        _isEditing
+                            ? Form(
+                              key: _formKey,
+                              child: Container(
+                                key: const ValueKey("editing"),
+                                padding: const EdgeInsets.all(12),
+                                decoration: _fieldDecoration(context),
+                                child: TextFormField(
+                                  controller: _nameController,
+                                  autofocus: true,
+                                  validator:
+                                      (value) =>
+                                          value == null || value.trim().isEmpty
+                                              ? "Name cannot be empty"
+                                              : null,
+                                  decoration: const InputDecoration.collapsed(
+                                    hintText: "Enter your name",
+                                  ),
                                 ),
                               ),
-                            ),
-                          )
-                          : GestureDetector(
-                            key: const ValueKey("displaying"),
-                            onTap: () => setState(() => _isEditing = true),
-                            child: Container(
-                              width: double.infinity,
-                              padding: const EdgeInsets.all(12),
-                              decoration: _fieldDecoration(context),
-                              child: Obx(() {
-                                final name = authController.fullName.value;
-                                return Text(
-                                  name.isEmpty ? "Enter your name" : name,
-                                  style: TextStyle(
-                                    color:
-                                        name.isEmpty
-                                            ? context.placeholderColor
-                                            : context.mainFontColor,
-                                  ),
-                                );
-                              }),
-                            ),
-                          ),
-                ),
-
-                if (_isEditing)
-                  Padding(
-                    padding: const EdgeInsets.only(top: 12),
-                    child: Center(
-                      child: ElevatedButton(
-                        onPressed: () {
-                          if (_formKey.currentState!.validate()) {
-                            authController.updateName(
-                              _nameController.text.trim(),
-                            );
-                            setState(() => _isEditing = false);
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                content: Text("Name updated successfully"),
+                            )
+                            : GestureDetector(
+                              key: const ValueKey("displaying"),
+                              onTap: () => setState(() => _isEditing = true),
+                              child: Container(
+                                width: double.infinity,
+                                padding: const EdgeInsets.all(12),
+                                decoration: _fieldDecoration(context),
+                                child: Obx(() {
+                                  final name = authController.fullName.value;
+                                  return Text(
+                                    name.isEmpty ? "Enter your name" : name,
+                                    style: TextStyle(
+                                      color:
+                                          name.isEmpty
+                                              ? context.placeholderColor
+                                              : context.mainFontColor,
+                                    ),
+                                  );
+                                }),
                               ),
-                            );
-                          }
-                        },
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: context.buttonColor,
-                          foregroundColor: context.buttonTextColor,
+                            ),
+                  ),
+      
+                  if (_isEditing)
+                    Padding(
+                      padding: const EdgeInsets.only(top: 12),
+                      child: Center(
+                        child: ElevatedButton(
+                          onPressed: () {
+                            if (_formKey.currentState!.validate()) {
+                              final newName = _nameController.text.trim();
+                              authController.updateName(newName);
+                              authController.fullName.value = newName;
+                              setState(() => _isEditing = false);
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                  content: Text("Name updated successfully"),
+                                ),
+                              );
+                            }
+                          },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: context.buttonColor,
+                            foregroundColor: context.buttonTextColor,
+                          ),
+                          child: const Text("Update"),
                         ),
-                        child: const Text("Update"),
+                      ),
+                    ),
+      
+                  const SizedBox(height: 24),
+      
+                  // Email
+                  _labeledStaticField(
+                    context,
+                    "Email",
+                    authController.email.value,
+                  ),
+      
+                  const SizedBox(height: 32),
+      
+                  Center(
+                    child: ElevatedButton.icon(
+                      onPressed: () => _showLogoutDialog(context),
+                      icon: const Icon(Icons.logout),
+                      label: const Text("Logout"),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: context.buttonColor,
+                        foregroundColor: context.buttonTextColor,
                       ),
                     ),
                   ),
-
-                const SizedBox(height: 24),
-                _labeledStaticField(
-                  context,
-                  "Email",
-                  authController.email.value,
-                ),
-                const SizedBox(height: 12),
-                const SizedBox(height: 32),
-
-                Center(
-                  child: ElevatedButton.icon(
-                    onPressed: () => _showLogoutDialog(context),
-                    icon: const Icon(Icons.logout),
-                    label: const Text("Logout"),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: context.buttonColor,
-                      foregroundColor: context.buttonTextColor,
-                    ),
-                  ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
         ),

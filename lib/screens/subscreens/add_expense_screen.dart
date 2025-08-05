@@ -3,7 +3,9 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:wealth_app/constants/text_styles.dart';
 import 'package:wealth_app/controllers/auth_controller.dart';
-import 'package:wealth_app/widgets/calendar_input_field.dart';
+import 'package:wealth_app/widgets/dot_loader.dart';
+import 'package:wealth_app/widgets/network_widget.dart';
+// import 'package:wealth_app/widgets/calendar_input_field.dart';
 import 'package:wealth_app/widgets/universal_scaffold.dart';
 import 'package:wealth_app/extension/theme_extension.dart';
 import '../../models/expense_model.dart';
@@ -22,9 +24,11 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
   final TextEditingController _yearController = TextEditingController(
     text: DateTime.now().year.toString(),
   );
-  final TextEditingController _dateController = TextEditingController(
-    text: DateTime.now().toString().substring(0, 10),
+  final TextEditingController _startDateController = TextEditingController(
+    text: DateTime.now().toIso8601String().substring(0, 10),
   );
+  final TextEditingController _incrementPercentageController =
+      TextEditingController(text: '0');
 
   final List<String> _expenseTypes = [
     'Housing',
@@ -40,27 +44,44 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
     'Other',
   ];
   final List<String> _periods = ['Monthly', 'Yearly'];
-  final List<String> _natureTypes = ['Luxury', 'Essential'];
+  final List<String> _natureTypes = ['Fixed', 'Variable'];
 
   String? _selectedType = 'Housing';
   String? _selectedSubCategory = 'Rent';
   String? _selectedPeriod = 'Monthly';
-  String? _selectedNature = 'Essential';
+  String? _selectedNature = 'Fixed';
 
   final TextEditingController _customTypeController = TextEditingController();
   final TextEditingController _customSubCategoryController =
       TextEditingController();
+  bool _isRecurring = false;
 
-  final userId = Get.find<AuthController>().userId.value;
+  final userId = Get.find<AuthController>().dbUserId.value;
   final ExpenseController expenseController = Get.find<ExpenseController>();
 
   Future<void> _submitExpense() async {
     FocusScope.of(context).unfocus();
 
     if (_formKey.currentState!.validate()) {
+      final parsedStartDate = DateTime.tryParse(
+        _startDateController.text.trim(),
+      );
+
+      if (parsedStartDate == null) {
+        Get.snackbar(
+          "Error",
+          "Invalid start date format",
+          snackPosition: SnackPosition.BOTTOM,
+          backgroundColor: context.failedColor,
+          colorText: Colors.white,
+        );
+        return;
+      }
+
       final expense = ExpenseModel(
-        year: _yearController.text.trim(),
-        type:
+        userId: userId,
+        year: int.tryParse(_yearController.text.trim()) ?? DateTime.now().year,
+        expenseType:
             _selectedType == 'Other'
                 ? _customTypeController.text.trim()
                 : _selectedType!,
@@ -70,9 +91,15 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
                 : _selectedSubCategory!,
         period: _selectedPeriod!,
         natureType: _selectedNature!,
-        amount: _amountController.text.trim(),
-        date: _dateController.text.trim(),
+        amount: double.tryParse(_amountController.text.trim()) ?? 0.0,
+        expectedAnnualIncrementPercentage:
+            double.tryParse(_incrementPercentageController.text.trim()) ?? 0.0,
+        startDate:
+            parsedStartDate != null ? parsedStartDate.toIso8601String() : '',
+        isRecurring: _isRecurring,
+        Id: '',
       );
+      Get.dialog(const Center(child: DotLoader()), barrierDismissible: false);
 
       final result = await expenseController.submitExpenseAndRefresh(
         userId,
@@ -80,9 +107,15 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
       );
 
       if (result['success']) {
+        Get.back();
+
         _amountController.clear();
         _yearController.text = DateTime.now().year.toString();
-        _dateController.text = DateTime.now().toString().substring(0, 10);
+        _startDateController.text = DateTime.now().toIso8601String().substring(
+          0,
+          10,
+        );
+        _incrementPercentageController.text = '0';
 
         setState(() {
           _selectedType = _expenseTypes[0];
@@ -91,6 +124,7 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
           _selectedNature = _natureTypes[0];
           _customTypeController.clear();
           _customSubCategoryController.clear();
+          _isRecurring = false;
         });
 
         Get.snackbar(
@@ -135,52 +169,50 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
           ),
         ),
       ),
-      child: UniversalScaffold(
-        body: SafeArea(
-          child: GestureDetector(
-            onTap: () => FocusScope.of(context).unfocus(),
-            child: Column(
-              children: [
-                Expanded(
-                  child: SingleChildScrollView(
-                    padding: const EdgeInsets.all(16),
-                    child: Form(
-                      key: _formKey,
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [..._formFields(context)],
-                      ),
-                    ),
-                  ),
-                ),
-                Padding(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 16,
-                    vertical: 12,
-                  ),
-                  child: SizedBox(
-                    width: double.infinity,
-                    height: mediaHeight * 0.055,
-                    child: ElevatedButton(
-                      onPressed: _submitExpense,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: context.buttonColor,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                      ),
-                      child: const Text(
-                        "Submit",
-                        style: TextStyle(
-                          color: Colors.white,
-                          // fontWeight: AppTextStyle.mediumWeight,
-                          // fontSize: 20,
+      child: NetworkAwareWidget(
+        child: UniversalScaffold(
+          body: SafeArea(
+            child: GestureDetector(
+              onTap: () => FocusScope.of(context).unfocus(),
+              child: Column(
+                children: [
+                  Expanded(
+                    child: SingleChildScrollView(
+                      padding: const EdgeInsets.all(16),
+                      child: Form(
+                        key: _formKey,
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [..._formFields(context)],
                         ),
                       ),
                     ),
                   ),
-                ),
-              ],
+                  Padding(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 12,
+                    ),
+                    child: SizedBox(
+                      width: double.infinity,
+                      height: mediaHeight * 0.055,
+                      child: ElevatedButton(
+                        onPressed: _submitExpense,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: context.buttonColor,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                        ),
+                        child: const Text(
+                          "Submit",
+                          style: TextStyle(color: Colors.white),
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
         ),
@@ -218,53 +250,90 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
         ],
       ),
       SizedBox(height: mediaHeight * 0.02),
-
       _label("Year"),
       _textField(_yearController, "Enter year", isNumber: true),
       SizedBox(height: mediaHeight * 0.015),
-
       _label("Expense Type"),
-      _dropdownField(_expenseTypes, _selectedType, (val) {
-        setState(() => _selectedType = val);
-      }, context),
+      _dropdownField(
+        _expenseTypes,
+        _selectedType,
+        (val) => setState(() => _selectedType = val),
+        context,
+      ),
       if (_selectedType == 'Other') ...[
         SizedBox(height: mediaHeight * 0.01),
         _textField(_customTypeController, "Enter custom expense type"),
       ],
-
       SizedBox(height: mediaHeight * 0.015),
       _label("Sub-Category"),
-      _dropdownField(_subCategories, _selectedSubCategory, (val) {
-        setState(() => _selectedSubCategory = val);
-      }, context),
+      _dropdownField(
+        _subCategories,
+        _selectedSubCategory,
+        (val) => setState(() => _selectedSubCategory = val),
+        context,
+      ),
       if (_selectedSubCategory == 'Other') ...[
         SizedBox(height: mediaHeight * 0.01),
         _textField(_customSubCategoryController, "Enter custom sub-category"),
       ],
-
       SizedBox(height: mediaHeight * 0.015),
       _label("Period"),
-      _dropdownField(_periods, _selectedPeriod, (val) {
-        setState(() => _selectedPeriod = val);
-      }, context),
-
+      _dropdownField(
+        _periods,
+        _selectedPeriod,
+        (val) => setState(() => _selectedPeriod = val),
+        context,
+      ),
       SizedBox(height: mediaHeight * 0.015),
       _label("Nature Type"),
-      _dropdownField(_natureTypes, _selectedNature, (val) {
-        setState(() => _selectedNature = val);
-      }, context),
-
+      _dropdownField(
+        _natureTypes,
+        _selectedNature,
+        (val) => setState(() => _selectedNature = val),
+        context,
+      ),
       SizedBox(height: mediaHeight * 0.015),
       _label("Amount"),
       _textField(_amountController, "Enter amount", isNumber: true),
       SizedBox(height: mediaHeight * 0.015),
-
-      CalendarInputField(
-        label: "Date",
-        controller: _dateController,
-        onChanged: (val) {},
+      _label("Expected Annual Increment %"),
+      _textField(
+        _incrementPercentageController,
+        "Enter increment %",
+        isNumber: true,
       ),
-
+      SizedBox(height: mediaHeight * 0.015),
+      _label("Start Date"),
+      TextFormField(
+        controller: _startDateController,
+        validator: (val) {
+          if (val == null || val.isEmpty) return "Required";
+          if (DateTime.tryParse(val) == null) return "Invalid date format";
+          return null;
+        },
+        readOnly: true,
+        onTap: () async {
+          final picked = await showDatePicker(
+            context: context,
+            initialDate: DateTime.now(),
+            firstDate: DateTime(2000),
+            lastDate: DateTime(2100),
+          );
+          if (picked != null) {
+            _startDateController.text = picked.toIso8601String().substring(
+              0,
+              10,
+            );
+          }
+        },
+        decoration: const InputDecoration(hintText: "Select start date"),
+      ),
+      SizedBox(height: mediaHeight * 0.015),
+      CheckboxListTile(
+        title: const Text("Is Recurring"),
+        value: _isRecurring,
+        onChanged: (val) => setState(() => _isRecurring = val ?? false),
+      ),
       SizedBox(height: mediaHeight * 0.03),
     ];
   }

@@ -9,6 +9,7 @@ import 'package:wealth_app/controllers/dashboard_controller.dart';
 import 'package:wealth_app/controllers/expense_controller.dart';
 import 'package:wealth_app/controllers/filter_controller.dart';
 import 'package:wealth_app/controllers/income_controller.dart';
+import 'package:wealth_app/controllers/network_controller.dart';
 import 'package:wealth_app/controllers/profile_image_controller.dart';
 import 'package:wealth_app/controllers/theme_controller.dart';
 import 'package:wealth_app/routes/app_routes.dart';
@@ -19,12 +20,13 @@ void main() async {
 
   Get.put(ThemeController(), permanent: true);
   Get.put(AuthController(), permanent: true);
-  Get.put(DashboardController());
-  Get.put(ProfileImageController());
+  Get.put(FilterController(), permanent: true);
+  Get.put(NetworkManager(), permanent: true);
   Get.put(IncomeController());
   Get.put(ExpenseController());
   Get.put(AssetController());
-  Get.put(FilterController());
+  Get.put(DashboardController());
+  Get.put(ProfileImageController());
 
   runApp(const MyApp());
 }
@@ -75,6 +77,8 @@ class MyApp extends StatelessWidget {
       onWillPop: () => _onWillPop(context),
       child: Obx(
         () => GetMaterialApp(
+          // defaultTransition: Transition.fade,
+          // transitionDuration: const Duration(milliseconds: 100),
           debugShowCheckedModeBanner: false,
           theme: AppTheme.lightTheme,
           darkTheme: AppTheme.darkTheme,

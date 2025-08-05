@@ -7,6 +7,7 @@ import 'package:wealth_app/controllers/auth_controller.dart';
 import 'package:wealth_app/controllers/income_controller.dart';
 import 'package:wealth_app/models/income_model.dart';
 import 'package:wealth_app/widgets/income_graph.dart';
+import 'package:wealth_app/widgets/network_widget.dart';
 import 'package:wealth_app/widgets/universal_scaffold.dart';
 import 'package:wealth_app/extension/theme_extension.dart';
 
@@ -25,6 +26,7 @@ class _AddIncomeScreenState extends State<AddIncomeScreen> {
 
   String _selectedType = 'Monthly';
   String? _selectedIncomeCategory;
+  String? dbUserId; 
 
   final List<String> _types = ['Monthly', 'Yearly', 'Annual', 'OneTime'];
   final List<String> _incomeCategories = [
@@ -35,7 +37,11 @@ class _AddIncomeScreenState extends State<AddIncomeScreen> {
     'Other',
   ];
 
-  final userId = Get.find<AuthController>().userId.value;
+  @override
+  void initState() {
+    super.initState();
+    dbUserId = Get.find<AuthController>().dbUserId.value;
+  }
 
   Future<void> _submitIncome() async {
     FocusScope.of(context).unfocus();
@@ -65,19 +71,40 @@ class _AddIncomeScreenState extends State<AddIncomeScreen> {
       return;
     }
 
+    if (dbUserId == null) {
+      Get.snackbar(
+        'Error',
+        'User not authenticated',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: context.failedColor,
+        colorText: Colors.white,
+      );
+      return;
+    }
+
+    // Show loading animation
+    Get.dialog(
+      const Center(child: CircularProgressIndicator()),
+      barrierDismissible: false,
+    );
+
     try {
       final incomeModel = IncomeModel(
-        title: _sourceController.text.trim(),
-        year: DateTime.now().year.toString(),
+        userId: dbUserId!,
+        incomeType: _sourceController.text.trim(),
         amount: amountValue,
-        source: _sourceController.text.trim(),
-        type: _selectedType,
-        date: DateTime.now().toIso8601String(),
-        category: _selectedIncomeCategory!,
-        userId: userId,
+        period: _selectedType,
+        startDate: DateTime.now().toIso8601String(),
+        expectedAnnualIncrementPercentage:
+            2.0,
+        endDate: DateTime.now().add(const Duration(days: 30)).toIso8601String(),
+        year: DateTime.now().year,
+        id:'',
       );
 
       final result = await incomeController.addIncome(incomeModel);
+
+      if (Get.isDialogOpen ?? false) Get.back();
 
       if (result['success'] == true) {
         _formKey.currentState?.reset();
@@ -87,8 +114,8 @@ class _AddIncomeScreenState extends State<AddIncomeScreen> {
         _selectedIncomeCategory = null;
 
         await Future.wait([
-          incomeController.fetchIncomes(userId),
-          incomeController.fetchTotalIncome(userId),
+          incomeController.fetchIncomes(dbUserId!),
+          // incomeController.fetchTotalIncome(dbUserId!),
         ]);
 
         Get.snackbar(
@@ -111,6 +138,8 @@ class _AddIncomeScreenState extends State<AddIncomeScreen> {
       }
     } catch (e) {
       debugPrint('submitIncome error: $e');
+      if (Get.isDialogOpen ?? false) Get.back();
+
       Get.snackbar(
         'Error',
         'Something went wrong',
@@ -126,171 +155,173 @@ class _AddIncomeScreenState extends State<AddIncomeScreen> {
     final mediaHeight = MediaQuery.of(context).size.height;
     final mediaWidth = MediaQuery.of(context).size.width;
 
-    return UniversalScaffold(
-      body: GestureDetector(
-        onTap: () => FocusScope.of(context).unfocus(),
-        child: SafeArea(
-          child: SingleChildScrollView(
-            padding: EdgeInsets.symmetric(
-              vertical: mediaHeight * 0.02,
-              horizontal: mediaWidth * 0.05,
-            ),
-            child: Form(
-              key: _formKey,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      const Text(
-                        "Add Income",
-                        style: TextStyle(
-                          fontSize: 22,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      ElevatedButton(
-                        onPressed: () => Navigator.pop(context),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: context.buttonColor,
-                          foregroundColor: Colors.white,
-                          padding: EdgeInsets.symmetric(
-                            horizontal: mediaWidth * 0.07,
-                            vertical: mediaHeight * 0.012,
-                          ),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(8),
+    return NetworkAwareWidget(
+      child: UniversalScaffold(
+        body: GestureDetector(
+          onTap: () => FocusScope.of(context).unfocus(),
+          child: SafeArea(
+            child: SingleChildScrollView(
+              padding: EdgeInsets.symmetric(
+                vertical: mediaHeight * 0.02,
+                horizontal: mediaWidth * 0.05,
+              ),
+              child: Form(
+                key: _formKey,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        const Text(
+                          "Add Income",
+                          style: TextStyle(
+                            fontSize: 22,
+                            fontWeight: FontWeight.bold,
                           ),
                         ),
-                        child: const Text("Back"),
-                      ),
-                    ],
-                  ),
-                  SizedBox(height: mediaHeight * 0.025),
-                  _label("Source"),
-                  const SizedBox(height: 6),
-                  DropdownButtonFormField2<String>(
-                    value: _selectedIncomeCategory,
-                    isExpanded: true,
-                    decoration: _inputDecoration(
-                      context,
-                      "Select income source",
+                        ElevatedButton(
+                          onPressed: () => Navigator.pop(context),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: context.buttonColor,
+                            foregroundColor: Colors.white,
+                            padding: EdgeInsets.symmetric(
+                              horizontal: mediaWidth * 0.07,
+                              vertical: mediaHeight * 0.012,
+                            ),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                          ),
+                          child: const Text("Back"),
+                        ),
+                      ],
                     ),
-                    items:
-                        _incomeCategories
-                            .map(
-                              (category) => DropdownMenuItem(
-                                value: category,
-                                child: Text(category),
-                              ),
-                            )
-                            .toList(),
-                    onChanged: (val) {
-                      setState(() {
-                        _selectedIncomeCategory = val!;
-                        if (val != 'Other') {
-                          _sourceController.text = val;
-                        } else {
-                          _sourceController.clear();
-                        }
-                      });
-                    },
-                    validator:
-                        (val) => val == null || val.isEmpty ? "Required" : null,
-                  ),
-                  if (_selectedIncomeCategory == 'Other') ...[
-                    const SizedBox(height: 12),
-                    _textField(_sourceController, "Enter custom source"),
-                  ],
-                  const SizedBox(height: 16),
-                  _label("Amount"),
-                  const SizedBox(height: 6),
-                  _textField(_amountController, "Enter amount", isNumber: true),
-                  const SizedBox(height: 16),
-                  _label("Period"),
-                  const SizedBox(height: 6),
-                  SizedBox(
-                    height: 50,
-                    child: Row(
-                      children:
-                          _types.map((type) {
-                            final isSelected = _selectedType == type;
-                            return Expanded(
-                              child: Padding(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 4.0,
+                    SizedBox(height: mediaHeight * 0.025),
+                    _label("Source"),
+                    const SizedBox(height: 6),
+                    DropdownButtonFormField2<String>(
+                      value: _selectedIncomeCategory,
+                      isExpanded: true,
+                      decoration: _inputDecoration(
+                        context,
+                        "Select income source",
+                      ),
+                      items:
+                          _incomeCategories
+                              .map(
+                                (category) => DropdownMenuItem(
+                                  value: category,
+                                  child: Text(category),
                                 ),
-                                child: FittedBox(
-                                  fit: BoxFit.contain,
-                                  child: ChoiceChip(
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(30),
-                                    ),
-                                    side: BorderSide(
-                                      color: context.borderColor,
-                                    ),
-                                    label: Text(
-                                      type,
-                                      style: TextStyle(
-                                        color:
-                                            Theme.of(context).brightness ==
-                                                    Brightness.dark
-                                                ? Colors.white
-                                                : (isSelected
-                                                    ? Colors.white
-                                                    : Colors.black),
+                              )
+                              .toList(),
+                      onChanged: (val) {
+                        setState(() {
+                          _selectedIncomeCategory = val!;
+                          if (val != 'Other') {
+                            _sourceController.text = val;
+                          } else {
+                            _sourceController.clear();
+                          }
+                        });
+                      },
+                      validator:
+                          (val) => val == null || val.isEmpty ? "Required" : null,
+                    ),
+                    if (_selectedIncomeCategory == 'Other') ...[
+                      const SizedBox(height: 12),
+                      _textField(_sourceController, "Enter custom source"),
+                    ],
+                    const SizedBox(height: 16),
+                    _label("Amount"),
+                    const SizedBox(height: 6),
+                    _textField(_amountController, "Enter amount", isNumber: true),
+                    const SizedBox(height: 16),
+                    _label("Period"),
+                    const SizedBox(height: 6),
+                    SizedBox(
+                      height: 50,
+                      child: Row(
+                        children:
+                            _types.map((type) {
+                              final isSelected = _selectedType == type;
+                              return Expanded(
+                                child: Padding(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 4.0,
+                                  ),
+                                  child: FittedBox(
+                                    fit: BoxFit.contain,
+                                    child: ChoiceChip(
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(30),
                                       ),
+                                      side: BorderSide(
+                                        color: context.borderColor,
+                                      ),
+                                      label: Text(
+                                        type,
+                                        style: TextStyle(
+                                          color:
+                                              Theme.of(context).brightness ==
+                                                      Brightness.dark
+                                                  ? Colors.white
+                                                  : (isSelected
+                                                      ? Colors.white
+                                                      : Colors.black),
+                                        ),
+                                      ),
+                                      selected: isSelected,
+                                      selectedColor: context.buttonColor,
+                                      backgroundColor: context.fieldColor,
+                                      onSelected:
+                                          (_) => setState(() {
+                                            _selectedType = type;
+                                          }),
                                     ),
-                                    selected: isSelected,
-                                    selectedColor: context.buttonColor,
-                                    backgroundColor: context.fieldColor,
-                                    onSelected:
-                                        (_) => setState(() {
-                                          _selectedType = type;
-                                        }),
                                   ),
                                 ),
-                              ),
-                            );
-                          }).toList(),
+                              );
+                            }).toList(),
+                      ),
                     ),
-                  ),
-                  const SizedBox(height: 30),
-                  SizedBox(
-                    width: double.infinity,
-                    height: 48,
-                    child: ElevatedButton(
-                      onPressed: _submitIncome,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: context.buttonColor,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(10),
+                    const SizedBox(height: 30),
+                    SizedBox(
+                      width: double.infinity,
+                      height: 48,
+                      child: ElevatedButton(
+                        onPressed: _submitIncome,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: context.buttonColor,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                        ),
+                        child: const Text(
+                          "Submit",
+                          style: TextStyle(color: Colors.white),
                         ),
                       ),
-                      child: const Text(
-                        "Submit",
-                        style: TextStyle(color: Colors.white),
+                    ),
+                    const SizedBox(height: 30),
+                    Align(
+                      alignment: Alignment.center,
+                      child: Text(
+                        "Income Graph",
+                        style: TextStyle(
+                          fontSize: FontSizes.heading1,
+                          fontWeight: AppTextStyle.bold,
+                        ),
                       ),
                     ),
-                  ),
-                  const SizedBox(height: 30),
-                  Align(
-                    alignment: Alignment.center,
-                    child: Text(
-                      "Income Graph",
-                      style: TextStyle(
-                        fontSize: FontSizes.heading1,
-                        fontWeight: AppTextStyle.bold,
-                      ),
+                    const SizedBox(height: 20),
+                    SizedBox(
+                      height: mediaHeight * 0.23,
+                      child: const IncomeGraph(),
                     ),
-                  ),
-                  const SizedBox(height: 20),
-                  SizedBox(
-                    height: mediaHeight * 0.23,
-                    child: const IncomeGraph(),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
           ),

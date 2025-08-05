@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:wealth_app/constants/text_styles.dart';
-import 'package:wealth_app/controllers/auth_controller.dart';
 import 'package:wealth_app/controllers/income_controller.dart';
 import 'package:wealth_app/controllers/filter_controller.dart';
 import 'package:wealth_app/extension/theme_extension.dart';
 import 'package:wealth_app/screens/subscreens/add_income_screen.dart';
+import 'package:wealth_app/widgets/network_widget.dart';
 import 'package:wealth_app/widgets/universal_scaffold.dart';
 
 class IncomeOverviewScreen extends StatefulWidget {
@@ -19,20 +20,51 @@ class IncomeOverviewScreen extends StatefulWidget {
 class _IncomeOverviewScreenState extends State<IncomeOverviewScreen> {
   final incomeController = Get.find<IncomeController>();
   final filterController = Get.put(FilterController());
-  final userId = Get.find<AuthController>().userId.value;
+  String? dbUserId;
+
+  String _formatDate(String rawDate) {
+    try {
+      final date = DateTime.parse(rawDate);
+      return "${date.day}-${date.month}-${date.year}";
+    } catch (e) {
+      return rawDate;
+    }
+  }
 
   int selectedIndex = -1;
+  bool _showAllIncomes = false;
 
   @override
   void initState() {
     super.initState();
-    _fetchData();
+    _loadDbUserIdAndFetchData();
+  }
+
+  Future<void> _loadDbUserIdAndFetchData() async {
+    final prefs = await SharedPreferences.getInstance();
+    dbUserId = prefs.getString('DBid');
+    if (dbUserId != null) {
+      await _fetchData();
+    } else {
+      debugPrint("❌ DBid not found in SharedPreferences");
+    }
   }
 
   Future<void> _fetchData() async {
-    await incomeController.fetchIncomes(userId);
-    await incomeController.fetchTotalIncome(userId);
-    filterController.setIncomeData(incomeController.incomeList);
+    if (dbUserId == null) return;
+    final result = await incomeController.fetchIncomes(dbUserId!);
+
+    if (result['success'] == false) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(result['message'] ?? "Failed to fetch income data."),
+          backgroundColor: Colors.red,
+          duration: const Duration(seconds: 3),
+        ),
+      );
+    } else {
+      filterController.setIncomeData(incomeController.incomeList);
+    }
   }
 
   @override
@@ -40,275 +72,32 @@ class _IncomeOverviewScreenState extends State<IncomeOverviewScreen> {
     final mediaWidth = MediaQuery.of(context).size.width;
     final mediaHeight = MediaQuery.of(context).size.height;
 
-    return UniversalScaffold(
-      body: SafeArea(
-        child: RefreshIndicator(
-          onRefresh: _fetchData,
-          backgroundColor: context.fieldColor,
-          color: context.mainFontColor,
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-            physics: const BouncingScrollPhysics(),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                /// Header Section
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          "Income Overview",
-                          style: TextStyle(
-                            fontSize: 22,
-                            fontWeight: FontWeight.bold,
-                            color: context.mainFontColor,
-                          ),
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          "Your complete income summary",
-                          style: TextStyle(
-                            fontSize: 12,
-                            color: context.placeholderColor,
-                          ),
-                        ),
-                        const SizedBox(height: 40),
-                        Text(
-                          "Total Income",
-                          style: TextStyle(
-                            fontWeight: AppTextStyle.semiBold,
-                            fontSize: 18,
-                            color: context.mainFontColor,
-                          ),
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          "Your Current Income",
-                          style: TextStyle(
-                            fontSize: 12,
-                            color: context.placeholderColor,
-                          ),
-                        ),
-                      ],
+    return NetworkAwareWidget(
+      child: UniversalScaffold(
+        body: SafeArea(
+          child: RefreshIndicator(
+            onRefresh: _fetchData,
+            backgroundColor: context.fieldColor,
+            color: context.mainFontColor,
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              physics: const BouncingScrollPhysics(),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _buildHeaderSection(),
+                  const SizedBox(height: 16),
+                  Obx(
+                    () => _buildCardTile(
+                      "₹${incomeController.totalIncome.value}",
                     ),
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.end,
-                      children: [
-                        OutlinedButton.icon(
-                          onPressed: _fetchData,
-                          icon: Icon(Icons.refresh, color: context.buttonColor),
-                          label: Text(
-                            "Refresh",
-                            style: TextStyle(color: context.buttonColor),
-                          ),
-                          style: OutlinedButton.styleFrom(
-                            side: BorderSide(color: context.buttonColor),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 12,
-                              vertical: 10,
-                            ),
-                          ),
-                        ),
-                        const SizedBox(height: 8),
-                        ElevatedButton(
-                          onPressed: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (_) => const AddIncomeScreen(),
-                              ),
-                            );
-                          },
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: context.buttonColor,
-                            foregroundColor: context.buttonTextColor,
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 12,
-                              vertical: 11,
-                            ),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                          ),
-                          child: const Text("Add Income"),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-
-                const SizedBox(height: 16),
-                Obx(() => _cardTile("₹${incomeController.totalIncome.value}")),
-                const SizedBox(height: 16),
-
-                /// Income List Title
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      "Income List",
-                      style: TextStyle(
-                        fontWeight: AppTextStyle.semiBold,
-                        fontSize: 18,
-                        color: context.mainFontColor,
-                      ),
-                    ),
-                    InkWell(
-                      onTap: () => _showFilterBottomSheet(context),
-                      child: Row(
-                        children: [
-                          Text(
-                            "Income Filter",
-                            style: TextStyle(color: context.buttonColor),
-                          ),
-                          const SizedBox(width: 8),
-                          SvgPicture.asset(
-                            'assets/icons/filter.svg',
-                            height: 14,
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-
-                const SizedBox(height: 12),
-
-                /// Income List
-                Container(
-                  width: mediaWidth * 0.93,
-                  height: mediaHeight * 0.5,
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    border: Border.all(
-                      color: context.borderColor.withOpacity(0.1),
-                    ),
-                    borderRadius: BorderRadius.circular(12),
                   ),
-                  child: Obx(() {
-                    final incomeList = filterController.filteredIncomeList;
-
-                    if (incomeList.isEmpty) {
-                      return Center(
-                        child: Text(
-                          "No Income available",
-                          style: TextStyle(color: context.mainFontColor),
-                        ),
-                      );
-                    }
-
-                    return Column(
-                      children: [
-                        Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 4),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Text(
-                                "Income's",
-                                style: TextStyle(color: context.mainFontColor),
-                              ),
-                              Text(
-                                "Amount",
-                                style: TextStyle(color: context.mainFontColor),
-                              ),
-                            ],
-                          ),
-                        ),
-                        const SizedBox(height: 8),
-                        Expanded(
-                          child: ListView.builder(
-                            itemCount: incomeList.length,
-                            itemBuilder: (context, index) {
-                              final income = incomeList[index];
-                              final isSelected = index == selectedIndex;
-
-                              return GestureDetector(
-                                onTap:
-                                    () => setState(() => selectedIndex = index),
-                                child: Container(
-                                  margin: const EdgeInsets.only(bottom: 8),
-                                  decoration: BoxDecoration(
-                                    color:
-                                        isSelected
-                                            ? context.buttonColor
-                                            : context.fieldColor,
-                                    borderRadius: BorderRadius.circular(10),
-                                    border: Border.all(
-                                      color: Colors.grey.shade300,
-                                    ),
-                                  ),
-                                  child: ListTile(
-                                    leading: SvgPicture.asset(
-                                      'assets/icons/rupee.svg',
-                                      height: 20,
-                                      colorFilter: ColorFilter.mode(
-                                        isSelected
-                                            ? Colors.white
-                                            : context.buttonColor,
-                                        BlendMode.srcIn,
-                                      ),
-                                    ),
-                                    title: Text(
-                                      "${income.source} (${income.type})",
-                                      style: TextStyle(
-                                        fontWeight:
-                                            isSelected
-                                                ? FontWeight.bold
-                                                : FontWeight.normal,
-                                        color:
-                                            isSelected
-                                                ? Colors.white
-                                                : context.mainFontColor,
-                                      ),
-                                    ),
-                                    subtitle: Text(
-                                      income.date,
-                                      style: TextStyle(
-                                        color:
-                                            isSelected
-                                                ? Colors.white
-                                                : context.mainFontColor,
-                                      ),
-                                    ),
-                                    trailing: Text(
-                                      "₹${income.amount}",
-                                      style: TextStyle(
-                                        fontWeight: FontWeight.bold,
-                                        fontSize: 15,
-                                        color:
-                                            isSelected
-                                                ? Colors.white
-                                                : context.mainFontColor,
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                              );
-                            },
-                          ),
-                        ),
-                        Center(
-                          child: TextButton(
-                            onPressed: () {},
-                            child: Text(
-                              "View More",
-                              style: TextStyle(color: context.buttonColor),
-                            ),
-                          ),
-                        ),
-                      ],
-                    );
-                  }),
-                ),
-              ],
+                  const SizedBox(height: 16),
+                  _buildListHeader(),
+                  const SizedBox(height: 12),
+                  _buildIncomeSection(mediaWidth, mediaHeight),
+                ],
+              ),
             ),
           ),
         ),
@@ -316,7 +105,91 @@ class _IncomeOverviewScreenState extends State<IncomeOverviewScreen> {
     );
   }
 
-  Widget _cardTile(String amount) {
+  Widget _buildHeaderSection() {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              "Income Overview",
+              style: TextStyle(
+                fontSize: 22,
+                fontWeight: FontWeight.bold,
+                color: context.mainFontColor,
+              ),
+            ),
+            const SizedBox(height: 4),
+            Text(
+              "Your complete income summary",
+              style: TextStyle(fontSize: 12, color: context.placeholderColor),
+            ),
+            const SizedBox(height: 40),
+            Text(
+              "Total Income",
+              style: TextStyle(
+                fontWeight: AppTextStyle.semiBold,
+                fontSize: 18,
+                color: context.mainFontColor,
+              ),
+            ),
+            const SizedBox(height: 4),
+            Text(
+              "Your Current Income",
+              style: TextStyle(fontSize: 12, color: context.placeholderColor),
+            ),
+          ],
+        ),
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.end,
+          children: [
+            OutlinedButton.icon(
+              onPressed: _fetchData,
+              icon: Icon(Icons.refresh, color: context.buttonColor),
+              label: Text(
+                "Refresh",
+                style: TextStyle(color: context.buttonColor),
+              ),
+              style: OutlinedButton.styleFrom(
+                side: BorderSide(color: context.buttonColor),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 10,
+                ),
+              ),
+            ),
+            const SizedBox(height: 8),
+            ElevatedButton(
+              onPressed:
+                  () => Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => const AddIncomeScreen()),
+                  ),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: context.buttonColor,
+                foregroundColor: context.buttonTextColor,
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 11,
+                ),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+              ),
+              child: const Text("Add Income"),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+
+  Widget _buildCardTile(String amount) {
     return Container(
       width: double.infinity,
       height: MediaQuery.of(context).size.height * 0.07,
@@ -342,6 +215,366 @@ class _IncomeOverviewScreenState extends State<IncomeOverviewScreen> {
             color: context.mainFontColor,
           ),
         ),
+      ),
+    );
+  }
+
+  Widget _buildListHeader() {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Text(
+          "Income List",
+          style: TextStyle(
+            fontWeight: AppTextStyle.semiBold,
+            fontSize: 18,
+            color: context.mainFontColor,
+          ),
+        ),
+        InkWell(
+          onTap: () => _showFilterBottomSheet(context),
+          child: Row(
+            children: [
+              Text(
+                "Income Filter",
+                style: TextStyle(color: context.buttonColor),
+              ),
+              const SizedBox(width: 8),
+              SvgPicture.asset('assets/icons/filter.svg', height: 14),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildIncomeSection(double mediaWidth, double mediaHeight) {
+    return Obx(() {
+      final incomeList = filterController.filteredIncomeList;
+      final visibleIncome =
+          _showAllIncomes ? incomeList : incomeList.take(4).toList();
+
+      return Container(
+        width: mediaWidth * 0.93,
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: context.cardColor,
+          border: Border.all(color: context.borderColor.withOpacity(0.1)),
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Column(
+          children: [
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 4),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    "Income's",
+                    style: TextStyle(color: context.mainFontColor),
+                  ),
+                  Text(
+                    "Amount",
+                    style: TextStyle(color: context.mainFontColor),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 8),
+            AnimatedSize(
+              duration: const Duration(milliseconds: 300),
+              curve: Curves.easeInOut,
+              child: Column(
+                children:
+                    visibleIncome.isEmpty
+                        ? [
+                          Center(
+                            child: Text(
+                              "No income available",
+                              style: TextStyle(color: context.mainFontColor),
+                            ),
+                          ),
+                        ]
+                        : visibleIncome.asMap().entries.map((entry) {
+                          final index = entry.key;
+                          final income = entry.value;
+                          final isSelected = index == selectedIndex;
+
+                          return GestureDetector(
+                            onTap:
+                                () => setState(() {
+                                  selectedIndex = isSelected ? -1 : index;
+                                }),
+                            child: AnimatedContainer(
+                              duration: const Duration(milliseconds: 300),
+                              margin: const EdgeInsets.only(bottom: 10),
+                              decoration: BoxDecoration(
+                                color:
+                                    isSelected
+                                        ? context.buttonColor
+                                        : context.fieldColor,
+                                borderRadius: BorderRadius.circular(10),
+                                border: Border.all(color: context.borderColor),
+                              ),
+                              child: Column(
+                                children: [
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(
+                                      vertical: 16,
+                                      horizontal: 16,
+                                    ),
+                                    child: Row(
+                                      children: [
+                                        SvgPicture.asset(
+                                          'assets/icons/rupee.svg',
+                                          height: 22,
+                                          colorFilter: ColorFilter.mode(
+                                            isSelected
+                                                ? Colors.white
+                                                : context.buttonColor,
+                                            BlendMode.srcIn,
+                                          ),
+                                        ),
+                                        const SizedBox(width: 12),
+                                        Expanded(
+                                          child: Column(
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.start,
+                                            children: [
+                                              Text(
+                                                income.incomeType,
+                                                style: TextStyle(
+                                                  fontWeight: FontWeight.w600,
+                                                  fontSize: 15,
+                                                  color:
+                                                      isSelected
+                                                          ? Colors.white
+                                                          : context
+                                                              .mainFontColor,
+                                                ),
+                                              ),
+                                              const SizedBox(height: 4),
+                                              Text(
+                                                _formatDate(income.startDate),
+                                                style: TextStyle(
+                                                  fontSize: 12,
+                                                  color:
+                                                      isSelected
+                                                          ? Colors.white70
+                                                          : context
+                                                              .placeholderColor,
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                        Text(
+                                          "₹${income.amount.toStringAsFixed(2)}",
+                                          style: TextStyle(
+                                            fontWeight: FontWeight.w600,
+                                            fontSize: 15,
+                                            color:
+                                                isSelected
+                                                    ? Colors.white
+                                                    : context.mainFontColor,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                  if (isSelected)
+                                    Container(
+                                      width: double.infinity,
+                                      padding: const EdgeInsets.all(12),
+                                      decoration: BoxDecoration(
+                                        color: context.backgroundColor,
+                                        borderRadius:
+                                            const BorderRadius.vertical(
+                                              bottom: Radius.circular(10),
+                                            ),
+                                      ),
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          _infoRow(
+                                            "Period",
+                                            income.period,
+                                            context,
+                                          ),
+                                          // _infoRow(
+                                          //   "Increment %",
+                                          //   "${income.expectedAnnualIncrementPercentage}%",
+                                          //   context,
+                                          // ),
+                                          _infoRow(
+                                            "Start Date",
+                                            _formatDate(income.startDate),
+                                            context,
+                                          ),
+                                          const SizedBox(height: 12),
+                                          Align(
+                                            alignment: Alignment.centerRight,
+                                            child: TextButton.icon(
+                                              onPressed: () async {
+                                                final confirmed = await showDialog<
+                                                  bool
+                                                >(
+                                                  context: context,
+                                                  builder:
+                                                      (ctx) => AlertDialog(
+                                                        title: const Text(
+                                                          "Confirm Deletion",
+                                                        ),
+                                                        content: const Text(
+                                                          "Are you sure you want to delete this income?",
+                                                        ),
+                                                        actions: [
+                                                          TextButton(
+                                                            onPressed:
+                                                                () =>
+                                                                    Navigator.of(
+                                                                      ctx,
+                                                                    ).pop(
+                                                                      false,
+                                                                    ),
+                                                            child: Text(
+                                                              "Cancel",
+                                                              style: TextStyle(
+                                                                color:
+                                                                    context
+                                                                        .mainFontColor,
+                                                              ),
+                                                            ),
+                                                          ),
+                                                          TextButton(
+                                                            onPressed:
+                                                                () =>
+                                                                    Navigator.of(
+                                                                      ctx,
+                                                                    ).pop(true),
+                                                            child: Text(
+                                                              "Delete",
+                                                              style: TextStyle(
+                                                                color:
+                                                                    Colors.red,
+                                                              ),
+                                                            ),
+                                                          ),
+                                                        ],
+                                                      ),
+                                                );
+
+                                                if (confirmed == true) {
+                                                  final result =
+                                                      await incomeController
+                                                          .deleteIncome(
+                                                            income.id,
+                                                          );
+                                                  if (result['success'] ==
+                                                      true) {
+                                                    setState(
+                                                      () => selectedIndex = -1,
+                                                    );
+                                                    await _fetchData();
+                                                    ScaffoldMessenger.of(
+                                                      context,
+                                                    ).showSnackBar(
+                                                      const SnackBar(
+                                                        content: Text(
+                                                          "Income deleted successfully.",
+                                                        ),
+                                                        backgroundColor:
+                                                            Colors.green,
+                                                        duration: Duration(
+                                                          seconds: 2,
+                                                        ),
+                                                      ),
+                                                    );
+                                                  } else {
+                                                    ScaffoldMessenger.of(
+                                                      context,
+                                                    ).showSnackBar(
+                                                      SnackBar(
+                                                        content: Text(
+                                                          result['message'] ??
+                                                              'Failed to delete income.',
+                                                        ),
+                                                        backgroundColor:
+                                                            Colors.red,
+                                                        duration:
+                                                            const Duration(
+                                                              seconds: 2,
+                                                            ),
+                                                      ),
+                                                    );
+                                                  }
+                                                }
+                                              },
+                                              icon: const Icon(
+                                                Icons.delete_outline,
+                                                color: Colors.red,
+                                              ),
+                                              label: const Text(
+                                                "Delete",
+                                                style: TextStyle(
+                                                  color: Colors.red,
+                                                ),
+                                              ),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                ],
+                              ),
+                            ),
+                          );
+                        }).toList(),
+              ),
+            ),
+            if (incomeList.length > 4)
+              Center(
+                child: TextButton.icon(
+                  onPressed: () {
+                    setState(() {
+                      _showAllIncomes = !_showAllIncomes;
+                      selectedIndex = -1;
+                    });
+                  },
+                  icon: Icon(
+                    _showAllIncomes ? Icons.expand_less : Icons.expand_more,
+                    color: context.buttonColor,
+                  ),
+                  label: Text(
+                    _showAllIncomes ? "View Less" : "View More",
+                    style: TextStyle(color: context.buttonColor),
+                  ),
+                ),
+              ),
+          ],
+        ),
+      );
+    });
+  }
+
+  Widget _infoRow(String label, String value, BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 6),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            "$label: ",
+            style: TextStyle(
+              fontWeight: FontWeight.w600,
+              color: context.mainFontColor.withOpacity(0.7),
+            ),
+          ),
+          Expanded(
+            child: Text(value, style: TextStyle(color: context.mainFontColor)),
+          ),
+        ],
       ),
     );
   }

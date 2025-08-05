@@ -6,37 +6,31 @@ import '../models/expense_model.dart';
 
 class ExpenseController extends GetxController {
   var expenseList = <ExpenseModel>[].obs;
-  final String baseUrl = 'http://localhost:7173/api/expense';
+  final String baseUrl = 'http://192.168.1.24:7173/api/expense';
 
   Future<Map<String, dynamic>> fetchExpenses(String userId) async {
-    final url = Uri.parse('$baseUrl/user/$userId');
     try {
-      final response = await http.get(url);
+      debugPrint("Fetching expenses for userId: $userId");
+      final response = await http.get(
+        Uri.parse('$baseUrl/user/$userId'),
+      );
+
       if (response.statusCode == 200) {
-        final List<dynamic> data = json.decode(response.body);
-        expenseList.value = data.map((e) => ExpenseModel.fromJson(e)).toList();
-        return {'success': true};
+        final jsonResponse = json.decode(response.body);
+        if (jsonResponse.containsKey('Expenses')) {
+          final List<dynamic> expensesList = jsonResponse['Expenses'];
+          expenseList.value =
+              expensesList.map((e) => ExpenseModel.fromJson(e)).toList();
+          return {'success': true};
+        } else {
+          return {'success': false, 'message': 'No Expenses key in response'};
+        }
       } else {
-        debugPrint('Failed to fetch expenses. Status: ${response.statusCode}');
         return {'success': false, 'message': 'Server error'};
       }
     } catch (e) {
-      return {'success': false, 'message': 'Exception: $e'};
+      return {'success': false, 'message': e.toString()};
     }
-  }
-
-  void addExpense(ExpenseModel expense) {
-    expenseList.add(expense);
-  }
-
-  void removeExpense(int index) {
-    if (index >= 0 && index < expenseList.length) {
-      expenseList.removeAt(index);
-    }
-  }
-
-  void clearExpenses() {
-    expenseList.clear();
   }
 
   Future<Map<String, dynamic>> submitExpenseAndRefresh(
@@ -68,5 +62,70 @@ class ExpenseController extends GetxController {
         'message': 'Something went wrong. Please try again.',
       };
     }
+  }
+
+  Future<Map<String, dynamic>> deleteExpense(String expenseId) async {
+  final url = Uri.parse('$baseUrl/$expenseId');
+
+  try {
+      debugPrint("🗑️ Deleting income with ID: $expenseId");
+
+    final response = await http.delete(url);
+
+    if (response.statusCode == 200) {
+      expenseList.removeWhere((expense) => expense.Id == expenseId);
+      return {'success': true};
+    } else {
+      return {
+        'success': false,
+        'message': 'Failed to delete expense (Status: ${response.statusCode})',
+      };
+    }
+  } catch (e) {
+    return {
+      'success': false,
+      'message': 'Something went wrong. Please try again.',
+    };
+  }
+}
+
+  Future<Map<String, dynamic>> updateExpense(
+    String expenseId,
+    ExpenseModel updatedExpense,
+    String userId,
+  ) async {
+    try {
+      final response = await http.put(
+        Uri.parse('$baseUrl/$expenseId'),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode(updatedExpense.toJson()..addAll({'userId': userId})),
+      );
+
+      if (response.statusCode == 200) {
+        await fetchExpenses(userId);
+        return {'success': true};
+      } else {
+        return {
+          'success': false,
+          'message': 'Failed to update (Status: ${response.statusCode})',
+        };
+      }
+    } catch (e) {
+      return {'success': false, 'message': e.toString()};
+    }
+  }
+
+  void addExpense(ExpenseModel expense) {
+    expenseList.add(expense);
+  }
+
+  void removeExpense(int index) {
+    if (index >= 0 && index < expenseList.length) {
+      expenseList.removeAt(index);
+    }
+  }
+
+  void clearExpenses() {
+    expenseList.clear();
   }
 }
