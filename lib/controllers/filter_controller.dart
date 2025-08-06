@@ -33,8 +33,10 @@ class FilterController extends GetxController {
   void setIncomeData(List<IncomeModel> incomes) {
     originalIncomeList.assignAll(incomes);
     applyIncomeFilter();
-    totalIncome.value =
-        originalIncomeList.fold(0.0, (sum, item) => sum + item.amount);
+    totalIncome.value = originalIncomeList.fold(
+      0.0,
+      (sum, item) => sum + item.amount,
+    );
   }
 
   void updateIncomeFilter(FilterType type) {
@@ -43,16 +45,22 @@ class FilterController extends GetxController {
   }
 
   void applyIncomeFilter() {
-    // No filtering yet
-    filteredIncomeList.assignAll(originalIncomeList);
+    final filter = incomeFilterType.value;
+    filteredIncomeList.assignAll(
+      originalIncomeList.where(
+        (income) => _isDateWithinFilter(income.startDate, filter),
+      ),
+    );
   }
 
   // ---------------- EXPENSE ---------------- //
   void setExpenseData(List<ExpenseModel> expenses) {
     originalExpenseList.assignAll(expenses);
     applyExpenseFilter();
-    totalExpense.value =
-        originalExpenseList.fold(0.0, (sum, item) => sum + item.amount);
+    totalExpense.value = originalExpenseList.fold(
+      0.0,
+      (sum, item) => sum + item.amount,
+    );
   }
 
   void updateExpenseFilter(FilterType type) {
@@ -61,15 +69,22 @@ class FilterController extends GetxController {
   }
 
   void applyExpenseFilter() {
-    filteredExpenseList.assignAll(originalExpenseList);
+    final filter = expenseFilterType.value;
+    filteredExpenseList.assignAll(
+      originalExpenseList.where(
+        (expense) => _isDateWithinFilter(expense.startDate, filter),
+      ),
+    );
   }
 
   // ---------------- ASSET ---------------- //
   void setAssetData(List<AssetModel> assets) {
     originalAssetList.assignAll(assets);
     applyAssetFilter();
-    totalAsset.value =
-        originalAssetList.fold(0.0, (sum, item) => sum + item.amount);
+    totalAsset.value = originalAssetList.fold(
+      0.0,
+      (sum, item) => sum + item.amount,
+    );
   }
 
   void updateAssetFilter(FilterType type) {
@@ -78,7 +93,12 @@ class FilterController extends GetxController {
   }
 
   void applyAssetFilter() {
-    filteredAssetList.assignAll(originalAssetList);
+    final filter = assetFilterType.value;
+    filteredAssetList.assignAll(
+      originalAssetList.where(
+        (asset) => _isDateWithinFilter(asset.startDate, filter),
+      ),
+    );
   }
 
   String getFilterLabel(FilterType type) {
@@ -89,6 +109,26 @@ class FilterController extends GetxController {
         return 'Last Month';
       case FilterType.lastYear:
         return 'Last Year';
+    }
+  }
+
+  bool _isDateWithinFilter(String dateStr, FilterType filterType) {
+    try {
+      final date = DateTime.parse(dateStr);
+      final now = DateTime.now();
+
+      switch (filterType) {
+        case FilterType.recentlyAdded:
+          return true; 
+        case FilterType.lastMonth:
+          final lastMonth = DateTime(now.year, now.month - 1);
+          return date.isAfter(lastMonth);
+        case FilterType.lastYear:
+          final lastYear = DateTime(now.year - 1, now.month, now.day);
+          return date.isAfter(lastYear);
+      }
+    } catch (e) {
+      return false; 
     }
   }
 }

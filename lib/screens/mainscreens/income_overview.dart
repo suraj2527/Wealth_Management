@@ -7,6 +7,7 @@ import 'package:wealth_app/controllers/income_controller.dart';
 import 'package:wealth_app/controllers/filter_controller.dart';
 import 'package:wealth_app/extension/theme_extension.dart';
 import 'package:wealth_app/screens/subscreens/add_income_screen.dart';
+import 'package:wealth_app/widgets/dot_loader.dart';
 import 'package:wealth_app/widgets/network_widget.dart';
 import 'package:wealth_app/widgets/universal_scaffold.dart';
 
@@ -32,7 +33,6 @@ class _IncomeOverviewScreenState extends State<IncomeOverviewScreen> {
   }
 
   int selectedIndex = -1;
-  bool _showAllIncomes = false;
 
   @override
   void initState() {
@@ -52,6 +52,7 @@ class _IncomeOverviewScreenState extends State<IncomeOverviewScreen> {
 
   Future<void> _fetchData() async {
     if (dbUserId == null) return;
+    Get.dialog(DotLoader(), barrierDismissible: false);
     final result = await incomeController.fetchIncomes(dbUserId!);
 
     if (result['success'] == false) {
@@ -64,6 +65,9 @@ class _IncomeOverviewScreenState extends State<IncomeOverviewScreen> {
       );
     } else {
       filterController.setIncomeData(incomeController.incomeList);
+    }
+    if (Get.isDialogOpen ?? false) {
+      Get.back();
     }
   }
 
@@ -166,10 +170,14 @@ class _IncomeOverviewScreenState extends State<IncomeOverviewScreen> {
             const SizedBox(height: 8),
             ElevatedButton(
               onPressed:
-                  () => Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (_) => const AddIncomeScreen()),
-                  ),
+                  () => {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (_) => AddIncomeScreen()),
+                    ).then((_) {
+                      _fetchData();
+                    }),
+                  },
               style: ElevatedButton.styleFrom(
                 backgroundColor: context.buttonColor,
                 foregroundColor: context.buttonTextColor,
@@ -251,8 +259,6 @@ class _IncomeOverviewScreenState extends State<IncomeOverviewScreen> {
   Widget _buildIncomeSection(double mediaWidth, double mediaHeight) {
     return Obx(() {
       final incomeList = filterController.filteredIncomeList;
-      final visibleIncome =
-          _showAllIncomes ? incomeList : incomeList.take(4).toList();
 
       return Container(
         width: mediaWidth * 0.93,
@@ -281,23 +287,21 @@ class _IncomeOverviewScreenState extends State<IncomeOverviewScreen> {
               ),
             ),
             const SizedBox(height: 8),
-            AnimatedSize(
-              duration: const Duration(milliseconds: 300),
-              curve: Curves.easeInOut,
-              child: Column(
-                children:
-                    visibleIncome.isEmpty
-                        ? [
-                          Center(
-                            child: Text(
-                              "No income available",
-                              style: TextStyle(color: context.mainFontColor),
-                            ),
-                          ),
-                        ]
-                        : visibleIncome.asMap().entries.map((entry) {
-                          final index = entry.key;
-                          final income = entry.value;
+            SizedBox(
+              height: MediaQuery.of(context).size.height * 0.45,
+              child:
+                  incomeList.isEmpty
+                      ? Center(
+                        child: Text(
+                          "No income available",
+                          style: TextStyle(color: context.mainFontColor),
+                        ),
+                      )
+                      : ListView.builder(
+                        itemCount: incomeList.length,
+                        physics: const BouncingScrollPhysics(),
+                        itemBuilder: (context, index) {
+                          final income = incomeList[index];
                           final isSelected = index == selectedIndex;
 
                           return GestureDetector(
@@ -402,11 +406,6 @@ class _IncomeOverviewScreenState extends State<IncomeOverviewScreen> {
                                             income.period,
                                             context,
                                           ),
-                                          // _infoRow(
-                                          //   "Increment %",
-                                          //   "${income.expectedAnnualIncrementPercentage}%",
-                                          //   context,
-                                          // ),
                                           _infoRow(
                                             "Start Date",
                                             _formatDate(income.startDate),
@@ -453,7 +452,7 @@ class _IncomeOverviewScreenState extends State<IncomeOverviewScreen> {
                                                                     Navigator.of(
                                                                       ctx,
                                                                     ).pop(true),
-                                                            child: Text(
+                                                            child: const Text(
                                                               "Delete",
                                                               style: TextStyle(
                                                                 color:
@@ -530,28 +529,9 @@ class _IncomeOverviewScreenState extends State<IncomeOverviewScreen> {
                               ),
                             ),
                           );
-                        }).toList(),
-              ),
+                        },
+                      ),
             ),
-            if (incomeList.length > 4)
-              Center(
-                child: TextButton.icon(
-                  onPressed: () {
-                    setState(() {
-                      _showAllIncomes = !_showAllIncomes;
-                      selectedIndex = -1;
-                    });
-                  },
-                  icon: Icon(
-                    _showAllIncomes ? Icons.expand_less : Icons.expand_more,
-                    color: context.buttonColor,
-                  ),
-                  label: Text(
-                    _showAllIncomes ? "View Less" : "View More",
-                    style: TextStyle(color: context.buttonColor),
-                  ),
-                ),
-              ),
           ],
         ),
       );

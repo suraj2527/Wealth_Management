@@ -4,8 +4,8 @@ import 'package:get/get.dart';
 import 'package:wealth_app/constants/text_styles.dart';
 import 'package:wealth_app/controllers/auth_controller.dart';
 import 'package:wealth_app/widgets/dot_loader.dart';
+// import 'package:wealth_app/widgets/dot_loader.dart';
 import 'package:wealth_app/widgets/network_widget.dart';
-// import 'package:wealth_app/widgets/calendar_input_field.dart';
 import 'package:wealth_app/widgets/universal_scaffold.dart';
 import 'package:wealth_app/extension/theme_extension.dart';
 import '../../models/expense_model.dart';
@@ -107,8 +107,6 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
       );
 
       if (result['success']) {
-        Get.back();
-
         _amountController.clear();
         _yearController.text = DateTime.now().year.toString();
         _startDateController.text = DateTime.now().toIso8601String().substring(
@@ -134,6 +132,8 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
           backgroundColor: context.successColor,
           colorText: Colors.white,
         );
+        Get.back();
+        Get.toNamed('/expenses');
       } else {
         Get.snackbar(
           "Error",

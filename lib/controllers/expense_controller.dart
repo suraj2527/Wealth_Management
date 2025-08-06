@@ -6,13 +6,18 @@ import '../models/expense_model.dart';
 
 class ExpenseController extends GetxController {
   var expenseList = <ExpenseModel>[].obs;
-  final String baseUrl = 'http://192.168.1.24:7173/api/expense';
+  final String baseUrl =
+      'https://dynamicsmonk-api.azure-api.net/wealthdev/expense';
 
   Future<Map<String, dynamic>> fetchExpenses(String userId) async {
     try {
       debugPrint("Fetching expenses for userId: $userId");
       final response = await http.get(
         Uri.parse('$baseUrl/user/$userId'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Ocp-Apim-Subscription-Key': '507f2afb55654b58b949017a7d8c5f22',
+        },
       );
 
       if (response.statusCode == 200) {
@@ -43,7 +48,10 @@ class ExpenseController extends GetxController {
     try {
       final response = await http.post(
         url,
-        headers: {'Content-Type': 'application/json'},
+        headers: {
+          'Content-Type': 'application/json',
+          'Ocp-Apim-Subscription-Key': '507f2afb55654b58b949017a7d8c5f22',
+        },
         body: jsonEncode(fullExpenseJson),
       );
 
@@ -65,29 +73,36 @@ class ExpenseController extends GetxController {
   }
 
   Future<Map<String, dynamic>> deleteExpense(String expenseId) async {
-  final url = Uri.parse('$baseUrl/$expenseId');
+    final url = Uri.parse('$baseUrl/$expenseId');
 
-  try {
+    try {
       debugPrint("🗑️ Deleting income with ID: $expenseId");
 
-    final response = await http.delete(url);
+      final response = await http.delete(
+        url,
+        headers: {
+          'Content-Type': 'application/json',
+          'Ocp-Apim-Subscription-Key': '507f2afb55654b58b949017a7d8c5f22',
+        },
+      );
 
-    if (response.statusCode == 200) {
-      expenseList.removeWhere((expense) => expense.Id == expenseId);
-      return {'success': true};
-    } else {
+      if (response.statusCode == 200) {
+        expenseList.removeWhere((expense) => expense.Id == expenseId);
+        return {'success': true};
+      } else {
+        return {
+          'success': false,
+          'message':
+              'Failed to delete expense (Status: ${response.statusCode})',
+        };
+      }
+    } catch (e) {
       return {
         'success': false,
-        'message': 'Failed to delete expense (Status: ${response.statusCode})',
+        'message': 'Something went wrong. Please try again.',
       };
     }
-  } catch (e) {
-    return {
-      'success': false,
-      'message': 'Something went wrong. Please try again.',
-    };
   }
-}
 
   Future<Map<String, dynamic>> updateExpense(
     String expenseId,
@@ -97,7 +112,10 @@ class ExpenseController extends GetxController {
     try {
       final response = await http.put(
         Uri.parse('$baseUrl/$expenseId'),
-        headers: {'Content-Type': 'application/json'},
+        headers: {
+          'Content-Type': 'application/json',
+          'Ocp-Apim-Subscription-Key': '507f2afb55654b58b949017a7d8c5f22',
+        },
         body: jsonEncode(updatedExpense.toJson()..addAll({'userId': userId})),
       );
 

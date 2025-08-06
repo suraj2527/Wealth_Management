@@ -4,6 +4,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
 import 'package:wealth_app/constants/text_styles.dart';
 import 'package:wealth_app/controllers/auth_controller.dart';
+import 'package:wealth_app/controllers/dashboard_controller.dart';
 import 'package:wealth_app/screens/Authentication/login_screen.dart';
 import 'package:wealth_app/screens/mainscreens/dashboard_screen.dart';
 import 'package:wealth_app/widgets/dot_loader.dart';
@@ -19,6 +20,8 @@ class SplashScreen extends StatefulWidget {
 class _SplashScreenState extends State<SplashScreen>
     with TickerProviderStateMixin {
   final AuthController authController = Get.put(AuthController());
+  final DashboardController dashboardController = Get.put(DashboardController()); 
+  final userId = Get.find<AuthController>().dbUserId.value;
 
   final String fullText = 'Wealth Management';
   String animatedText = '';
@@ -34,6 +37,8 @@ class _SplashScreenState extends State<SplashScreen>
     _setupLogoFade();
     _startTextAnimation();
     checkLoginStatus();
+    dashboardController.initializeDashboard(userId);
+
   }
 
   void _setupLogoFade() {

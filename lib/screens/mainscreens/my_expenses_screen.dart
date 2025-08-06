@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:wealth_app/constants/text_styles.dart';
 import 'package:wealth_app/controllers/auth_controller.dart';
 import 'package:wealth_app/controllers/expense_controller.dart';
@@ -8,6 +9,7 @@ import 'package:wealth_app/controllers/filter_controller.dart';
 import 'package:wealth_app/extension/theme_extension.dart';
 import 'package:wealth_app/models/expense_model.dart';
 import 'package:wealth_app/screens/subscreens/add_expense_screen.dart';
+import 'package:wealth_app/widgets/dot_loader.dart';
 import 'package:wealth_app/widgets/network_widget.dart';
 import 'package:wealth_app/widgets/universal_scaffold.dart';
 import 'package:intl/intl.dart';
@@ -25,11 +27,22 @@ class _MyExpensesScreenState extends State<MyExpensesScreen> {
   final userId = Get.find<AuthController>().dbUserId.value;
   final ExpenseController expenseController = Get.put(ExpenseController());
   final FilterController filterController = Get.find<FilterController>();
+  String? dbUserId;
 
   @override
   void initState() {
     super.initState();
-    _fetchData();
+    _loadDbUserIdAndFetchData();
+  }
+
+  Future<void> _loadDbUserIdAndFetchData() async {
+    final prefs = await SharedPreferences.getInstance();
+    dbUserId = prefs.getString('DBid');
+    if (dbUserId != null) {
+      await _fetchData();
+    } else {
+      debugPrint("❌ DBid not found in SharedPreferences");
+    }
   }
 
   Future<void> _showDeleteConfirmation(
@@ -47,12 +60,17 @@ class _MyExpensesScreenState extends State<MyExpensesScreen> {
             actions: [
               TextButton(
                 onPressed: () => Navigator.of(ctx).pop(false),
-                child: const Text("Cancel"),
+                child: Text(
+                  "Cancel",
+                  style: TextStyle(color: context.mainFontColor),
+                ),
               ),
-              ElevatedButton(
-                style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+              TextButton(
                 onPressed: () => Navigator.of(ctx).pop(true),
-                child: const Text("Delete"),
+                child: const Text(
+                  "Delete",
+                  style: TextStyle(color: Colors.red),
+                ),
               ),
             ],
           ),
@@ -85,9 +103,13 @@ class _MyExpensesScreenState extends State<MyExpensesScreen> {
   }
 
   Future<void> _fetchData() async {
+    Get.dialog(DotLoader(), barrierDismissible: false);
     final result = await expenseController.fetchExpenses(userId);
     if (result['success']) {
       filterController.setExpenseData(expenseController.expenseList);
+    }
+    if (Get.isDialogOpen ?? false) {
+      Get.back();
     }
   }
 
@@ -105,6 +127,8 @@ class _MyExpensesScreenState extends State<MyExpensesScreen> {
             color: context.mainFontColor,
             child: SingleChildScrollView(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              physics: const BouncingScrollPhysics(),
+
               child: Obx(() {
                 final expenses = filterController.filteredExpenseList;
                 final totalAmount = expenses
@@ -117,7 +141,7 @@ class _MyExpensesScreenState extends State<MyExpensesScreen> {
                       }
                     })
                     .fold<double>(0.0, (sum, e) => sum + e.amount);
-      
+
                 return Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -127,7 +151,7 @@ class _MyExpensesScreenState extends State<MyExpensesScreen> {
                     const SizedBox(height: 16),
                     _buildHeaderWithFilter(),
                     const SizedBox(height: 12),
-                    _buildExpenseList(expenses, mediaWidth),
+                    _buildExpenseList(expenses, mediaWidth)
                   ],
                 );
               }),
@@ -203,8 +227,10 @@ class _MyExpensesScreenState extends State<MyExpensesScreen> {
                 onPressed: () {
                   Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (_) => const AddExpenseScreen()),
-                  );
+                    MaterialPageRoute(builder: (_) => AddExpenseScreen()),
+                  ).then((_) {
+                    _fetchData();
+                  });
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: context.buttonColor,
@@ -304,8 +330,6 @@ class _MyExpensesScreenState extends State<MyExpensesScreen> {
   }
 
   Widget _buildExpenseList(List<ExpenseModel> expenses, double mediaWidth) {
-    final visibleExpenses = showFullList ? expenses : expenses.take(4).toList();
-
     return Container(
       width: mediaWidth * 0.93,
       padding: const EdgeInsets.all(12),
@@ -330,203 +354,186 @@ class _MyExpensesScreenState extends State<MyExpensesScreen> {
             ),
           ),
           const SizedBox(height: 8),
-          AnimatedSize(
-            duration: const Duration(milliseconds: 300),
-            curve: Curves.easeInOut,
-            child: Column(
-              children:
-                  visibleExpenses.isEmpty
-                      ? [
-                        Center(
-                          child: Text(
-                            "No expense found",
-                            style: TextStyle(color: context.mainFontColor),
-                          ),
-                        ),
-                      ]
-                      : visibleExpenses.asMap().entries.map((entry) {
-                        final index = entry.key;
-                        final expense = entry.value;
-                        final isSelected = index == selectedIndex;
 
-                        return GestureDetector(
-                          onTap:
-                              () => setState(() {
-                                selectedIndex = isSelected ? -1 : index;
-                              }),
-                          child: AnimatedContainer(
-                            duration: const Duration(milliseconds: 300),
-                            margin: const EdgeInsets.only(bottom: 10),
-                            decoration: BoxDecoration(
-                              color:
-                                  isSelected
-                                      ? context.buttonColor
-                                      : context.fieldColor,
-                              borderRadius: BorderRadius.circular(10),
-                              border: Border.all(color: context.borderColor),
-                            ),
-                            child: Column(
-                              children: [
-                                Padding(
-                                  padding: const EdgeInsets.symmetric(
-                                    vertical: 16,
-                                    horizontal: 16,
-                                  ),
-                                  child: Row(
-                                    children: [
-                                      SvgPicture.asset(
-                                        'assets/icons/rupee.svg',
-                                        height: 20,
-                                        colorFilter: ColorFilter.mode(
-                                          isSelected
-                                              ? Colors.white
-                                              : context.buttonColor,
-                                          BlendMode.srcIn,
-                                        ),
-                                      ),
-                                      const SizedBox(width: 12),
-                                      Expanded(
-                                        child: Column(
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.start,
-                                          children: [
-                                            Text(
-                                              "${expense.expenseType} - ${expense.subCategory}",
-                                              style: TextStyle( 
-                                                fontWeight: FontWeight.w600,
-                                                fontSize: 15,
-                                                color:
-                                                    isSelected
-                                                        ? Colors.white
-                                                        : context.mainFontColor,
-                                              ),
-                                            ),
-                                            const SizedBox(height: 4),
-                                            Text(
-                                              () {
-                                                try {
-                                                  final parsedDate =
-                                                      DateTime.parse(
-                                                        expense.startDate,
-                                                      );
-                                                  return DateFormat(
-                                                    'dd MMM yyyy',
-                                                  ).format(parsedDate);
-                                                } catch (_) {
-                                                  return expense
-                                                          .startDate
-                                                          .isNotEmpty
-                                                      ? expense.startDate
-                                                      : 'No Date';
-                                                }
-                                              }(),
-                                              style: TextStyle(
-                                                fontSize: 12,
-                                                color:
-                                                    isSelected
-                                                        ? Colors.white70
-                                                        : context
-                                                            .placeholderColor,
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                      Text(
-                                        "₹${expense.amount.toStringAsFixed(2)}",
-                                        style: TextStyle(
-                                          fontWeight: FontWeight.w600,
-                                          fontSize: 15,
-                                          color:
-                                              isSelected
-                                                  ? Colors.white
-                                                  : context.mainFontColor,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                                if (isSelected)
-                                  Container(
-                                    width: double.infinity,
-                                    padding: const EdgeInsets.all(12),
-                                    decoration: BoxDecoration(
-                                      color: context.backgroundColor,
-                                      borderRadius: const BorderRadius.vertical(
-                                        bottom: Radius.circular(10),
-                                      ),
+          expenses.isEmpty
+              ? SizedBox(
+                height: 100,
+                child: Center(
+                  child: Text(
+                    "No expense found",
+                    style: TextStyle(color: context.mainFontColor),
+                  ),
+                ),
+              )
+              : SizedBox(
+                height: MediaQuery.of(context).size.height * 0.45,
+
+                child: ListView.builder(
+                  itemCount: expenses.length,
+                  physics: const BouncingScrollPhysics(),
+                  itemBuilder: (context, index) {
+                    final expense = expenses[index];
+                    final isSelected = index == selectedIndex;
+
+                    return GestureDetector(
+                      onTap:
+                          () => setState(
+                            () => selectedIndex = isSelected ? -1 : index,
+                          ),
+                      child: AnimatedContainer(
+                        duration: const Duration(milliseconds: 300),
+                        margin: const EdgeInsets.only(bottom: 10),
+                        decoration: BoxDecoration(
+                          color:
+                              isSelected
+                                  ? context.buttonColor
+                                  : context.fieldColor,
+                          borderRadius: BorderRadius.circular(10),
+                          border: Border.all(color: context.borderColor),
+                        ),
+                        child: Column(
+                          children: [
+                            Padding(
+                              padding: const EdgeInsets.symmetric(
+                                vertical: 16,
+                                horizontal: 16,
+                              ),
+                              child: Row(
+                                children: [
+                                  SvgPicture.asset(
+                                    'assets/icons/rupee.svg',
+                                    height: 20,
+                                    colorFilter: ColorFilter.mode(
+                                      isSelected
+                                          ? Colors.white
+                                          : context.buttonColor,
+                                      BlendMode.srcIn,
                                     ),
+                                  ),
+                                  const SizedBox(width: 12),
+                                  Expanded(
                                     child: Column(
                                       crossAxisAlignment:
                                           CrossAxisAlignment.start,
                                       children: [
-                                        _buildDetailRow(
-                                          "Sub Category",
-                                          expense.subCategory,
-                                          context,
+                                        Text(
+                                          "${expense.expenseType} - ${expense.subCategory}",
+                                          style: TextStyle(
+                                            fontWeight: FontWeight.w600,
+                                            fontSize: 15,
+                                            color:
+                                                isSelected
+                                                    ? Colors.white
+                                                    : context.mainFontColor,
+                                          ),
                                         ),
-                                        _buildDetailRow(
-                                          "Period",
-                                          expense.period,
-                                          context,
-                                        ),
-                                        _buildDetailRow(
-                                          "Annual Increment %",
-                                          "${expense.expectedAnnualIncrementPercentage.toStringAsFixed(2)}%",
-                                          context,
-                                        ),
-                                        _buildDetailRow(
-                                          "Is Recurring",
-                                          expense.isRecurring ? "Yes" : "No",
-                                          context,
-                                        ),
-                                        _buildDetailRow(
-                                          "Year",
-                                          expense.year.toString(),
-                                          context,
-                                        ),
-                                        const SizedBox(height: 12),
-                                        Align(
-                                          alignment: Alignment.centerRight,
-                                          child: TextButton.icon(
-                                            style: TextButton.styleFrom(
-                                              foregroundColor: Colors.red,
-                                            ),
-                                            icon: const Icon(
-                                              Icons.delete_outline,
-                                            ),
-                                            label: const Text("Delete"),
-                                            onPressed:
-                                                () => _showDeleteConfirmation(
-                                                  context,
-                                                  expense,
-                                                ),
+                                        const SizedBox(height: 4),
+                                        Text(
+                                          () {
+                                            try {
+                                              final parsedDate = DateTime.parse(
+                                                expense.startDate,
+                                              );
+                                              return DateFormat(
+                                                'dd MMM yyyy',
+                                              ).format(parsedDate);
+                                            } catch (_) {
+                                              return expense
+                                                      .startDate
+                                                      .isNotEmpty
+                                                  ? expense.startDate
+                                                  : 'No Date';
+                                            }
+                                          }(),
+                                          style: TextStyle(
+                                            fontSize: 12,
+                                            color:
+                                                isSelected
+                                                    ? Colors.white70
+                                                    : context.placeholderColor,
                                           ),
                                         ),
                                       ],
                                     ),
                                   ),
-                              ],
+                                  Text(
+                                    "₹${expense.amount.toStringAsFixed(2)}",
+                                    style: TextStyle(
+                                      fontWeight: FontWeight.w600,
+                                      fontSize: 15,
+                                      color:
+                                          isSelected
+                                              ? Colors.white
+                                              : context.mainFontColor,
+                                    ),
+                                  ),
+                                ],
+                              ),
                             ),
-                          ),
-                        );
-                      }).toList(),
-            ),
-          ),
-          if (expenses.length > 4)
-            Center(
-              child: TextButton.icon(
-                onPressed: () => setState(() => showFullList = !showFullList),
-                icon: Icon(
-                  showFullList ? Icons.expand_less : Icons.expand_more,
-                  color: context.buttonColor,
-                ),
-                label: Text(
-                  showFullList ? "View Less" : "View More",
-                  style: TextStyle(color: context.buttonColor),
+                            if (isSelected)
+                              Container(
+                                width: double.infinity,
+                                padding: const EdgeInsets.all(12),
+                                decoration: BoxDecoration(
+                                  color: context.backgroundColor,
+                                  borderRadius: const BorderRadius.vertical(
+                                    bottom: Radius.circular(10),
+                                  ),
+                                ),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    _buildDetailRow(
+                                      "Sub Category",
+                                      expense.subCategory,
+                                      context,
+                                    ),
+                                    _buildDetailRow(
+                                      "Period",
+                                      expense.period,
+                                      context,
+                                    ),
+                                    _buildDetailRow(
+                                      "Annual Increment %",
+                                      "${expense.expectedAnnualIncrementPercentage.toStringAsFixed(2)}%",
+                                      context,
+                                    ),
+                                    _buildDetailRow(
+                                      "Is Recurring",
+                                      expense.isRecurring ? "Yes" : "No",
+                                      context,
+                                    ),
+                                    _buildDetailRow(
+                                      "Year",
+                                      expense.year.toString(),
+                                      context,
+                                    ),
+                                    const SizedBox(height: 12),
+                                    Align(
+                                      alignment: Alignment.centerRight,
+                                      child: TextButton.icon(
+                                        style: TextButton.styleFrom(
+                                          foregroundColor: Colors.red,
+                                        ),
+                                        icon: const Icon(Icons.delete_outline),
+                                        label: const Text("Delete"),
+                                        onPressed:
+                                            () => _showDeleteConfirmation(
+                                              context,
+                                              expense,
+                                            ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                          ],
+                        ),
+                      ),
+                    );
+                  },
                 ),
               ),
-            ),
         ],
       ),
     );

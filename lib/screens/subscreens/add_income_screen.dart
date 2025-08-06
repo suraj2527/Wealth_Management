@@ -1,12 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:dropdown_button2/dropdown_button2.dart';
-import 'package:wealth_app/constants/font_sizes.dart';
-import 'package:wealth_app/constants/text_styles.dart';
 import 'package:wealth_app/controllers/auth_controller.dart';
 import 'package:wealth_app/controllers/income_controller.dart';
 import 'package:wealth_app/models/income_model.dart';
-import 'package:wealth_app/widgets/income_graph.dart';
+import 'package:wealth_app/widgets/dot_loader.dart';
+// import 'package:wealth_app/widgets/dot_loader.dart';
 import 'package:wealth_app/widgets/network_widget.dart';
 import 'package:wealth_app/widgets/universal_scaffold.dart';
 import 'package:wealth_app/extension/theme_extension.dart';
@@ -26,7 +25,7 @@ class _AddIncomeScreenState extends State<AddIncomeScreen> {
 
   String _selectedType = 'Monthly';
   String? _selectedIncomeCategory;
-  String? dbUserId; 
+  String? dbUserId;
 
   final List<String> _types = ['Monthly', 'Yearly', 'Annual', 'OneTime'];
   final List<String> _incomeCategories = [
@@ -81,12 +80,7 @@ class _AddIncomeScreenState extends State<AddIncomeScreen> {
       );
       return;
     }
-
-    // Show loading animation
-    Get.dialog(
-      const Center(child: CircularProgressIndicator()),
-      barrierDismissible: false,
-    );
+    // Get.dialog(const Center(child: DotLoader()), barrierDismissible: false);
 
     try {
       final incomeModel = IncomeModel(
@@ -95,16 +89,16 @@ class _AddIncomeScreenState extends State<AddIncomeScreen> {
         amount: amountValue,
         period: _selectedType,
         startDate: DateTime.now().toIso8601String(),
-        expectedAnnualIncrementPercentage:
-            2.0,
+        expectedAnnualIncrementPercentage: 2.0,
         endDate: DateTime.now().add(const Duration(days: 30)).toIso8601String(),
         year: DateTime.now().year,
-        id:'',
+        id: '',
       );
+      Get.dialog(const Center(child: DotLoader()), barrierDismissible: false);
 
       final result = await incomeController.addIncome(incomeModel);
 
-      if (Get.isDialogOpen ?? false) Get.back();
+      // if (Get.isDialogOpen ?? false) Get.back();
 
       if (result['success'] == true) {
         _formKey.currentState?.reset();
@@ -113,10 +107,7 @@ class _AddIncomeScreenState extends State<AddIncomeScreen> {
         _selectedType = 'Monthly';
         _selectedIncomeCategory = null;
 
-        await Future.wait([
-          incomeController.fetchIncomes(dbUserId!),
-          // incomeController.fetchTotalIncome(dbUserId!),
-        ]);
+        await Future.wait([incomeController.fetchIncomes(dbUserId!)]);
 
         Get.snackbar(
           'Success',
@@ -125,8 +116,8 @@ class _AddIncomeScreenState extends State<AddIncomeScreen> {
           backgroundColor: context.successColor,
           colorText: Colors.white,
         );
-
-        if (mounted) Navigator.pop(context);
+        Get.back();
+        Get.toNamed('/income');
       } else {
         Get.snackbar(
           'Error',
@@ -212,7 +203,10 @@ class _AddIncomeScreenState extends State<AddIncomeScreen> {
                               .map(
                                 (category) => DropdownMenuItem(
                                   value: category,
-                                  child: Text(category),
+                                  child: Align(
+                                    alignment: Alignment(-1, 0),
+                                    child: Text(category),
+                                  ),
                                 ),
                               )
                               .toList(),
@@ -227,7 +221,8 @@ class _AddIncomeScreenState extends State<AddIncomeScreen> {
                         });
                       },
                       validator:
-                          (val) => val == null || val.isEmpty ? "Required" : null,
+                          (val) =>
+                              val == null || val.isEmpty ? "Required" : null,
                     ),
                     if (_selectedIncomeCategory == 'Other') ...[
                       const SizedBox(height: 12),
@@ -236,7 +231,11 @@ class _AddIncomeScreenState extends State<AddIncomeScreen> {
                     const SizedBox(height: 16),
                     _label("Amount"),
                     const SizedBox(height: 6),
-                    _textField(_amountController, "Enter amount", isNumber: true),
+                    _textField(
+                      _amountController,
+                      "Enter amount",
+                      isNumber: true,
+                    ),
                     const SizedBox(height: 16),
                     _label("Period"),
                     const SizedBox(height: 6),
@@ -305,21 +304,6 @@ class _AddIncomeScreenState extends State<AddIncomeScreen> {
                       ),
                     ),
                     const SizedBox(height: 30),
-                    Align(
-                      alignment: Alignment.center,
-                      child: Text(
-                        "Income Graph",
-                        style: TextStyle(
-                          fontSize: FontSizes.heading1,
-                          fontWeight: AppTextStyle.bold,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 20),
-                    SizedBox(
-                      height: mediaHeight * 0.23,
-                      child: const IncomeGraph(),
-                    ),
                   ],
                 ),
               ),
@@ -339,7 +323,8 @@ class _AddIncomeScreenState extends State<AddIncomeScreen> {
       filled: true,
       fillColor: context.fieldColor,
       hintText: hint,
-      contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
+
+      // contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 14),
       border: OutlineInputBorder(
         borderRadius: BorderRadius.circular(8),
         borderSide: BorderSide(color: context.borderColor.withOpacity(0.1)),

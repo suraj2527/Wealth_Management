@@ -180,44 +180,58 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     ),
                   ),
                   const SizedBox(height: 24),
-      
-                  // Profile Picture
+
                   Center(
                     child: GestureDetector(
                       onTap: () => _pickImageDialog(context),
                       child: Stack(
+                        alignment: Alignment.center,
                         children: [
                           Obx(() {
                             final path = profileImageController.imagePath.value;
-                            return CircleAvatar(
-                              key: ValueKey(path),
-                              radius: 50,
-                              backgroundColor: context.fieldColor,
-                              backgroundImage:
-                                  path != null ? FileImage(File(path)) : null,
-                              child:
-                                  path == null
-                                      ? Icon(
-                                        Icons.person,
-                                        size: 50,
-                                        color: context.placeholderColor,
-                                      )
-                                      : null,
+                            return Container(
+                              width: 110,
+                              height: 110,
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                border: Border.all(
+                                  color: context.buttonColor,
+                                  width: 1,
+                                ),
+                              ),
+                              child: CircleAvatar(
+                                key: ValueKey(path),
+                                radius: 50,
+                                backgroundColor: context.fieldColor,
+                                backgroundImage:
+                                    path != null ? FileImage(File(path)) : null,
+                                child:
+                                    path == null
+                                        ? Icon(
+                                          Icons.person,
+                                          size: 50,
+                                          color: context.placeholderColor,
+                                        )
+                                        : null,
+                              ),
                             );
                           }),
                           Positioned(
                             bottom: 0,
-                            right: 0,
+                            right: 4,
                             child: Container(
-                              padding: const EdgeInsets.all(4),
+                              padding: const EdgeInsets.all(6),
                               decoration: BoxDecoration(
                                 color: context.buttonColor,
                                 shape: BoxShape.circle,
-                                border: Border.all(color: Colors.white, width: 2),
+                                border: Border.all(
+                                  color: Colors.white,
+                                  width: 2,
+                                ),
                               ),
                               child: const Icon(
                                 Icons.edit,
-                                size: 16,
+                                size: 18,
                                 color: Colors.white,
                               ),
                             ),
@@ -226,9 +240,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       ),
                     ),
                   ),
-      
+
                   const SizedBox(height: 30),
-      
+
                   // Name Field
                   Text(
                     "Name",
@@ -285,7 +299,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                               ),
                             ),
                   ),
-      
+
                   if (_isEditing)
                     Padding(
                       padding: const EdgeInsets.only(top: 12),
@@ -312,18 +326,18 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         ),
                       ),
                     ),
-      
+
                   const SizedBox(height: 24),
-      
+
                   // Email
                   _labeledStaticField(
                     context,
                     "Email",
                     authController.email.value,
                   ),
-      
+
                   const SizedBox(height: 32),
-      
+
                   Center(
                     child: ElevatedButton.icon(
                       onPressed: () => _showLogoutDialog(context),

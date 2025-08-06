@@ -7,8 +7,9 @@ import 'package:wealth_app/constants/text_styles.dart';
 import 'package:wealth_app/controllers/auth_controller.dart';
 import 'package:wealth_app/controllers/dashboard_controller.dart';
 import 'package:wealth_app/extension/theme_extension.dart';
+import 'package:wealth_app/widgets/dot_loader.dart';
 import 'package:wealth_app/widgets/network_widget.dart';
-import 'package:wealth_app/widgets/projection_graph.dart';
+import 'package:wealth_app/widgets/pie_chart.dart';
 import 'package:wealth_app/widgets/summary_card.dart';
 import 'package:wealth_app/widgets/universal_scaffold.dart';
 
@@ -31,11 +32,17 @@ class _DashboardScreenState extends State<DashboardScreen> {
   }
 
   Future<void> _initializeDashboard() async {
-    await dashboardController.initializeDashboard(userId); 
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      Get.dialog(DotLoader(), barrierDismissible: false);
+    });
+    await dashboardController.initializeDashboard(userId);
+    if (Get.isDialogOpen ?? false) {
+      Get.back();
+    }
   }
 
   Future<void> _refreshData() async {
-    await dashboardController.initializeDashboard(userId); 
+    await dashboardController.initializeDashboard(userId);
   }
 
   @override
@@ -106,7 +113,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   ),
                   const SizedBox(height: 6),
                   const SizedBox(height: 20),
-        
+
                   Obx(() {
                     return Wrap(
                       spacing: 16,
@@ -155,11 +162,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       ],
                     );
                   }),
-        
+
                   const SizedBox(height: 30),
                   Divider(color: context.lineColor, thickness: 0.4),
                   const SizedBox(height: 20),
-        
+
                   Text(
                     'Wealth Projection',
                     style: TextStyle(
@@ -177,42 +184,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     ),
                   ),
                   const SizedBox(height: 24),
-        
-                  Text(
-                    'Your Net Worth Projection',
-                    style: TextStyle(
-                      fontWeight: AppTextStyle.semiBold,
-                      fontSize: FontSizes.heading1,
-                      color: context.mainFontColor,
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-        
-                  const ProjectionGraph(
-                    showLegend: true,
-                    legendLeft: 'Current',
-                    legendRight: 'Projected',
-                    isIncomeGraph: false,
-                  ),
-        
-                  const SizedBox(height: 24),
-                  Text(
-                    'Your Income Projection',
-                    style: TextStyle(
-                      fontWeight: AppTextStyle.semiBold,
-                      fontSize: FontSizes.heading1,
-                      color: context.mainFontColor,
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-        
-                  const ProjectionGraph(
-                    showLegend: true,
-                    legendLeft: 'Current',
-                    legendRight: 'Projected',
-                    isIncomeGraph: true,
-                  ),
-        
+
+                  const InteractivePieChart(),
+
                   const SizedBox(height: 30),
                   Center(
                     child: Text(

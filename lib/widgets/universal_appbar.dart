@@ -68,12 +68,12 @@ class UniversalAppBar extends StatelessWidget implements PreferredSizeWidget {
           ),
           onPressed: () => showNotificationDialog(context),
         ),
-        Container(
-          height: iconSize,
-          width: 1,
-          color: context.lineColor,
-          margin: EdgeInsets.symmetric(horizontal: width * 0.02),
-        ),
+        // Container(
+        //   height: iconSize,
+        //   width: 1,
+        //   color: context.buttonColor,
+        //   margin: EdgeInsets.symmetric(horizontal: width * 0.02),
+        // ),
         Obx(() {
           final path = controller.imagePath.value;
           final profileImageFile = (path != null) ? File(path) : null;
@@ -92,19 +92,32 @@ class UniversalAppBar extends StatelessWidget implements PreferredSizeWidget {
                 );
                 controller.loadImagePath();
               },
-              child: CircleAvatar(
-                radius: iconSize * 0.7,
-                backgroundColor: context.fieldColor,
-                backgroundImage:
-                    hasValidImage ? FileImage(profileImageFile) : null,
+              child: Container(
+                width: iconSize * 1.4, 
+                height: iconSize * 1.4,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  border: Border.all(
+                    color: context.buttonColor,
+                    width: 1, 
+                  ),
+                  color: context.fieldColor,
+                  image:
+                      hasValidImage
+                          ? DecorationImage(
+                            image: FileImage(profileImageFile),
+                            fit: BoxFit.cover,
+                          )
+                          : null,
+                ),
                 child:
-                    hasValidImage
-                        ? null
-                        : Icon(
+                    !hasValidImage
+                        ? Icon(
                           Icons.person,
-                          size: iconSize * 0.7,
+                          size: iconSize * 0.8,
                           color: context.placeholderColor,
-                        ),
+                        )
+                        : null,
               ),
             ),
           );

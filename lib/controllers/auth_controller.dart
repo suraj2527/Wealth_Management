@@ -143,11 +143,14 @@ class AuthController extends GetxController {
     required String userId,
     required String idToken,
   }) async {
-    final url = Uri.parse('http://192.168.1.24:7173/api/users');
+    final url = Uri.parse(
+      'https://dynamicsmonk-api.azure-api.net/wealthdev/users',
+    );
 
     final headers = {
       'Content-Type': 'application/json',
-      'Authorization': 'Bearer $idToken',
+      // 'Authorization': 'Bearer $idToken',
+      'Ocp-Apim-Subscription-Key': '507f2afb55654b58b949017a7d8c5f22',
     };
 
     final body = {
@@ -344,7 +347,7 @@ class AuthController extends GetxController {
       final storedEmail = prefs.getString('userEmail');
       final storedName = prefs.getString('userName');
       final storedUserId = prefs.getString('userId');
-      final storedDbId = prefs.getString('DBid'); 
+      final storedDbId = prefs.getString('DBid');
 
       if (storedRefreshToken != null &&
           storedEmail != null &&
@@ -357,11 +360,11 @@ class AuthController extends GetxController {
         email.value = storedEmail;
         fullName.value = storedName.trim().isNotEmpty ? storedName : '';
         userId.value = storedUserId;
-        dbUserId.value = storedDbId; 
+        dbUserId.value = storedDbId;
         isLoggedIn.value = true;
 
         debugPrint("✅ Silent login successful from Splash");
-        debugPrint("🪪 Stored DBid loaded: $storedDbId"); 
+        debugPrint("🪪 Stored DBid loaded: $storedDbId");
 
         return true;
       } else {

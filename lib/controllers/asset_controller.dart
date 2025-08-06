@@ -6,7 +6,8 @@ import '../models/asset_model.dart';
 
 class AssetController extends GetxController {
   final RxList<AssetModel> assetList = <AssetModel>[].obs;
-  final String baseUrl = 'http://192.168.1.24:7173/api/investments';
+  final String baseUrl =
+      'https://dynamicsmonk-api.azure-api.net/wealthdev/investments';
 
   Future<Map<String, dynamic>> submitAssetAndRefresh(
     String userId,
@@ -21,7 +22,10 @@ class AssetController extends GetxController {
     try {
       final response = await http.post(
         Uri.parse(baseUrl),
-        headers: {'Content-Type': 'application/json'},
+        headers: {
+          'Content-Type': 'application/json',
+          'Ocp-Apim-Subscription-Key': '507f2afb55654b58b949017a7d8c5f22',
+        },
         body: jsonEncode(fullAssetJson),
       );
 
@@ -48,7 +52,6 @@ class AssetController extends GetxController {
     }
   }
 
-  /// 📥 Fetch all assets for a user
   Future<Map<String, dynamic>> fetchAssets(String userId) async {
     final url = '$baseUrl/recent/$userId';
 
@@ -56,7 +59,13 @@ class AssetController extends GetxController {
     debugPrint("🌐 GET: $url");
 
     try {
-      final response = await http.get(Uri.parse(url));
+      final response = await http.get(
+        Uri.parse(url),
+        headers: {
+          'Content-Type': 'application/json',
+          'Ocp-Apim-Subscription-Key': '507f2afb55654b58b949017a7d8c5f22',
+        },
+      );
 
       debugPrint("📬 Response Status: ${response.statusCode}");
 
@@ -110,7 +119,13 @@ class AssetController extends GetxController {
     debugPrint("🌐 DELETE: $url");
 
     try {
-      final response = await http.delete(Uri.parse(url));
+      final response = await http.delete(
+        Uri.parse(url),
+        headers: {
+          'Content-Type': 'application/json',
+          'Ocp-Apim-Subscription-Key': '507f2afb55654b58b949017a7d8c5f22',
+        },
+      );
 
       debugPrint("📬 Response Status: ${response.statusCode}");
 

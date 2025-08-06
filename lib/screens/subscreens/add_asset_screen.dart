@@ -4,6 +4,7 @@ import 'package:get/get.dart';
 import 'package:wealth_app/controllers/auth_controller.dart';
 import 'package:wealth_app/widgets/calendar_input_field.dart';
 import 'package:wealth_app/widgets/dot_loader.dart';
+// import 'package:wealth_app/widgets/dot_loader.dart';
 import 'package:wealth_app/widgets/network_widget.dart';
 import 'package:wealth_app/widgets/universal_scaffold.dart';
 import 'package:wealth_app/extension/theme_extension.dart';
@@ -49,7 +50,6 @@ class _AddAssetScreenState extends State<AddAssetScreen> {
 
   final ScrollController _scrollController = ScrollController();
 
-  final String apiUrl = 'http://192.168.1.24:7173/api/investments';
   final userId = Get.find<AuthController>().dbUserId.value;
 
   @override
@@ -82,16 +82,11 @@ class _AddAssetScreenState extends State<AddAssetScreen> {
 
       final assetController = Get.find<AssetController>();
 
-      Get.dialog(
-        const Center(child: DotLoader()),
-        barrierDismissible: false,
-      );
+      Get.dialog(const Center(child: DotLoader()), barrierDismissible: true);
 
       final result = await assetController.submitAssetAndRefresh(userId, asset);
 
-
       if (result['success']) {
-        Get.back();
         Get.snackbar(
           'Success',
           'Asset added successfully',
@@ -99,6 +94,8 @@ class _AddAssetScreenState extends State<AddAssetScreen> {
           backgroundColor: context.successColor,
           colorText: Colors.white,
         );
+        Get.back();
+        Get.offNamed('/assets');
       } else {
         Get.snackbar(
           'Error',
@@ -177,21 +174,23 @@ class _AddAssetScreenState extends State<AddAssetScreen> {
                               ],
                             ),
                             const SizedBox(height: 20),
-        
+
                             CalendarInputField(
                               label: "Enter Start Date",
                               controller: _startDateController,
                             ),
                             const SizedBox(height: 16),
-        
+
                             CalendarInputField(
                               label: "Enter End Date",
                               controller: _endDateController,
                             ),
                             const SizedBox(height: 16),
-        
+
                             _label("Investment Category"),
-                            _dropdownField(_categories, _selectedCategory, (val) {
+                            _dropdownField(_categories, _selectedCategory, (
+                              val,
+                            ) {
                               setState(() {
                                 _selectedCategory = val!;
                                 if (_selectedCategory != 'Others') {
@@ -222,33 +221,36 @@ class _AddAssetScreenState extends State<AddAssetScreen> {
                               ),
                             ],
                             const SizedBox(height: 16),
-        
+
                             _label("Investment Sub-Category"),
-                            _dropdownField(_subCategories, _selectedSubCategory, (
-                              val,
-                            ) {
-                              setState(() {
-                                _selectedSubCategory = val!;
-                                if (_selectedSubCategory != 'Others') {
-                                  _customSubCategoryController.clear();
-                                } else {
-                                  Future.delayed(
-                                    const Duration(milliseconds: 300),
-                                    () {
-                                      _scrollController.animateTo(
-                                        _scrollController
-                                            .position
-                                            .maxScrollExtent,
-                                        duration: const Duration(
-                                          milliseconds: 400,
-                                        ),
-                                        curve: Curves.easeOut,
-                                      );
-                                    },
-                                  );
-                                }
-                              });
-                            }, context),
+                            _dropdownField(
+                              _subCategories,
+                              _selectedSubCategory,
+                              (val) {
+                                setState(() {
+                                  _selectedSubCategory = val!;
+                                  if (_selectedSubCategory != 'Others') {
+                                    _customSubCategoryController.clear();
+                                  } else {
+                                    Future.delayed(
+                                      const Duration(milliseconds: 300),
+                                      () {
+                                        _scrollController.animateTo(
+                                          _scrollController
+                                              .position
+                                              .maxScrollExtent,
+                                          duration: const Duration(
+                                            milliseconds: 400,
+                                          ),
+                                          curve: Curves.easeOut,
+                                        );
+                                      },
+                                    );
+                                  }
+                                });
+                              },
+                              context,
+                            ),
                             if (_selectedSubCategory == 'Others') ...[
                               const SizedBox(height: 10),
                               _textField(
@@ -257,11 +259,11 @@ class _AddAssetScreenState extends State<AddAssetScreen> {
                               ),
                             ],
                             const SizedBox(height: 16),
-        
+
                             _label("Investment Fund Name"),
                             _textField(_fundNameController, "Enter Fund Name"),
                             const SizedBox(height: 16),
-        
+
                             _label("Enter Amount"),
                             _textField(
                               _amountController,

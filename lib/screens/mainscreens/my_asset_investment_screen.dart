@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:wealth_app/constants/text_styles.dart';
 import 'package:wealth_app/controllers/auth_controller.dart';
 import 'package:wealth_app/controllers/asset_controller.dart';
@@ -10,6 +11,7 @@ import 'package:wealth_app/controllers/filter_controller.dart';
 import 'package:wealth_app/extension/theme_extension.dart';
 import 'package:wealth_app/models/asset_model.dart';
 import 'package:wealth_app/screens/subscreens/add_asset_screen.dart';
+import 'package:wealth_app/widgets/dot_loader.dart';
 import 'package:wealth_app/widgets/network_widget.dart';
 import 'package:wealth_app/widgets/universal_scaffold.dart';
 
@@ -29,13 +31,25 @@ class _MyAssetsAndInvestmentsScreenState
   final userId = Get.find<AuthController>().dbUserId.value;
   final AssetController assetController = Get.put(AssetController());
   final FilterController filterController = Get.find<FilterController>();
+  String? dbUserId;
 
-  final String apiUrl = 'http://192.168.1.24:7173/api/investments/recent';
+  final String apiUrl =
+      'https://dynamicsmonk-api.azure-api.net/wealthdev/investments/recent';
 
   @override
   void initState() {
     super.initState();
-    _fetchData();
+    _loadDbUserIdAndFetchData();
+  }
+
+  Future<void> _loadDbUserIdAndFetchData() async {
+    final prefs = await SharedPreferences.getInstance();
+    dbUserId = prefs.getString('DBid');
+    if (dbUserId != null) {
+      await _fetchData();
+    } else {
+      debugPrint("❌ DBid not found in SharedPreferences");
+    }
   }
 
   void _confirmDelete(BuildContext context, AssetModel asset) async {
@@ -48,12 +62,17 @@ class _MyAssetsAndInvestmentsScreenState
             actions: [
               TextButton(
                 onPressed: () => Navigator.pop(context, false),
-                child: const Text("Cancel"),
+                child: Text(
+                  "Cancel",
+                  style: TextStyle(color: context.mainFontColor),
+                ),
               ),
-              ElevatedButton(
-                onPressed: () => Navigator.pop(context, true),
-                style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
-                child: const Text("Delete"),
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(true),
+                child: const Text(
+                  "Delete",
+                  style: TextStyle(color: Colors.red),
+                ),
               ),
             ],
           ),
@@ -84,22 +103,29 @@ class _MyAssetsAndInvestmentsScreenState
   Future<void> _fetchData() async {
     final result = await assetController.fetchAssets(userId);
     if (result['success']) {
+      Get.dialog(DotLoader(), barrierDismissible: false);
+
       filterController.setAssetData(assetController.assetList);
+    }
+    if (Get.isDialogOpen ?? false) {
+      Get.back();
     }
   }
 
-  Future<void> _navigateToAddAsset() async {
-    final result = await Navigator.push(
-      context,
-      MaterialPageRoute(builder: (_) => const AddAssetScreen()),
-    );
+  Future<void> navigateToAddAsset() async {
+    final result = await Get.to(() => const AddAssetScreen());
+    _fetchData();
 
     if (result is AssetModel) {
       await http.post(
         Uri.parse(apiUrl),
-        headers: {'Content-Type': 'application/json'},
+        headers: {
+          'Content-Type': 'application/json',
+          'Ocp-Apim-Subscription-Key': '507f2afb55654b58b949017a7d8c5f22',
+        },
         body: jsonEncode(result.toJson()..addAll({'userId': userId})),
       );
+
       await _fetchData();
     }
   }
@@ -123,7 +149,7 @@ class _MyAssetsAndInvestmentsScreenState
                 final totalAmount = assets
                     .where((a) => a.amount != null)
                     .fold<double>(0.0, (sum, a) => sum + a.amount);
-      
+
                 return Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -212,7 +238,7 @@ class _MyAssetsAndInvestmentsScreenState
             ),
             const SizedBox(height: 8),
             ElevatedButton(
-              onPressed: _navigateToAddAsset,
+              onPressed: navigateToAddAsset,
               style: ElevatedButton.styleFrom(
                 backgroundColor: context.buttonColor,
                 foregroundColor: context.buttonTextColor,
@@ -316,8 +342,6 @@ class _MyAssetsAndInvestmentsScreenState
   }
 
   Widget _buildAssetList(List<AssetModel> assets, double mediaWidth) {
-    final visibleAssets = showFullList ? assets : assets.take(4).toList();
-
     return Container(
       width: mediaWidth * 0.93,
       padding: const EdgeInsets.all(12),
@@ -342,195 +366,179 @@ class _MyAssetsAndInvestmentsScreenState
             ),
           ),
           const SizedBox(height: 8),
-          AnimatedSize(
-            duration: const Duration(milliseconds: 300),
-            curve: Curves.easeInOut,
-            child: Column(
-              children:
-                  visibleAssets.isEmpty
-                      ? [
-                        Center(
-                          child: Text(
-                            "No asset added yet",
-                            style: TextStyle(color: context.mainFontColor),
-                          ),
-                        ),
-                      ]
-                      : visibleAssets.asMap().entries.map((entry) {
-                        final index = entry.key;
-                        final asset = entry.value;
-                        final isSelected = index == selectedIndex;
 
-                        return GestureDetector(
-                          onTap:
-                              () => setState(
-                                () => selectedIndex = isSelected ? -1 : index,
+          assets.isEmpty
+              ? SizedBox(
+                height: 100,
+                child: Center(
+                  child: Text(
+                    "No asset added yet",
+                    style: TextStyle(color: context.mainFontColor),
+                  ),
+                ),
+              )
+              : SizedBox(
+                height: MediaQuery.of(context).size.height * 0.45,
+
+                child: ListView.builder(
+                  padding: EdgeInsets.zero,
+                  itemCount: assets.length,
+                  physics: const BouncingScrollPhysics(),
+
+                  itemBuilder: (context, index) {
+                    final asset = assets[index];
+                    final isSelected = index == selectedIndex;
+
+                    return GestureDetector(
+                      onTap:
+                          () => setState(
+                            () => selectedIndex = isSelected ? -1 : index,
+                          ),
+                      child: AnimatedContainer(
+                        duration: const Duration(milliseconds: 300),
+                        margin: const EdgeInsets.only(bottom: 10),
+                        decoration: BoxDecoration(
+                          color:
+                              isSelected
+                                  ? context.buttonColor
+                                  : context.fieldColor,
+                          borderRadius: BorderRadius.circular(10),
+                          border: Border.all(color: context.borderColor),
+                        ),
+                        child: Column(
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                vertical: 16,
+                                horizontal: 16,
                               ),
-                          child: AnimatedContainer(
-                            duration: const Duration(milliseconds: 300),
-                            margin: const EdgeInsets.only(bottom: 10),
-                            decoration: BoxDecoration(
-                              color:
-                                  isSelected
-                                      ? context.buttonColor
-                                      : context.fieldColor,
-                              borderRadius: BorderRadius.circular(10),
-                              border: Border.all(color: context.borderColor),
-                            ),
-                            child: Column(
-                              children: [
-                                Container(
-                                  padding: const EdgeInsets.symmetric(
-                                    vertical: 16,
-                                    horizontal: 16,
-                                  ),
-                                  child: Row(
-                                    children: [
-                                      SvgPicture.asset(
-                                        'assets/icons/asset_icon.svg',
-                                        height: 22,
-                                        colorFilter: ColorFilter.mode(
-                                          isSelected
-                                              ? Colors.white
-                                              : context.buttonColor,
-                                          BlendMode.srcIn,
-                                        ),
-                                      ),
-                                      const SizedBox(width: 12),
-                                      Expanded(
-                                        child: Column(
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.start,
-                                          children: [
-                                            Text(
-                                              "${asset.investmentCategory} - ${asset.investmentFundName}",
-                                              style: TextStyle(
-                                                fontWeight: FontWeight.w600,
-                                                fontSize: 15,
-                                                color:
-                                                    isSelected
-                                                        ? Colors.white
-                                                        : context.mainFontColor,
-                                              ),
-                                            ),
-                                            const SizedBox(height: 4),
-                                            Text(
-                                              "(${_getYear(asset.startDate)})",
-                                              style: TextStyle(
-                                                fontSize: 12,
-                                                color:
-                                                    isSelected
-                                                        ? Colors.white70
-                                                        : context
-                                                            .placeholderColor,
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                      Text(
-                                        "₹${asset.amount.toStringAsFixed(2)}",
-                                        style: TextStyle(
-                                          fontWeight: FontWeight.w600,
-                                          fontSize: 15,
-                                          color:
-                                              isSelected
-                                                  ? Colors.white
-                                                  : context.mainFontColor,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                                if (isSelected)
-                                  Container(
-                                    width: double.infinity,
-                                    padding: const EdgeInsets.all(12),
-                                    decoration: BoxDecoration(
-                                      color: context.backgroundColor,
-                                      borderRadius: const BorderRadius.vertical(
-                                        bottom: Radius.circular(10),
-                                      ),
+                              child: Row(
+                                children: [
+                                  SvgPicture.asset(
+                                    'assets/icons/asset_icon.svg',
+                                    height: 22,
+                                    colorFilter: ColorFilter.mode(
+                                      isSelected
+                                          ? Colors.white
+                                          : context.buttonColor,
+                                      BlendMode.srcIn,
                                     ),
+                                  ),
+                                  const SizedBox(width: 12),
+                                  Expanded(
                                     child: Column(
                                       crossAxisAlignment:
                                           CrossAxisAlignment.start,
                                       children: [
-                                        _infoRow(
-                                          "Fund Name",
-                                          asset.investmentFundName,
-                                          context,
+                                        Text(
+                                          "${asset.investmentCategory} - ${asset.investmentFundName}",
+                                          style: TextStyle(
+                                            fontWeight: FontWeight.w600,
+                                            fontSize: 15,
+                                            color:
+                                                isSelected
+                                                    ? Colors.white
+                                                    : context.mainFontColor,
+                                          ),
                                         ),
-                                        _infoRow(
-                                          "Start Date",
-                                          asset.startDate,
-                                          context,
-                                        ),
-                                        _infoRow(
-                                          "End Date",
-                                          asset.endDate,
-                                          context,
-                                        ),
-                                        _infoRow(
-                                          "Category",
-                                          asset.investmentCategory,
-                                          context,
-                                        ),
-                                        _infoRow(
-                                          "Sub-Category",
-                                          asset.investmentSubCategory,
-                                          context,
-                                        ),
-                                        _infoRow(
-                                          "Amount",
-                                          "₹${asset.amount.toStringAsFixed(2)}",
-                                          context,
-                                        ),
-                                        const SizedBox(height: 12),
-                                        Align(
-                                          alignment: Alignment.centerRight,
-                                          child: TextButton.icon(
-                                            onPressed:
-                                                () => _confirmDelete(
-                                                  context,
-                                                  asset,
-                                                ),
-                                            icon: const Icon(
-                                              Icons.delete_outline,
-                                              color: Colors.red,
-                                            ),
-                                            label: const Text(
-                                              "Delete",
-                                              style: TextStyle(
-                                                color: Colors.red,
-                                              ),
-                                            ),
+                                        const SizedBox(height: 4),
+                                        Text(
+                                          "(${_getYear(asset.startDate)})",
+                                          style: TextStyle(
+                                            fontSize: 12,
+                                            color:
+                                                isSelected
+                                                    ? Colors.white70
+                                                    : context.placeholderColor,
                                           ),
                                         ),
                                       ],
                                     ),
                                   ),
-                              ],
+                                  Text(
+                                    "₹${asset.amount.toStringAsFixed(2)}",
+                                    style: TextStyle(
+                                      fontWeight: FontWeight.w600,
+                                      fontSize: 15,
+                                      color:
+                                          isSelected
+                                              ? Colors.white
+                                              : context.mainFontColor,
+                                    ),
+                                  ),
+                                ],
+                              ),
                             ),
-                          ),
-                        );
-                      }).toList(),
-            ),
-          ),
-          if (assets.length > 4)
-            Center(
-              child: TextButton.icon(
-                onPressed: () => setState(() => showFullList = !showFullList),
-                icon: Icon(
-                  showFullList ? Icons.expand_less : Icons.expand_more,
-                  color: context.buttonColor,
-                ),
-                label: Text(
-                  showFullList ? "View Less" : "View More",
-                  style: TextStyle(color: context.buttonColor),
+                            if (isSelected)
+                              Container(
+                                width: double.infinity,
+                                padding: const EdgeInsets.all(12),
+                                decoration: BoxDecoration(
+                                  color: context.backgroundColor,
+                                  borderRadius: const BorderRadius.vertical(
+                                    bottom: Radius.circular(10),
+                                  ),
+                                ),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    _infoRow(
+                                      "Fund Name",
+                                      asset.investmentFundName,
+                                      context,
+                                    ),
+                                    _infoRow(
+                                      "Start Date",
+                                      asset.startDate,
+                                      context,
+                                    ),
+                                    _infoRow(
+                                      "End Date",
+                                      asset.endDate,
+                                      context,
+                                    ),
+                                    _infoRow(
+                                      "Category",
+                                      asset.investmentCategory,
+                                      context,
+                                    ),
+                                    _infoRow(
+                                      "Sub-Category",
+                                      asset.investmentSubCategory,
+                                      context,
+                                    ),
+                                    _infoRow(
+                                      "Amount",
+                                      "₹${asset.amount.toStringAsFixed(2)}",
+                                      context,
+                                    ),
+                                    const SizedBox(height: 12),
+                                    Align(
+                                      alignment: Alignment.centerRight,
+                                      child: TextButton.icon(
+                                        onPressed:
+                                            () =>
+                                                _confirmDelete(context, asset),
+                                        icon: const Icon(
+                                          Icons.delete_outline,
+                                          color: Colors.red,
+                                        ),
+                                        label: const Text(
+                                          "Delete",
+                                          style: TextStyle(color: Colors.red),
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                          ],
+                        ),
+                      ),
+                    );
+                  },
                 ),
               ),
-            ),
         ],
       ),
     );
