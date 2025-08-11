@@ -2,7 +2,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
-import '../models/asset_model.dart';
+import '../../models/asset_model.dart';
 
 class AssetController extends GetxController {
   final RxList<AssetModel> assetList = <AssetModel>[].obs;
@@ -110,6 +110,57 @@ class AssetController extends GetxController {
   void clearAssets() {
     assetList.clear();
     debugPrint("🧼 Cleared all assets.");
+  }
+
+  Future<Map<String, dynamic>> updateAsset(
+    String userId,
+    AssetModel asset,
+  ) async {
+    final assetId = asset.id;
+    final url = '$baseUrl/${asset.id}';
+    final Map<String, dynamic> updatedAssetJson =
+        asset.toJson()..addAll({'userId': userId});
+
+    debugPrint("✏️ Updating Asset with ID: ${asset.id}");
+    debugPrint("🌐 PUT: $url");
+    debugPrint("📦 Updated JSON: ${jsonEncode(updatedAssetJson)}");
+
+    try {
+      final response = await http.put(
+        Uri.parse(url),
+        headers: {
+          'Content-Type': 'application/json',
+          'Ocp-Apim-Subscription-Key': '507f2afb55654b58b949017a7d8c5f22',
+        },
+        body: jsonEncode(updatedAssetJson),
+      );
+
+      debugPrint("📬 Response Status: ${response.statusCode}");
+      debugPrint("📩 Response Body: ${response.body}");
+
+      if (response.statusCode == 200) {
+        debugPrint("✅ Asset updated successfully. Refreshing list...");
+        final index = assetList.indexWhere((e) => e.id == assetId);
+        if (index != -1) {
+          assetList[index] = asset;
+          assetList.refresh();
+        }
+        await fetchAssets(userId);
+        return {'success': true};
+      } else {
+        return {
+          'success': false,
+          'message': 'Failed to update asset (Status: ${response.statusCode})',
+        };
+      }
+    } catch (e, stack) {
+      debugPrint("❌ Exception while updating asset: $e");
+      debugPrint("🧠 StackTrace: $stack");
+      return {
+        'success': false,
+        'message': 'Something went wrong while updating asset.',
+      };
+    }
   }
 
   Future<Map<String, dynamic>> deleteAsset(String id, String userId) async {

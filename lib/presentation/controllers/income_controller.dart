@@ -2,7 +2,7 @@ import 'dart:convert';
 import 'dart:io';
 import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
-import '../models/income_model.dart';
+import '../../models/income_model.dart';
 import 'package:flutter/foundation.dart';
 
 class IncomeController extends GetxController {
@@ -97,6 +97,55 @@ class IncomeController extends GetxController {
       return {
         'success': false,
         'message': 'Something went wrong while adding income.',
+      };
+    }
+  }
+
+  Future<Map<String, dynamic>> updateIncome(IncomeModel income , String userId) async {
+    final incomeid = income.id;
+    try {
+      debugPrint("✏️ Updating income with ID: ${income.id}");
+      debugPrint("➡️ Body: ${json.encode(income.toJson())}");
+
+      final response = await http.put(
+        Uri.parse('$baseUrl/income/$incomeid'), 
+        headers: {
+          'Content-Type': 'application/json',
+          'Ocp-Apim-Subscription-Key': '507f2afb55654b58b949017a7d8c5f22',
+        },
+        body: json.encode(income.toJson()), 
+      );
+
+      debugPrint(
+        "📡 PUT /income/${income.id} => Status: ${response.statusCode}",
+      );
+
+      if (response.statusCode == 200) {
+        // Replace updated income in the local list
+        final index = incomeList.indexWhere((i) => i.id == income.id);
+        if (index != -1) {
+          incomeList[index] = income;
+        }
+
+        debugPrint("✅ Income updated successfully.");
+        return {'success': true};
+      } else {
+        debugPrint("❌ Failed to update income: ${response.body}");
+        return {
+          'success': false,
+          'message': 'Failed to update income (Status: ${response.statusCode})',
+        };
+      }
+    } on SocketException catch (_) {
+      return {
+        'success': false,
+        'message': 'Server is not running or not reachable.',
+      };
+    } catch (e) {
+      debugPrint("❌ Error updating income: $e");
+      return {
+        'success': false,
+        'message': 'Something went wrong while updating income.',
       };
     }
   }

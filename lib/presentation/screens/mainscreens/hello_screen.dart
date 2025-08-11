@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
 import 'package:wealth_app/constants/text_styles.dart';
-import 'package:wealth_app/controllers/auth_controller.dart';
+import 'package:wealth_app/presentation/controllers/auth_controller.dart';
 
 class HelloScreen extends StatefulWidget {
   const HelloScreen({super.key});
@@ -74,7 +74,7 @@ class _HelloScreenState extends State<HelloScreen>
             const SizedBox(height: 30),
             Obx(
               () => Column(
-                 crossAxisAlignment: CrossAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
                   Text(
                     'Hello  ${_authController.fullName.value}',
@@ -86,11 +86,14 @@ class _HelloScreenState extends State<HelloScreen>
                   Align(
                     alignment: Alignment.center,
                     child: Row(
-                       mainAxisAlignment: MainAxisAlignment.center,
+                      mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         Text(
                           'Thank you, ',
-                          style: TextStyle(color: context.theme.colorScheme.primary, fontWeight: AppTextStyle.mediumWeight),
+                          style: TextStyle(
+                            color: context.theme.colorScheme.primary,
+                            fontWeight: AppTextStyle.mediumWeight,
+                          ),
                         ),
                         Text(
                           'You are a part of us now.',

@@ -3,9 +3,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
 import 'package:wealth_app/extension/theme_extension.dart';
-import 'package:wealth_app/screens/mainscreens/profile_screen.dart';
-import 'package:wealth_app/screens/subscreens/notification_screen.dart';
-import 'package:wealth_app/controllers/profile_image_controller.dart';
+import 'package:wealth_app/presentation/screens/mainscreens/profile_screen.dart';
+import 'package:wealth_app/presentation/screens/subscreens/notification_screen.dart';
+import 'package:wealth_app/presentation/controllers/profile_image_controller.dart';
 
 class UniversalAppBar extends StatelessWidget implements PreferredSizeWidget {
   const UniversalAppBar({super.key});
@@ -84,23 +84,26 @@ class UniversalAppBar extends StatelessWidget implements PreferredSizeWidget {
             padding: EdgeInsets.only(right: paddingRight),
             child: GestureDetector(
               onTap: () async {
-                await Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => const ProfileScreen(),
-                  ),
-                );
-                controller.loadImagePath();
+                final currentRoute = ModalRoute.of(context)?.settings.name;
+
+                if (currentRoute != '/profile') {
+                  await Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      settings: const RouteSettings(name: '/profile'),
+                      builder: (context) => const ProfileScreen(),
+                    ),
+                  );
+                  controller.loadImagePath();
+                }
               },
+
               child: Container(
-                width: iconSize * 1.4, 
+                width: iconSize * 1.4,
                 height: iconSize * 1.4,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  border: Border.all(
-                    color: context.buttonColor,
-                    width: 1, 
-                  ),
+                  border: Border.all(color: context.buttonColor, width: 1),
                   color: context.fieldColor,
                   image:
                       hasValidImage

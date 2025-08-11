@@ -1,33 +1,40 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
+import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:wealth_app/constants/text_styles.dart';
-import 'package:wealth_app/controllers/auth_controller.dart';
-import 'package:wealth_app/controllers/expense_controller.dart';
-import 'package:wealth_app/controllers/filter_controller.dart';
+import 'package:wealth_app/presentation/controllers/auth_controller.dart';
+import 'package:wealth_app/presentation/controllers/asset_controller.dart';
+import 'package:wealth_app/presentation/controllers/filter_controller.dart';
 import 'package:wealth_app/extension/theme_extension.dart';
-import 'package:wealth_app/models/expense_model.dart';
-import 'package:wealth_app/screens/subscreens/add_expense_screen.dart';
-import 'package:wealth_app/widgets/dot_loader.dart';
-import 'package:wealth_app/widgets/network_widget.dart';
-import 'package:wealth_app/widgets/universal_scaffold.dart';
-import 'package:intl/intl.dart';
+import 'package:wealth_app/models/asset_model.dart';
+import 'package:wealth_app/presentation/screens/subscreens/add_asset_screen.dart';
+import 'package:wealth_app/presentation/widgets/dot_loader.dart';
+import 'package:wealth_app/presentation/widgets/network_widget.dart';
+import 'package:wealth_app/presentation/widgets/universal_scaffold.dart';
 
-class MyExpensesScreen extends StatefulWidget {
-  const MyExpensesScreen({super.key});
+class MyAssetsAndInvestmentsScreen extends StatefulWidget {
+  const MyAssetsAndInvestmentsScreen({super.key});
 
   @override
-  State<MyExpensesScreen> createState() => _MyExpensesScreenState();
+  State<MyAssetsAndInvestmentsScreen> createState() =>
+      _MyAssetsAndInvestmentsScreenState();
 }
 
-class _MyExpensesScreenState extends State<MyExpensesScreen> {
+class _MyAssetsAndInvestmentsScreenState
+    extends State<MyAssetsAndInvestmentsScreen> {
   int selectedIndex = -1;
   bool showFullList = false;
+
   final userId = Get.find<AuthController>().dbUserId.value;
-  final ExpenseController expenseController = Get.put(ExpenseController());
+  final AssetController assetController = Get.put(AssetController());
   final FilterController filterController = Get.find<FilterController>();
   String? dbUserId;
+
+  final String apiUrl =
+      'https://dynamicsmonk-api.azure-api.net/wealthdev/investments/recent';
 
   @override
   void initState() {
@@ -45,28 +52,23 @@ class _MyExpensesScreenState extends State<MyExpensesScreen> {
     }
   }
 
-  Future<void> _showDeleteConfirmation(
-    BuildContext context,
-    ExpenseModel expense,
-  ) async {
+  void _confirmDelete(BuildContext context, AssetModel asset) async {
     final confirmed = await showDialog<bool>(
       context: context,
       builder:
-          (ctx) => AlertDialog(
-            title: const Text("Confirm Deletion"),
-            content: const Text(
-              "Are you sure you want to delete this expense?",
-            ),
+          (_) => AlertDialog(
+            title: const Text("Delete Asset"),
+            content: const Text("Are you sure you want to delete this asset?"),
             actions: [
               TextButton(
-                onPressed: () => Navigator.of(ctx).pop(false),
+                onPressed: () => Navigator.pop(context, false),
                 child: Text(
                   "Cancel",
                   style: TextStyle(color: context.mainFontColor),
                 ),
               ),
               TextButton(
-                onPressed: () => Navigator.of(ctx).pop(true),
+                onPressed: () => Navigator.of(context).pop(true),
                 child: const Text(
                   "Delete",
                   style: TextStyle(color: Colors.red),
@@ -77,25 +79,21 @@ class _MyExpensesScreenState extends State<MyExpensesScreen> {
     );
 
     if (confirmed == true) {
-      final result = await expenseController.deleteExpense(expense.Id);
-      debugPrint('😍😎😎$expense.Id');
-
+      final result = await assetController.deleteAsset(asset.id, userId);
       if (result['success']) {
         setState(() => selectedIndex = -1);
         await _fetchData();
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text("Expense deleted successfully."),
+            content: Text("Asset deleted successfully"),
             backgroundColor: Colors.green,
-            duration: Duration(seconds: 2),
           ),
         );
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(result['message'] ?? 'Failed to delete expense.'),
+            content: Text(result['message'] ?? "Deletion failed"),
             backgroundColor: Colors.red,
-            duration: const Duration(seconds: 2),
           ),
         );
       }
@@ -104,19 +102,37 @@ class _MyExpensesScreenState extends State<MyExpensesScreen> {
 
   Future<void> _fetchData() async {
     Get.dialog(DotLoader(), barrierDismissible: false);
-    final result = await expenseController.fetchExpenses(userId);
+
+    final result = await assetController.fetchAssets(userId);
     if (result['success']) {
-      filterController.setExpenseData(expenseController.expenseList);
+      filterController.setAssetData(assetController.assetList);
     }
     if (Get.isDialogOpen ?? false) {
       Get.back();
     }
   }
 
+  Future<void> navigateToAddAsset() async {
+    final result = await Get.to(() => const AddAssetScreen());
+    _fetchData();
+
+    if (result is AssetModel) {
+      await http.post(
+        Uri.parse(apiUrl),
+        headers: {
+          'Content-Type': 'application/json',
+          'Ocp-Apim-Subscription-Key': '507f2afb55654b58b949017a7d8c5f22',
+        },
+        body: jsonEncode(result.toJson()..addAll({'userId': userId})),
+      );
+
+      await _fetchData();
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final mediaWidth = MediaQuery.of(context).size.width;
-    final currentYear = DateTime.now().year;
 
     return NetworkAwareWidget(
       child: UniversalScaffold(
@@ -128,19 +144,11 @@ class _MyExpensesScreenState extends State<MyExpensesScreen> {
             child: SingleChildScrollView(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
               physics: const BouncingScrollPhysics(),
-
               child: Obx(() {
-                final expenses = filterController.filteredExpenseList;
-                final totalAmount = expenses
-                    .where((e) {
-                      try {
-                        final parsedDate = DateTime.parse(e.startDate);
-                        return parsedDate.year == currentYear;
-                      } catch (e) {
-                        return false;
-                      }
-                    })
-                    .fold<double>(0.0, (sum, e) => sum + e.amount);
+                final assets = filterController.filteredAssetList;
+                final totalAmount = assets
+                    .where((a) => a.amount != null)
+                    .fold<double>(0.0, (sum, a) => sum + a.amount);
 
                 return Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -151,7 +159,7 @@ class _MyExpensesScreenState extends State<MyExpensesScreen> {
                     const SizedBox(height: 16),
                     _buildHeaderWithFilter(),
                     const SizedBox(height: 12),
-                    _buildExpenseList(expenses, mediaWidth)
+                    _buildAssetList(assets, mediaWidth),
                   ],
                 );
               }),
@@ -171,7 +179,15 @@ class _MyExpensesScreenState extends State<MyExpensesScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              "My Expenses",
+              "My Assets &",
+              style: TextStyle(
+                fontSize: 22,
+                fontWeight: AppTextStyle.bold,
+                color: context.mainFontColor,
+              ),
+            ),
+            Text(
+              "Investments",
               style: TextStyle(
                 fontSize: 22,
                 fontWeight: AppTextStyle.bold,
@@ -180,22 +196,22 @@ class _MyExpensesScreenState extends State<MyExpensesScreen> {
             ),
             const SizedBox(height: 4),
             Text(
-              "Your Overall Expenses",
-              style: TextStyle(fontSize: 12, color: context.placeholderColor),
+              "Your Overall Assets Summary",
+              style: TextStyle(fontSize: 12,  color: context.mainFontColor),
             ),
             const SizedBox(height: 40),
             Text(
-              "Current Year Expenses",
+              "Current Year Investments",
               style: TextStyle(
-                fontSize: 18,
                 fontWeight: AppTextStyle.semiBold,
+                fontSize: 18,
                 color: context.mainFontColor,
               ),
             ),
             const SizedBox(height: 4),
             Text(
-              "Your Total Expenses",
-              style: TextStyle(fontSize: 12, color: context.placeholderColor),
+              "This Year Investments",
+              style: TextStyle(fontSize: 12,  color: context.mainFontColor),
             ),
           ],
         ),
@@ -221,32 +237,22 @@ class _MyExpensesScreenState extends State<MyExpensesScreen> {
               ),
             ),
             const SizedBox(height: 8),
-            SizedBox(
-              height: 40,
-              child: ElevatedButton(
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (_) => AddExpenseScreen()),
-                  ).then((_) {
-                    _fetchData();
-                  });
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: context.buttonColor,
-                  foregroundColor: context.buttonTextColor,
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 13,
-                    vertical: 10,
-                  ),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8),
-                  ),
+            ElevatedButton(
+              onPressed: navigateToAddAsset,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: context.buttonColor,
+                foregroundColor: context.buttonTextColor,
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 13,
+                  vertical: 10,
                 ),
-                child: const Text(
-                  "Add Expense",
-                  style: TextStyle(fontSize: 14),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
                 ),
+              ),
+              child: const Text(
+                "Add Investment",
+                style: TextStyle(fontSize: 14),
               ),
             ),
           ],
@@ -260,19 +266,19 @@ class _MyExpensesScreenState extends State<MyExpensesScreen> {
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         Text(
-          "Expense List",
+          "Assets List",
           style: TextStyle(
-            fontSize: 18,
             fontWeight: AppTextStyle.semiBold,
+            fontSize: 18,
             color: context.mainFontColor,
           ),
         ),
         InkWell(
-          onTap: () => _showFilterBottomSheet(context),
+          onTap: () => _showAssetFilterBottomSheet(context),
           child: Row(
             children: [
               Text(
-                "Expense Filter",
+                "Asset Filter",
                 style: TextStyle(color: context.buttonColor),
               ),
               const SizedBox(width: 8),
@@ -284,52 +290,58 @@ class _MyExpensesScreenState extends State<MyExpensesScreen> {
     );
   }
 
-  void _showFilterBottomSheet(BuildContext context) {
+  void _showAssetFilterBottomSheet(BuildContext context) {
     showModalBottomSheet(
       backgroundColor: context.fieldColor,
       context: context,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
-      builder: (_) {
-        return SafeArea(
-          child: Obx(() {
-            return Column(
-              mainAxisSize: MainAxisSize.min,
-              children:
-                  FilterType.values.map((type) {
-                    final selected =
-                        filterController.expenseFilterType.value == type;
-                    return ListTile(
-                      leading: Icon(
-                        selected ? Icons.check_circle : Icons.circle_outlined,
-                        color:
+      builder:
+          (_) => SafeArea(
+            child: Obx(
+              () => Padding(
+                padding: const EdgeInsets.symmetric(vertical: 10),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children:
+                      AssetFilterType.values.map((type) {
+                        final selected =
+                            filterController.selectedAssetType.value == type;
+                        return ListTile(
+                          leading: Icon(
                             selected
-                                ? context.buttonColor
-                                : context.borderColor,
-                      ),
-                      title: Text(
-                        filterController.getFilterLabel(type),
-                        style: TextStyle(
-                          color: context.mainFontColor,
-                          fontWeight:
-                              selected ? FontWeight.bold : FontWeight.normal,
-                        ),
-                      ),
-                      onTap: () {
-                        filterController.updateExpenseFilter(type);
-                        Navigator.pop(context);
-                      },
-                    );
-                  }).toList(),
-            );
-          }),
-        );
-      },
+                                ? Icons.check_circle
+                                : Icons.circle_outlined,
+                            color:
+                                selected
+                                    ? context.buttonColor
+                                    : context.borderColor,
+                          ),
+                          title: Text(
+                            filterController.getAssetFilterLabel(type),
+                            style: TextStyle(
+                              color: context.mainFontColor,
+                              fontWeight:
+                                  selected
+                                      ? FontWeight.bold
+                                      : FontWeight.normal,
+                            ),
+                          ),
+                          onTap: () {
+                            filterController.updateAssetFilter(type);
+                            Navigator.pop(context);
+                          },
+                        );
+                      }).toList(),
+                ),
+              ),
+            ),
+          ),
     );
   }
 
-  Widget _buildExpenseList(List<ExpenseModel> expenses, double mediaWidth) {
+  Widget _buildAssetList(List<AssetModel> assets, double mediaWidth) {
     return Container(
       width: mediaWidth * 0.93,
       padding: const EdgeInsets.all(12),
@@ -341,26 +353,26 @@ class _MyExpensesScreenState extends State<MyExpensesScreen> {
       child: Column(
         children: [
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 4),
+            padding: const EdgeInsets.symmetric(horizontal: 30),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
-                  "Category",
-                  style: TextStyle(color: context.mainFontColor),
+                  "Assets",
+                  style: TextStyle(color: context.mainFontColor,fontWeight: AppTextStyle.mediumWeight),
                 ),
-                Text("Amount", style: TextStyle(color: context.mainFontColor)),
+                Text("Amount", style: TextStyle(color: context.mainFontColor,fontWeight: AppTextStyle.mediumWeight)),
               ],
             ),
           ),
           const SizedBox(height: 8),
 
-          expenses.isEmpty
+          assets.isEmpty
               ? SizedBox(
                 height: 100,
                 child: Center(
                   child: Text(
-                    "No expense found",
+                    "No asset added yet",
                     style: TextStyle(color: context.mainFontColor),
                   ),
                 ),
@@ -369,10 +381,12 @@ class _MyExpensesScreenState extends State<MyExpensesScreen> {
                 height: MediaQuery.of(context).size.height * 0.45,
 
                 child: ListView.builder(
-                  itemCount: expenses.length,
+                  padding: EdgeInsets.zero,
+                  itemCount: assets.length,
                   physics: const BouncingScrollPhysics(),
+
                   itemBuilder: (context, index) {
-                    final expense = expenses[index];
+                    final asset = assets[index];
                     final isSelected = index == selectedIndex;
 
                     return GestureDetector(
@@ -393,7 +407,7 @@ class _MyExpensesScreenState extends State<MyExpensesScreen> {
                         ),
                         child: Column(
                           children: [
-                            Padding(
+                            Container(
                               padding: const EdgeInsets.symmetric(
                                 vertical: 16,
                                 horizontal: 16,
@@ -401,8 +415,8 @@ class _MyExpensesScreenState extends State<MyExpensesScreen> {
                               child: Row(
                                 children: [
                                   SvgPicture.asset(
-                                    'assets/icons/rupee.svg',
-                                    height: 20,
+                                    'assets/icons/asset_icon.svg',
+                                    height: 22,
                                     colorFilter: ColorFilter.mode(
                                       isSelected
                                           ? Colors.white
@@ -417,7 +431,7 @@ class _MyExpensesScreenState extends State<MyExpensesScreen> {
                                           CrossAxisAlignment.start,
                                       children: [
                                         Text(
-                                          "${expense.expenseType} - ${expense.subCategory}",
+                                          "${asset.investmentCategory} ",
                                           style: TextStyle(
                                             fontWeight: FontWeight.w600,
                                             fontSize: 15,
@@ -429,22 +443,7 @@ class _MyExpensesScreenState extends State<MyExpensesScreen> {
                                         ),
                                         const SizedBox(height: 4),
                                         Text(
-                                          () {
-                                            try {
-                                              final parsedDate = DateTime.parse(
-                                                expense.startDate,
-                                              );
-                                              return DateFormat(
-                                                'dd MMM yyyy',
-                                              ).format(parsedDate);
-                                            } catch (_) {
-                                              return expense
-                                                      .startDate
-                                                      .isNotEmpty
-                                                  ? expense.startDate
-                                                  : 'No Date';
-                                            }
-                                          }(),
+                                          "(${_getYear(asset.startDate)})",
                                           style: TextStyle(
                                             fontSize: 12,
                                             color:
@@ -457,7 +456,7 @@ class _MyExpensesScreenState extends State<MyExpensesScreen> {
                                     ),
                                   ),
                                   Text(
-                                    "₹${expense.amount.toStringAsFixed(2)}",
+                                    "₹${asset.amount.toStringAsFixed(2)}",
                                     style: TextStyle(
                                       fontWeight: FontWeight.w600,
                                       fontSize: 15,
@@ -483,46 +482,73 @@ class _MyExpensesScreenState extends State<MyExpensesScreen> {
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    _buildDetailRow(
-                                      "Sub Category",
-                                      expense.subCategory,
+                                    _infoRow(
+                                      "Fund Name",
+                                      asset.investmentFundName,
                                       context,
                                     ),
-                                    _buildDetailRow(
-                                      "Period",
-                                      expense.period,
+                                    _infoRow(
+                                      "Start Date",
+                                      asset.startDate,
                                       context,
                                     ),
-                                    _buildDetailRow(
-                                      "Annual Increment %",
-                                      "${expense.expectedAnnualIncrementPercentage.toStringAsFixed(2)}%",
+                                    _infoRow(
+                                      "End Date",
+                                      asset.endDate,
                                       context,
                                     ),
-                                    _buildDetailRow(
-                                      "Is Recurring",
-                                      expense.isRecurring ? "Yes" : "No",
+                                    _infoRow(
+                                      "Category",
+                                      asset.investmentCategory,
                                       context,
                                     ),
-                                    _buildDetailRow(
-                                      "Year",
-                                      expense.year.toString(),
+                                    _infoRow(
+                                      "Sub-Category",
+                                      asset.investmentSubCategory,
+                                      context,
+                                    ),
+                                    _infoRow(
+                                      "Amount",
+                                      "₹${asset.amount.toStringAsFixed(2)}",
                                       context,
                                     ),
                                     const SizedBox(height: 12),
-                                    Align(
-                                      alignment: Alignment.centerRight,
-                                      child: TextButton.icon(
-                                        style: TextButton.styleFrom(
-                                          foregroundColor: Colors.red,
+                                    Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.end,
+                                      children: [
+                                        // TextButton.icon(
+                                        //   onPressed: () {
+                                        //     _editAsset(context, asset);
+                                        //   },
+                                        //   icon: const Icon(
+                                        //     Icons.edit_outlined,
+                                        //     color: Colors.blue,
+                                        //   ),
+                                        //   label: const Text(
+                                        //     "Edit",
+                                        //     style: TextStyle(
+                                        //       color: Colors.blue,
+                                        //     ),
+                                        //   ),
+                                        // ),
+                                        // const SizedBox(width: 8),
+                                        TextButton.icon(
+                                          onPressed:
+                                              () => _confirmDelete(
+                                                context,
+                                                asset,
+                                              ),
+                                          icon: const Icon(
+                                            Icons.delete_outline,
+                                            color: Colors.red,
+                                          ),
+                                          label: const Text(
+                                            "Delete",
+                                            style: TextStyle(color: Colors.red),
+                                          ),
                                         ),
-                                        icon: const Icon(Icons.delete_outline),
-                                        label: const Text("Delete"),
-                                        onPressed:
-                                            () => _showDeleteConfirmation(
-                                              context,
-                                              expense,
-                                            ),
-                                      ),
+                                      ],
                                     ),
                                   ],
                                 ),
@@ -537,6 +563,15 @@ class _MyExpensesScreenState extends State<MyExpensesScreen> {
         ],
       ),
     );
+  }
+
+  String _getYear(String startDate) {
+    try {
+      final date = DateTime.parse(startDate);
+      return date.year.toString();
+    } catch (e) {
+      return "";
+    }
   }
 
   Widget _cardTile(String amount) {
@@ -567,7 +602,7 @@ class _MyExpensesScreenState extends State<MyExpensesScreen> {
   }
 }
 
-Widget _buildDetailRow(String label, String value, BuildContext context) {
+Widget _infoRow(String label, String value, BuildContext context) {
   return Padding(
     padding: const EdgeInsets.symmetric(vertical: 6),
     child: Row(
@@ -587,3 +622,12 @@ Widget _buildDetailRow(String label, String value, BuildContext context) {
     ),
   );
 }
+
+// void _editAsset(BuildContext context, AssetModel asset) {
+//   Navigator.push(
+//     context,
+//     MaterialPageRoute(
+//       builder: (context) => AddAssetScreen(assetToEdit: asset, isEdit: true),
+//     ),
+//   );
+// }

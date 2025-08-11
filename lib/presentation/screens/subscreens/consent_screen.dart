@@ -5,9 +5,9 @@ import 'package:get/get.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:wealth_app/constants/text_styles.dart';
 import 'package:wealth_app/extension/theme_extension.dart';
-import 'package:wealth_app/screens/mainscreens/splash_screen.dart';
-import 'package:wealth_app/widgets/consent_dialog.dart';
-import 'package:wealth_app/widgets/dot_loader.dart';
+import 'package:wealth_app/presentation/screens/mainscreens/splash_screen.dart';
+import 'package:wealth_app/presentation/widgets/consent_dialog.dart';
+import 'package:wealth_app/presentation/widgets/dot_loader.dart';
 
 class ConsentGatekeeper extends StatefulWidget {
   const ConsentGatekeeper({super.key});

@@ -1,13 +1,13 @@
 import 'package:get/get.dart';
-import 'package:wealth_app/screens/Authentication/login_screen.dart';
-import 'package:wealth_app/screens/mainscreens/dashboard_screen.dart';
-import 'package:wealth_app/screens/mainscreens/income_overview.dart';
-import 'package:wealth_app/screens/mainscreens/my_asset_investment_screen.dart';
-import 'package:wealth_app/screens/mainscreens/my_expenses_screen.dart';
-import 'package:wealth_app/screens/mainscreens/profile_screen.dart';
-import 'package:wealth_app/screens/mainscreens/splash_screen.dart';
-import 'package:wealth_app/screens/subscreens/consent_screen.dart';
-import 'package:wealth_app/screens/subscreens/upload_document_screen.dart';
+import 'package:wealth_app/presentation/screens/Authentication/login_screen.dart';
+import 'package:wealth_app/presentation/screens/mainscreens/dashboard_screen.dart';
+import 'package:wealth_app/presentation/screens/mainscreens/income_overview.dart';
+import 'package:wealth_app/presentation/screens/mainscreens/my_asset_investment_screen.dart';
+import 'package:wealth_app/presentation/screens/mainscreens/my_expenses_screen.dart';
+import 'package:wealth_app/presentation/screens/mainscreens/profile_screen.dart';
+import 'package:wealth_app/presentation/screens/mainscreens/splash_screen.dart';
+import 'package:wealth_app/presentation/screens/subscreens/consent_screen.dart';
+import 'package:wealth_app/presentation/screens/subscreens/upload_document_screen.dart';
 
 class AppRoutes {
   static final routes = [

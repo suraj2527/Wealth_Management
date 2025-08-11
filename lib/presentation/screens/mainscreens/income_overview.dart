@@ -3,13 +3,13 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:wealth_app/constants/text_styles.dart';
-import 'package:wealth_app/controllers/income_controller.dart';
-import 'package:wealth_app/controllers/filter_controller.dart';
+import 'package:wealth_app/presentation/controllers/income_controller.dart';
+import 'package:wealth_app/presentation/controllers/filter_controller.dart';
 import 'package:wealth_app/extension/theme_extension.dart';
-import 'package:wealth_app/screens/subscreens/add_income_screen.dart';
-import 'package:wealth_app/widgets/dot_loader.dart';
-import 'package:wealth_app/widgets/network_widget.dart';
-import 'package:wealth_app/widgets/universal_scaffold.dart';
+import 'package:wealth_app/presentation/screens/subscreens/add_income_screen.dart';
+import 'package:wealth_app/presentation/widgets/dot_loader.dart';
+import 'package:wealth_app/presentation/widgets/network_widget.dart';
+import 'package:wealth_app/presentation/widgets/universal_scaffold.dart';
 
 class IncomeOverviewScreen extends StatefulWidget {
   const IncomeOverviewScreen({super.key});
@@ -128,7 +128,7 @@ class _IncomeOverviewScreenState extends State<IncomeOverviewScreen> {
             const SizedBox(height: 4),
             Text(
               "Your complete income summary",
-              style: TextStyle(fontSize: 12, color: context.placeholderColor),
+              style: TextStyle(fontSize: 12, color: context.mainFontColor),
             ),
             const SizedBox(height: 40),
             Text(
@@ -142,7 +142,7 @@ class _IncomeOverviewScreenState extends State<IncomeOverviewScreen> {
             const SizedBox(height: 4),
             Text(
               "Your Current Income",
-              style: TextStyle(fontSize: 12, color: context.placeholderColor),
+              style: TextStyle(fontSize: 12, color: context.mainFontColor),
             ),
           ],
         ),
@@ -240,7 +240,7 @@ class _IncomeOverviewScreenState extends State<IncomeOverviewScreen> {
           ),
         ),
         InkWell(
-          onTap: () => _showFilterBottomSheet(context),
+          onTap: () => _showIncomeFilterBottomSheet(context),
           child: Row(
             children: [
               Text(
@@ -271,17 +271,23 @@ class _IncomeOverviewScreenState extends State<IncomeOverviewScreen> {
         child: Column(
           children: [
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 4),
+              padding: const EdgeInsets.symmetric(horizontal: 28),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text(
-                    "Income's",
-                    style: TextStyle(color: context.mainFontColor),
+                    "Income",
+                    style: TextStyle(
+                      color: context.mainFontColor,
+                      fontWeight: AppTextStyle.mediumWeight,
+                    ),
                   ),
                   Text(
                     "Amount",
-                    style: TextStyle(color: context.mainFontColor),
+                    style: TextStyle(
+                      color: context.mainFontColor,
+                      fontWeight: AppTextStyle.mediumWeight,
+                    ),
                   ),
                 ],
               ),
@@ -411,116 +417,155 @@ class _IncomeOverviewScreenState extends State<IncomeOverviewScreen> {
                                             _formatDate(income.startDate),
                                             context,
                                           ),
+                                          _infoRow(
+                                            "End Date",
+                                            _formatDate(income.endDate),
+                                            context,
+                                          ),
                                           const SizedBox(height: 12),
-                                          Align(
-                                            alignment: Alignment.centerRight,
-                                            child: TextButton.icon(
-                                              onPressed: () async {
-                                                final confirmed = await showDialog<
-                                                  bool
-                                                >(
-                                                  context: context,
-                                                  builder:
-                                                      (ctx) => AlertDialog(
-                                                        title: const Text(
-                                                          "Confirm Deletion",
-                                                        ),
-                                                        content: const Text(
-                                                          "Are you sure you want to delete this income?",
-                                                        ),
-                                                        actions: [
-                                                          TextButton(
-                                                            onPressed:
-                                                                () =>
-                                                                    Navigator.of(
-                                                                      ctx,
-                                                                    ).pop(
-                                                                      false,
-                                                                    ),
-                                                            child: Text(
-                                                              "Cancel",
-                                                              style: TextStyle(
-                                                                color:
-                                                                    context
-                                                                        .mainFontColor,
-                                                              ),
-                                                            ),
-                                                          ),
-                                                          TextButton(
-                                                            onPressed:
-                                                                () =>
-                                                                    Navigator.of(
-                                                                      ctx,
-                                                                    ).pop(true),
-                                                            child: const Text(
-                                                              "Delete",
-                                                              style: TextStyle(
-                                                                color:
-                                                                    Colors.red,
-                                                              ),
-                                                            ),
-                                                          ),
-                                                        ],
-                                                      ),
-                                                );
+                                          Row(
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.end,
+                                            children: [
+                                              // TextButton.icon(
+                                              //   onPressed: () {
+                                              //     Navigator.push(
+                                              //       context,
+                                              //       MaterialPageRoute(
+                                              //         builder:
+                                              //             (_) =>
+                                              //                 AddIncomeScreen(
+                                              //                   isEdit: true,
+                                              //                   incomeToEdit:
+                                              //                       income,
+                                              //                 ),
+                                              //       ),
+                                              //     );
+                                              //   },
+                                              //   icon: const Icon(
+                                              //     Icons.edit,
+                                              //     color: Colors.blue,
+                                              //   ),
+                                              //   label: const Text(
+                                              //     "Edit",
+                                              //     style: TextStyle(
+                                              //       color: Colors.blue,
+                                              //     ),
+                                              //   ),
+                                              // ),
 
-                                                if (confirmed == true) {
-                                                  final result =
-                                                      await incomeController
-                                                          .deleteIncome(
-                                                            income.id,
-                                                          );
-                                                  if (result['success'] ==
-                                                      true) {
-                                                    setState(
-                                                      () => selectedIndex = -1,
-                                                    );
-                                                    await _fetchData();
-                                                    ScaffoldMessenger.of(
-                                                      context,
-                                                    ).showSnackBar(
-                                                      const SnackBar(
-                                                        content: Text(
-                                                          "Income deleted successfully.",
-                                                        ),
-                                                        backgroundColor:
-                                                            Colors.green,
-                                                        duration: Duration(
-                                                          seconds: 2,
-                                                        ),
-                                                      ),
-                                                    );
-                                                  } else {
-                                                    ScaffoldMessenger.of(
-                                                      context,
-                                                    ).showSnackBar(
-                                                      SnackBar(
-                                                        content: Text(
-                                                          result['message'] ??
-                                                              'Failed to delete income.',
-                                                        ),
-                                                        backgroundColor:
-                                                            Colors.red,
-                                                        duration:
-                                                            const Duration(
-                                                              seconds: 2,
+                                              TextButton.icon(
+                                                onPressed: () async {
+                                                  final confirmed = await showDialog<
+                                                    bool
+                                                  >(
+                                                    context: context,
+                                                    builder:
+                                                        (ctx) => AlertDialog(
+                                                          title: const Text(
+                                                            "Confirm Deletion",
+                                                          ),
+                                                          content: const Text(
+                                                            "Are you sure you want to delete this income?",
+                                                          ),
+                                                          actions: [
+                                                            TextButton(
+                                                              onPressed:
+                                                                  () =>
+                                                                      Navigator.of(
+                                                                        ctx,
+                                                                      ).pop(
+                                                                        false,
+                                                                      ),
+                                                              child: Text(
+                                                                "Cancel",
+                                                                style: TextStyle(
+                                                                  color:
+                                                                      context
+                                                                          .mainFontColor,
+                                                                ),
+                                                              ),
                                                             ),
-                                                      ),
-                                                    );
+                                                            TextButton(
+                                                              onPressed:
+                                                                  () =>
+                                                                      Navigator.of(
+                                                                        ctx,
+                                                                      ).pop(
+                                                                        true,
+                                                                      ),
+                                                              child: const Text(
+                                                                "Delete",
+                                                                style: TextStyle(
+                                                                  color:
+                                                                      Colors
+                                                                          .red,
+                                                                ),
+                                                              ),
+                                                            ),
+                                                          ],
+                                                        ),
+                                                  );
+
+                                                  if (confirmed == true) {
+                                                    final result =
+                                                        await incomeController
+                                                            .deleteIncome(
+                                                              income.id,
+                                                            );
+                                                    if (result['success'] ==
+                                                        true) {
+                                                      setState(
+                                                        () =>
+                                                            selectedIndex = -1,
+                                                      );
+                                                      await _fetchData();
+                                                      ScaffoldMessenger.of(
+                                                        context,
+                                                      ).showSnackBar(
+                                                        const SnackBar(
+                                                          content: Text(
+                                                            "Income deleted successfully.",
+                                                          ),
+                                                          backgroundColor:
+                                                              Colors.green,
+                                                          duration: Duration(
+                                                            seconds: 2,
+                                                          ),
+                                                        ),
+                                                      );
+                                                    } else {
+                                                      ScaffoldMessenger.of(
+                                                        context,
+                                                      ).showSnackBar(
+                                                        SnackBar(
+                                                          content: Text(
+                                                            result['message'] ??
+                                                                'Failed to delete income.',
+                                                          ),
+                                                          backgroundColor:
+                                                              Colors.red,
+                                                          duration:
+                                                              const Duration(
+                                                                seconds: 2,
+                                                              ),
+                                                        ),
+                                                      );
+                                                    }
                                                   }
-                                                }
-                                              },
-                                              icon: const Icon(
-                                                Icons.delete_outline,
-                                                color: Colors.red,
-                                              ),
-                                              label: const Text(
-                                                "Delete",
-                                                style: TextStyle(
+                                                },
+                                                icon: const Icon(
+                                                  Icons.delete_outline,
                                                   color: Colors.red,
                                                 ),
+                                                label: const Text(
+                                                  "Delete",
+                                                  style: TextStyle(
+                                                    color: Colors.red,
+                                                  ),
+                                                ),
                                               ),
-                                            ),
+                                            ],
                                           ),
                                         ],
                                       ),
@@ -559,7 +604,7 @@ class _IncomeOverviewScreenState extends State<IncomeOverviewScreen> {
     );
   }
 
-  void _showFilterBottomSheet(BuildContext context) {
+  void _showIncomeFilterBottomSheet(BuildContext context) {
     showModalBottomSheet(
       backgroundColor: context.fieldColor,
       context: context,
@@ -573,9 +618,9 @@ class _IncomeOverviewScreenState extends State<IncomeOverviewScreen> {
             return Column(
               mainAxisSize: MainAxisSize.min,
               children:
-                  FilterType.values.map((type) {
+                  IncomeFilterType.values.map((type) {
                     final selected =
-                        filterController.incomeFilterType.value == type;
+                        filterController.selectedIncomeType.value == type;
                     return ListTile(
                       leading: Icon(
                         selected ? Icons.check_circle : Icons.circle_outlined,
@@ -585,7 +630,7 @@ class _IncomeOverviewScreenState extends State<IncomeOverviewScreen> {
                                 : context.placeholderColor,
                       ),
                       title: Text(
-                        filterController.getFilterLabel(type),
+                        filterController.getIncomeFilterLabel(type),
                         style: TextStyle(color: context.mainFontColor),
                       ),
                       onTap: () {

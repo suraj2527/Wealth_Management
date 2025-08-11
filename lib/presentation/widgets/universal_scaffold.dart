@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:wealth_app/extension/theme_extension.dart';
-import 'package:wealth_app/widgets/network_widget.dart';
-import 'package:wealth_app/widgets/side_menu_drawer.dart';
-import 'package:wealth_app/widgets/universal_appbar.dart';
+import 'package:wealth_app/presentation/widgets/network_widget.dart';
+import 'package:wealth_app/presentation/widgets/side_menu_drawer.dart';
+import 'package:wealth_app/presentation/widgets/universal_appbar.dart';
 
 class UniversalScaffold extends StatelessWidget {
   final Widget body;

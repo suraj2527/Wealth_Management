@@ -4,11 +4,11 @@ import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:wealth_app/constants/text_styles.dart';
-import 'package:wealth_app/controllers/auth_controller.dart';
-import 'package:wealth_app/controllers/profile_image_controller.dart';
-import 'package:wealth_app/controllers/theme_controller.dart';
-import 'package:wealth_app/widgets/network_widget.dart';
-import 'package:wealth_app/widgets/universal_scaffold.dart';
+import 'package:wealth_app/presentation/controllers/auth_controller.dart';
+import 'package:wealth_app/presentation/controllers/profile_image_controller.dart';
+import 'package:wealth_app/presentation/controllers/theme_controller.dart';
+import 'package:wealth_app/presentation/widgets/network_widget.dart';
+import 'package:wealth_app/presentation/widgets/universal_scaffold.dart';
 import 'package:wealth_app/extension/theme_extension.dart';
 
 class ProfileScreen extends StatefulWidget {

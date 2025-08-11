@@ -2,7 +2,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
-import '../models/expense_model.dart';
+import '../../models/expense_model.dart';
 
 class ExpenseController extends GetxController {
   var expenseList = <ExpenseModel>[].obs;
@@ -105,22 +105,32 @@ class ExpenseController extends GetxController {
   }
 
   Future<Map<String, dynamic>> updateExpense(
-    String expenseId,
-    ExpenseModel updatedExpense,
     String userId,
+    ExpenseModel expense,
   ) async {
+    final expenseId = expense.Id;
+
     try {
+      debugPrint("✏️ Updating expenses with ID: ${expense.Id}");
+      debugPrint("➡️ Body: ${json.encode(expense.toJson())}");
       final response = await http.put(
         Uri.parse('$baseUrl/$expenseId'),
         headers: {
           'Content-Type': 'application/json',
           'Ocp-Apim-Subscription-Key': '507f2afb55654b58b949017a7d8c5f22',
         },
-        body: jsonEncode(updatedExpense.toJson()..addAll({'userId': userId})),
+        body: jsonEncode(expense.toJson()..addAll({'userId': userId})),
       );
 
       if (response.statusCode == 200) {
-        await fetchExpenses(userId);
+        debugPrint("✅ Expense updated successfully. Refreshing list...");
+
+        final index = expenseList.indexWhere((e) => e.Id == expenseId);
+        if (index != -1) {
+          expenseList[index] = expense;
+          expenseList.refresh();
+        }
+
         return {'success': true};
       } else {
         return {

@@ -4,14 +4,14 @@ import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:wealth_app/constants/font_sizes.dart';
 import 'package:wealth_app/constants/text_styles.dart';
-import 'package:wealth_app/controllers/auth_controller.dart';
-import 'package:wealth_app/controllers/dashboard_controller.dart';
+import 'package:wealth_app/presentation/controllers/auth_controller.dart';
+import 'package:wealth_app/presentation/controllers/dashboard_controller.dart';
 import 'package:wealth_app/extension/theme_extension.dart';
-import 'package:wealth_app/widgets/dot_loader.dart';
-import 'package:wealth_app/widgets/network_widget.dart';
-import 'package:wealth_app/widgets/pie_chart.dart';
-import 'package:wealth_app/widgets/summary_card.dart';
-import 'package:wealth_app/widgets/universal_scaffold.dart';
+import 'package:wealth_app/presentation/widgets/dot_loader.dart';
+import 'package:wealth_app/presentation/widgets/network_widget.dart';
+import 'package:wealth_app/presentation/widgets/pie_chart.dart';
+import 'package:wealth_app/presentation/widgets/summary_card.dart';
+import 'package:wealth_app/presentation/widgets/universal_scaffold.dart';
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
@@ -179,7 +179,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   Text(
                     'Based on current data trends',
                     style: TextStyle(
-                      color: context.placeholderColor,
+                      color: context.mainFontColor,
                       fontSize: FontSizes.body,
                     ),
                   ),

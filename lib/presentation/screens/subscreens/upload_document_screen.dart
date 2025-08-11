@@ -6,7 +6,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:wealth_app/extension/theme_extension.dart';
-import 'package:wealth_app/widgets/universal_scaffold.dart';
+import 'package:wealth_app/presentation/widgets/universal_scaffold.dart';
 
 class UploadDocumentScreen extends StatefulWidget {
   const UploadDocumentScreen({super.key});
@@ -123,7 +123,6 @@ class _UploadDocumentScreenState extends State<UploadDocumentScreen> {
 
             const SizedBox(height: 10),
 
-            // Sample record UI
             Container(
               height: height,
               width: width,

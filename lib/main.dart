@@ -3,17 +3,17 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:wealth_app/constants/app_theme.dart';
-import 'package:wealth_app/controllers/asset_controller.dart';
-import 'package:wealth_app/controllers/auth_controller.dart';
-import 'package:wealth_app/controllers/dashboard_controller.dart';
-import 'package:wealth_app/controllers/expense_controller.dart';
-import 'package:wealth_app/controllers/filter_controller.dart';
-import 'package:wealth_app/controllers/income_controller.dart';
-import 'package:wealth_app/controllers/network_controller.dart';
-import 'package:wealth_app/controllers/profile_image_controller.dart';
-import 'package:wealth_app/controllers/theme_controller.dart';
+import 'package:wealth_app/presentation/controllers/asset_controller.dart';
+import 'package:wealth_app/presentation/controllers/auth_controller.dart';
+import 'package:wealth_app/presentation/controllers/dashboard_controller.dart';
+import 'package:wealth_app/presentation/controllers/expense_controller.dart';
+import 'package:wealth_app/presentation/controllers/filter_controller.dart';
+import 'package:wealth_app/presentation/controllers/income_controller.dart';
+import 'package:wealth_app/presentation/controllers/network_controller.dart';
+import 'package:wealth_app/presentation/controllers/profile_image_controller.dart';
+import 'package:wealth_app/presentation/controllers/theme_controller.dart';
 import 'package:wealth_app/routes/app_routes.dart';
-import 'package:wealth_app/screens/subscreens/consent_screen.dart';
+import 'package:wealth_app/presentation/screens/subscreens/consent_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();

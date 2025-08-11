@@ -1,19 +1,22 @@
 import 'package:dropdown_button2/dropdown_button2.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:wealth_app/controllers/auth_controller.dart';
-import 'package:wealth_app/widgets/calendar_input_field.dart';
-import 'package:wealth_app/widgets/dot_loader.dart';
-// import 'package:wealth_app/widgets/dot_loader.dart';
-import 'package:wealth_app/widgets/network_widget.dart';
-import 'package:wealth_app/widgets/universal_scaffold.dart';
+import 'package:intl/intl.dart';
+import 'package:wealth_app/presentation/controllers/auth_controller.dart';
+import 'package:wealth_app/presentation/widgets/calendar_input_field.dart';
+import 'package:wealth_app/presentation/widgets/dot_loader.dart';
+import 'package:wealth_app/presentation/widgets/network_widget.dart';
+import 'package:wealth_app/presentation/widgets/universal_scaffold.dart';
 import 'package:wealth_app/extension/theme_extension.dart';
 
-import '../../models/asset_model.dart';
+import '../../../models/asset_model.dart';
 import '../../controllers/asset_controller.dart';
 
 class AddAssetScreen extends StatefulWidget {
-  const AddAssetScreen({super.key});
+  final AssetModel? assetToEdit;
+  final bool isEdit;
+
+  const AddAssetScreen({super.key, this.assetToEdit, this.isEdit = false});
 
   @override
   State<AddAssetScreen> createState() => _AddAssetScreenState();
@@ -37,7 +40,6 @@ class _AddAssetScreenState extends State<AddAssetScreen> {
     'Gold',
     'Others',
   ];
-
   final List<String> _subCategories = [
     'Equity Mutual fund',
     'Debt Fund',
@@ -49,8 +51,40 @@ class _AddAssetScreenState extends State<AddAssetScreen> {
   String _selectedSubCategory = 'Equity Mutual fund';
 
   final ScrollController _scrollController = ScrollController();
+  late final String userId;
 
-  final userId = Get.find<AuthController>().dbUserId.value;
+  @override
+  void initState() {
+    super.initState();
+    userId = Get.find<AuthController>().dbUserId.value;
+
+    if (widget.isEdit && widget.assetToEdit != null) {
+      final asset = widget.assetToEdit!;
+      final DateFormat formatter = DateFormat('yyyy-MM-dd');
+      _startDateController.text = asset.startDate;
+      _endDateController.text = asset.endDate;
+      _startDateController.text = formatter.format(
+        DateTime.parse(asset.startDate),
+      );
+      _endDateController.text = formatter.format(DateTime.parse(asset.endDate));
+      _fundNameController.text = asset.investmentFundName;
+      _amountController.text = asset.amount.toString();
+
+      if (_categories.contains(asset.investmentCategory)) {
+        _selectedCategory = asset.investmentCategory;
+      } else {
+        _selectedCategory = 'Others';
+        _customCategoryController.text = asset.investmentCategory;
+      }
+
+      if (_subCategories.contains(asset.investmentSubCategory)) {
+        _selectedSubCategory = asset.investmentSubCategory;
+      } else {
+        _selectedSubCategory = 'Others';
+        _customSubCategoryController.text = asset.investmentSubCategory;
+      }
+    }
+  }
 
   @override
   void dispose() {
@@ -61,11 +95,16 @@ class _AddAssetScreenState extends State<AddAssetScreen> {
   Future<void> _submitAsset() async {
     FocusScope.of(context).unfocus();
 
-    if (_formKey.currentState!.validate()) {
+    if (!_formKey.currentState!.validate()) return;
+
+    if (userId == null || userId.isEmpty) {
+      return _showError("User not authenticated");
+    }
+
+    try {
       final asset = AssetModel(
         userId: userId,
         id: '',
-        // date: DateTime.now().year.toString(),
         startDate: _startDateController.text,
         endDate: _endDateController.text,
         investmentCategory:
@@ -82,14 +121,24 @@ class _AddAssetScreenState extends State<AddAssetScreen> {
 
       final assetController = Get.find<AssetController>();
 
-      Get.dialog(const Center(child: DotLoader()), barrierDismissible: true);
+      Get.dialog(const Center(child: DotLoader()), barrierDismissible: false);
 
-      final result = await assetController.submitAssetAndRefresh(userId, asset);
+      late Map<String, dynamic> result;
+      if (widget.isEdit) {
+        result = await assetController.updateAsset(userId, asset);
+      } else {
+        result = await assetController.submitAssetAndRefresh(userId, asset);
+      }
+      if (Get.isDialogOpen ?? false) Get.back();
 
-      if (result['success']) {
+      if (result['success'] == true) {
+        await assetController.fetchAssets(userId);
+
         Get.snackbar(
           'Success',
-          'Asset added successfully',
+          widget.isEdit
+              ? 'Asset updated successfully'
+              : 'Asset added successfully',
           snackPosition: SnackPosition.BOTTOM,
           backgroundColor: context.successColor,
           colorText: Colors.white,
@@ -97,15 +146,24 @@ class _AddAssetScreenState extends State<AddAssetScreen> {
         Get.back();
         Get.offNamed('/assets');
       } else {
-        Get.snackbar(
-          'Error',
-          result['message'] ?? 'Failed to add asset.',
-          snackPosition: SnackPosition.BOTTOM,
-          backgroundColor: context.failedColor,
-          colorText: Colors.white,
-        );
+        _showError(result['message'] ?? 'Something went wrong');
+        if (Get.isDialogOpen ?? false) Get.back();
       }
+    } catch (e) {
+      debugPrint('submitAsset error: $e');
+      _showError("Something went wrong");
+      if (Get.isDialogOpen ?? false) Get.back();
     }
+  }
+
+  void _showError(String msg) {
+    Get.snackbar(
+      'Error',
+      msg,
+      snackPosition: SnackPosition.BOTTOM,
+      backgroundColor: context.failedColor,
+      colorText: Colors.white,
+    );
   }
 
   @override
@@ -149,9 +207,9 @@ class _AddAssetScreenState extends State<AddAssetScreen> {
                             Row(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
-                                const Text(
-                                  "Add Asset",
-                                  style: TextStyle(
+                                Text(
+                                  widget.isEdit ? "Edit Asset" : "Add Asset",
+                                  style: const TextStyle(
                                     fontSize: 22,
                                     fontWeight: FontWeight.bold,
                                   ),
@@ -195,21 +253,6 @@ class _AddAssetScreenState extends State<AddAssetScreen> {
                                 _selectedCategory = val!;
                                 if (_selectedCategory != 'Others') {
                                   _customCategoryController.clear();
-                                } else {
-                                  Future.delayed(
-                                    const Duration(milliseconds: 300),
-                                    () {
-                                      _scrollController.animateTo(
-                                        _scrollController
-                                            .position
-                                            .maxScrollExtent,
-                                        duration: const Duration(
-                                          milliseconds: 400,
-                                        ),
-                                        curve: Curves.easeOut,
-                                      );
-                                    },
-                                  );
                                 }
                               });
                             }, context),
@@ -231,21 +274,6 @@ class _AddAssetScreenState extends State<AddAssetScreen> {
                                   _selectedSubCategory = val!;
                                   if (_selectedSubCategory != 'Others') {
                                     _customSubCategoryController.clear();
-                                  } else {
-                                    Future.delayed(
-                                      const Duration(milliseconds: 300),
-                                      () {
-                                        _scrollController.animateTo(
-                                          _scrollController
-                                              .position
-                                              .maxScrollExtent,
-                                          duration: const Duration(
-                                            milliseconds: 400,
-                                          ),
-                                          curve: Curves.easeOut,
-                                        );
-                                      },
-                                    );
                                   }
                                 });
                               },
@@ -269,6 +297,16 @@ class _AddAssetScreenState extends State<AddAssetScreen> {
                               _amountController,
                               "Enter Amount",
                               isNumber: true,
+                              validator: (val) {
+                                if (val == null || val.trim().isEmpty)
+                                  return "Required";
+                                final number = double.tryParse(val.trim());
+                                if (number == null)
+                                  return "Enter a valid number";
+                                if (number < 0)
+                                  return "Amount can't be negative";
+                                return null;
+                              },
                             ),
                             const SizedBox(height: 16),
                           ],
@@ -292,9 +330,9 @@ class _AddAssetScreenState extends State<AddAssetScreen> {
                             borderRadius: BorderRadius.circular(10),
                           ),
                         ),
-                        child: const Text(
-                          "Submit",
-                          style: TextStyle(color: Colors.white),
+                        child: Text(
+                          widget.isEdit ? "Update" : "Submit",
+                          style: const TextStyle(color: Colors.white),
                         ),
                       ),
                     ),
@@ -316,12 +354,23 @@ class _AddAssetScreenState extends State<AddAssetScreen> {
     TextEditingController controller,
     String hint, {
     bool isNumber = false,
+    String? Function(String?)? validator,
   }) {
     return TextFormField(
       controller: controller,
       keyboardType: isNumber ? TextInputType.number : TextInputType.text,
-      validator: (val) => val == null || val.isEmpty ? "Required" : null,
-      decoration: InputDecoration(hintText: hint),
+      validator:
+          validator ??
+          (val) {
+            if (val == null || val.trim().isEmpty) return "Required";
+            if (isNumber) {
+              final number = double.tryParse(val.trim());
+              if (number == null) return "Enter a valid number";
+              if (number <= 0) return "Amount must be greater than 0";
+            }
+            return null;
+          },
+      decoration: _inputDecoration(context, hint),
     );
   }
 
@@ -362,19 +411,31 @@ class _AddAssetScreenState extends State<AddAssetScreen> {
       items:
           items
               .map(
-                (val) => DropdownMenuItem<String>(
-                  value: val,
-                  child: Text(
-                    val,
-                    style: TextStyle(
-                      color: isDarkMode ? context.mainFontColor : Colors.black,
-                    ),
-                  ),
-                ),
+                (val) => DropdownMenuItem<String>(value: val, child: Text(val)),
               )
               .toList(),
       onChanged: onChanged,
       validator: (val) => val == null || val.isEmpty ? "Required" : null,
     );
   }
+}
+
+InputDecoration _inputDecoration(BuildContext context, String hint) {
+  return InputDecoration(
+    filled: true,
+    fillColor: context.fieldColor,
+    hintText: hint,
+    border: OutlineInputBorder(
+      borderRadius: BorderRadius.circular(8),
+      borderSide: BorderSide(color: context.borderColor.withOpacity(0.1)),
+    ),
+    enabledBorder: OutlineInputBorder(
+      borderRadius: BorderRadius.circular(8),
+      borderSide: BorderSide(color: context.borderColor.withOpacity(0.1)),
+    ),
+    focusedBorder: OutlineInputBorder(
+      borderRadius: BorderRadius.circular(8),
+      borderSide: BorderSide(color: context.borderColor),
+    ),
+  );
 }

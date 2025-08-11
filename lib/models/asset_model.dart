@@ -7,7 +7,6 @@ class AssetModel {
   final String investmentFundName;
   final double amount;
   final String id;
-  double get currentValue => amount;
 
   AssetModel({
     required this.userId,

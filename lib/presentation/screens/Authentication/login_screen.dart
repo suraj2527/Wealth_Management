@@ -3,12 +3,12 @@ import 'package:flutter/services.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
 import 'package:wealth_app/constants/text_styles.dart';
-import 'package:wealth_app/controllers/auth_controller.dart';
+import 'package:wealth_app/presentation/controllers/auth_controller.dart';
 import 'package:wealth_app/extension/theme_extension.dart';
-import 'package:wealth_app/screens/mainscreens/hello_screen.dart';
-import 'package:wealth_app/widgets/custom_button.dart';
-import 'package:wealth_app/widgets/dot_loader.dart';
-import 'package:wealth_app/widgets/network_widget.dart';
+import 'package:wealth_app/presentation/screens/mainscreens/hello_screen.dart';
+import 'package:wealth_app/presentation/widgets/custom_button.dart';
+import 'package:wealth_app/presentation/widgets/dot_loader.dart';
+import 'package:wealth_app/presentation/widgets/network_widget.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});

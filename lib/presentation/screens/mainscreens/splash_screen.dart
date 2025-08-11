@@ -3,11 +3,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
 import 'package:wealth_app/constants/text_styles.dart';
-import 'package:wealth_app/controllers/auth_controller.dart';
-import 'package:wealth_app/controllers/dashboard_controller.dart';
-import 'package:wealth_app/screens/Authentication/login_screen.dart';
-import 'package:wealth_app/screens/mainscreens/dashboard_screen.dart';
-import 'package:wealth_app/widgets/dot_loader.dart';
+import 'package:wealth_app/presentation/controllers/auth_controller.dart';
+import 'package:wealth_app/presentation/controllers/dashboard_controller.dart';
+import 'package:wealth_app/presentation/screens/Authentication/login_screen.dart';
+import 'package:wealth_app/presentation/screens/mainscreens/dashboard_screen.dart';
+import 'package:wealth_app/presentation/widgets/dot_loader.dart';
 import 'package:wealth_app/extension/theme_extension.dart';
 
 class SplashScreen extends StatefulWidget {
