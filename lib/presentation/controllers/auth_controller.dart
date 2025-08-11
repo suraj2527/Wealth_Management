@@ -64,6 +64,7 @@ class AuthController extends GetxController {
       debugPrint("❌ Failed to decode JWT: $e");
     }
   }
+
   Future<void> login() async {
     if (isLoggingIn.value) return;
     isLoggingIn.value = true;
@@ -170,10 +171,10 @@ class AuthController extends GetxController {
         dbUserId.value = backendUserId;
 
         debugPrint("✅ User registered in backend: $backendUserId");
-        return true; // ✅ success
+        return true;
       } else {
         debugPrint("❌ Backend failed: ${response.statusCode} ${response.body}");
-        return false; // ❌ fail
+        return false;
       }
     } catch (e) {
       debugPrint("❌ Error sending data to backend: $e");
