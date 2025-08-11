@@ -28,7 +28,6 @@ class AuthController extends GetxController {
   static const String _discoveryUrl =
       'https://dynamicsmonkdev.b2clogin.com/tfp/dynamicsmonkdev.onmicrosoft.com/B2C_1_b2c_wealth_1/v2.0/.well-known/openid-configuration';
 
-  // Decode JWT Payload
   Map<String, dynamic> decodeJWT(String token) {
     final parts = token.split('.');
     if (parts.length != 3) throw Exception('Invalid JWT token');
@@ -39,7 +38,6 @@ class AuthController extends GetxController {
     return json.decode(decodedPayload);
   }
 
-  // Print Token Data
   Future<void> printTokenData() async {
     try {
       final idToken = await getIdToken();
@@ -106,7 +104,6 @@ class AuthController extends GetxController {
 
         debugPrint("✅ Azure login successful");
 
-        // ✅ Backend call and check response
         final backendSuccess = await sendUserDataToBackend(
           name: name,
           email: userEmail,
