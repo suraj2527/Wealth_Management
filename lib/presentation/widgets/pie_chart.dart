@@ -52,95 +52,172 @@ class _InteractivePieChartState extends State<InteractivePieChart> {
               ),
             ),
             const SizedBox(height: 20),
+
             AspectRatio(
               aspectRatio: 1.3,
-              child: PieChart(
-                PieChartData(
-                  sectionsSpace: 2,
-                  centerSpaceRadius: 50,
-                  pieTouchData: PieTouchData(
-                    touchCallback: (event, response) {
-                      setState(() {
-                        if (response != null &&
-                            response.touchedSection != null) {
-                          touchedIndex =
-                              response.touchedSection!.touchedSectionIndex;
-                        } else {
-                          touchedIndex = null;
-                        }
-                      });
-                    },
-                  ),
-                  sections: List.generate(data.length, (i) {
-                    final percent =
-                        (data[i].value / total * 100).toStringAsFixed(1);
-                    return PieChartSectionData(
-                      color: data[i].color,
-                      value: data[i].value,
-                      title: '$percent%',
-                      titleStyle: TextStyle(
-                        color: context.mainFontColor,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 14,
+              child: Stack(
+                alignment: Alignment.center,
+                children: [
+                  PieChart(
+                    PieChartData(
+                      sectionsSpace: 2,
+                      centerSpaceRadius: 50,
+                      pieTouchData: PieTouchData(
+                        touchCallback: (event, response) {
+                          if (response == null ||
+                              response.touchedSection == null) {
+                            setState(() {
+                              touchedIndex = null;
+                            });
+                            return;
+                          }
+
+                          if (event is FlTapDownEvent ||
+                              event is FlLongPressStart) {
+                            setState(() {
+                              touchedIndex =
+                                  response.touchedSection!.touchedSectionIndex;
+                            });
+                          }
+
+                          if (event is FlTapUpEvent ||
+                              event is FlPanEndEvent ||
+                              event is FlLongPressEnd ||
+                              event is FlPointerExitEvent) {
+                            setState(() {
+                              touchedIndex = null;
+                            });
+                          }
+                        },
                       ),
-                      radius: 60,
-                      badgeWidget: touchedIndex == i
-                          ? Container(
-                              padding: const EdgeInsets.symmetric(
-                                  horizontal: 8, vertical: 4),
-                              decoration: BoxDecoration(
-                                color: context.backgroundColor,
-                                borderRadius: BorderRadius.circular(6),
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: Colors.black.withOpacity(0.15),
-                                    blurRadius: 4,
-                                    offset: const Offset(0, 2),
-                                  ),
-                                ],
+                      sections: List.generate(data.length, (i) {
+                        double actualPercent =
+                            total == 0 ? 0 : (data[i].value / total) * 100;
+
+                        double displayPercent =
+                            actualPercent < 3 && actualPercent > 0
+                                ? 3
+                                : actualPercent;
+
+                        return PieChartSectionData(
+                          color: data[i].color,
+                          value: displayPercent,
+                          title: '${actualPercent.toStringAsFixed(1)}%',
+                          titleStyle: TextStyle(
+                            color: context.mainFontColor,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 14,
+                          ),
+                          radius: touchedIndex == i ? 70 : 67,
+                        );
+                      }),
+                    ),
+                    swapAnimationDuration: const Duration(milliseconds: 300),
+                    swapAnimationCurve: Curves.easeOutCubic,
+                  ),
+
+                  if (touchedIndex != null &&
+                      touchedIndex! >= 0 &&
+                      touchedIndex! < data.length)
+                    Positioned(
+                      bottom: 0,
+                      child: ConstrainedBox(
+                        constraints: BoxConstraints(
+                          maxWidth: MediaQuery.of(context).size.width * 0.7,
+                        ),
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 10,
+                            vertical: 8,
+                          ),
+                          decoration: BoxDecoration(
+                            color: context.backgroundColor,
+                            borderRadius: BorderRadius.circular(6),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withOpacity(0.15),
+                                blurRadius: 4,
+                                offset: const Offset(0, 2),
                               ),
-                              child: Text(
-                                '${data[i].label}: ₹${data[i].value.toStringAsFixed(2)} ($percent%)',
-                                style: const TextStyle(
-                                  fontSize: 10,
-                                  color: Colors.black,
+                            ],
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Container(
+                                width: 8,
+                                height: 8,
+                                decoration: BoxDecoration(
+                                  color: data[touchedIndex!].color,
+                                  shape: BoxShape.circle,
                                 ),
                               ),
-                            )
-                          : null,
-                      badgePositionPercentageOffset: 1.2, 
-                    );
-                  }),
-                ),
+                              const SizedBox(width: 6),
+                              Flexible(
+                                child: RichText(
+                                  overflow: TextOverflow.ellipsis,
+                                  text: TextSpan(
+                                    children: [
+                                      TextSpan(
+                                        text: '${data[touchedIndex!].label}: ',
+                                        style: TextStyle(
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 12,
+                                          color: context.mainFontColor,
+                                        ),
+                                      ),
+                                      TextSpan(
+                                        text:
+                                            '₹${data[touchedIndex!].value.toStringAsFixed(2)} ',
+                                            // '(${(total == 0 ? 0 : (data[touchedIndex!].value / total) * 100).toStringAsFixed(1)}%)',
+                                        style: TextStyle(
+                                          fontWeight: FontWeight.normal,
+                                          fontSize: 12,
+                                          color: context.mainFontColor,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                ],
               ),
             ),
+
             const SizedBox(height: 20),
+
             Wrap(
               spacing: 16,
               runSpacing: 8,
-              children: data.map((item) {
-                return Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Container(
-                      width: 12,
-                      height: 12,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        color: item.color,
-                      ),
-                    ),
-                    const SizedBox(width: 6),
-                    Text(
-                      item.label,
-                      style: TextStyle(
-                        color: context.mainFontColor,
-                        fontSize: 10,
-                      ),
-                    ),
-                  ],
-                );
-              }).toList(),
+              children:
+                  data.map((item) {
+                    return Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Container(
+                          width: 12,
+                          height: 12,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: item.color,
+                          ),
+                        ),
+                        const SizedBox(width: 6),
+                        Text(
+                          item.label,
+                          style: TextStyle(
+                            color: context.mainFontColor,
+                            fontSize: 10,
+                          ),
+                        ),
+                      ],
+                    );
+                  }).toList(),
             ),
           ],
         ),

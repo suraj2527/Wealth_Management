@@ -65,12 +65,79 @@ class AuthController extends GetxController {
     }
   }
 
-  Future<void> login() async {
-    if (isLoggingIn.value) {
-      debugPrint("⚠️ Login already in progress.");
-      return;
-    }
+  // Future<void> login() async {
+  //   if (isLoggingIn.value) {
+  //     debugPrint("⚠️ Login already in progress.");
+  //     return;
+  //   }
 
+  //   isLoggingIn.value = true;
+
+  //   try {
+  //     debugPrint("🌐 Performing interactive login...");
+  //     final result = await _appAuth.authorizeAndExchangeCode(
+  //       AuthorizationTokenRequest(
+  //         _clientId,
+  //         _redirectUri,
+  //         externalUserAgent:
+  //             ExternalUserAgent.ephemeralAsWebAuthenticationSession,
+  //         promptValues: ['login'],
+  //         discoveryUrl: _discoveryUrl,
+  //         scopes: _scopes,
+  //       ),
+  //     );
+
+  //     if (result.idToken != null) {
+  //       final payload = decodeJWT(result.idToken!);
+  //       final name =
+  //           (payload['name']?.toString().trim().isNotEmpty ?? false)
+  //               ? payload['name']
+  //               : '';
+  //       final userEmail =
+  //           payload['emails'] is List
+  //               ? payload['emails'][0]
+  //               : payload['email'] ?? '';
+  //       final userIdValue = payload['sub'] ?? payload['oid'] ?? '';
+
+  //       fullName.value = name;
+  //       email.value = userEmail;
+  //       userId.value = userIdValue;
+  //       isLoggedIn.value = true;
+
+  //       final prefs = await SharedPreferences.getInstance();
+  //       await prefs.setString('accessToken', result.accessToken ?? '');
+  //       await prefs.setString('refreshToken', result.refreshToken ?? '');
+  //       await prefs.setString('idToken', result.idToken!);
+  //       await prefs.setString('userEmail', userEmail);
+  //       await prefs.setString('userName', name);
+  //       await prefs.setString('userId', userIdValue);
+
+  //       debugPrint("✅ login successful");
+  //       debugPrint("👤 User ID: $userIdValue");
+  //       debugPrint("👤 Email: $userEmail");
+  //       debugPrint("🔐 JWT (idToken): ${result.idToken}");
+
+  //       await sendUserDataToBackend(
+  //         name: name,
+  //         email: userEmail,
+  //         userId: userIdValue,
+  //         idToken: result.idToken ?? '',
+  //       );
+
+  //       await printTokenData();
+  //     } else {
+  //       throw Exception("No id token received");
+  //     }
+  //   } catch (e) {
+  //     debugPrint("❌ Login failed: $e");
+  //     isLoggedIn.value = false;
+  //     rethrow;
+  //   } finally {
+  //     isLoggingIn.value = false;
+  //   }
+  // }
+  Future<void> login() async {
+    if (isLoggingIn.value) return;
     isLoggingIn.value = true;
 
     try {
@@ -89,10 +156,7 @@ class AuthController extends GetxController {
 
       if (result.idToken != null) {
         final payload = decodeJWT(result.idToken!);
-        final name =
-            (payload['name']?.toString().trim().isNotEmpty ?? false)
-                ? payload['name']
-                : '';
+        final name = payload['name'] ?? '';
         final userEmail =
             payload['emails'] is List
                 ? payload['emails'][0]
@@ -102,7 +166,6 @@ class AuthController extends GetxController {
         fullName.value = name;
         email.value = userEmail;
         userId.value = userIdValue;
-        isLoggedIn.value = true;
 
         final prefs = await SharedPreferences.getInstance();
         await prefs.setString('accessToken', result.accessToken ?? '');
@@ -112,19 +175,23 @@ class AuthController extends GetxController {
         await prefs.setString('userName', name);
         await prefs.setString('userId', userIdValue);
 
-        debugPrint("✅ login successful");
-        debugPrint("👤 User ID: $userIdValue");
-        debugPrint("👤 Email: $userEmail");
-        debugPrint("🔐 JWT (idToken): ${result.idToken}");
+        debugPrint("✅ Azure login successful");
 
-        await sendUserDataToBackend(
+        // ✅ Backend call and check response
+        final backendSuccess = await sendUserDataToBackend(
           name: name,
           email: userEmail,
           userId: userIdValue,
           idToken: result.idToken ?? '',
         );
 
-        await printTokenData();
+        if (backendSuccess) {
+          isLoggedIn.value = true;
+          await printTokenData();
+        } else {
+          isLoggedIn.value = false;
+          throw Exception("Backend registration failed");
+        }
       } else {
         throw Exception("No id token received");
       }
@@ -137,7 +204,60 @@ class AuthController extends GetxController {
     }
   }
 
-  Future<void> sendUserDataToBackend({
+  // Future<void> sendUserDataToBackend({
+  //   required String name,
+  //   required String email,
+  //   required String userId,
+  //   required String idToken,
+  // }) async {
+  //   final url = Uri.parse(
+  //     'https://dynamicsmonk-api.azure-api.net/wealthdev/users',
+  //   );
+
+  //   final headers = {
+  //     'Content-Type': 'application/json',
+  //     // 'Authorization': 'Bearer $idToken',
+  //     'Ocp-Apim-Subscription-Key': '507f2afb55654b58b949017a7d8c5f22',
+  //   };
+
+  //   final body = {
+  //     'firstName': name,
+  //     'lastname': "",
+  //     'email': email,
+  //     'phone': "",
+  //   };
+
+  //   try {
+  //     final response = await http.post(
+  //       url,
+  //       headers: headers,
+  //       body: jsonEncode(body),
+  //     );
+
+  //     if (response.statusCode == 200 || response.statusCode == 201) {
+  //       final responseData = jsonDecode(response.body);
+
+  //       final backendUserId = responseData['userId'];
+  //       debugPrint("✅ User data sent to backend successfully: $backendUserId");
+
+  //       final prefs = await SharedPreferences.getInstance();
+  //       await prefs.setString('DBid', backendUserId);
+
+  //       Get.find<AuthController>().dbUserId.value = backendUserId;
+
+  //       debugPrint(
+  //         "📝 Saved DBid to SharedPreferences & AuthController: $backendUserId",
+  //       );
+  //     } else {
+  //       debugPrint(
+  //         "❌ Failed to send user data: ${response.statusCode} ${response.body}",
+  //       );
+  //     }
+  //   } catch (e) {
+  //     debugPrint("❌ Error sending data to backend: $e");
+  //   }
+  // }
+  Future<bool> sendUserDataToBackend({
     required String name,
     required String email,
     required String userId,
@@ -149,7 +269,6 @@ class AuthController extends GetxController {
 
     final headers = {
       'Content-Type': 'application/json',
-      // 'Authorization': 'Bearer $idToken',
       'Ocp-Apim-Subscription-Key': '507f2afb55654b58b949017a7d8c5f22',
     };
 
@@ -169,25 +288,21 @@ class AuthController extends GetxController {
 
       if (response.statusCode == 200 || response.statusCode == 201) {
         final responseData = jsonDecode(response.body);
-
         final backendUserId = responseData['userId'];
-        debugPrint("✅ User data sent to backend successfully: $backendUserId");
 
         final prefs = await SharedPreferences.getInstance();
         await prefs.setString('DBid', backendUserId);
+        dbUserId.value = backendUserId;
 
-        Get.find<AuthController>().dbUserId.value = backendUserId;
-
-        debugPrint(
-          "📝 Saved DBid to SharedPreferences & AuthController: $backendUserId",
-        );
+        debugPrint("✅ User registered in backend: $backendUserId");
+        return true; // ✅ success
       } else {
-        debugPrint(
-          "❌ Failed to send user data: ${response.statusCode} ${response.body}",
-        );
+        debugPrint("❌ Backend failed: ${response.statusCode} ${response.body}");
+        return false; // ❌ fail
       }
     } catch (e) {
       debugPrint("❌ Error sending data to backend: $e");
+      return false;
     }
   }
 

@@ -168,7 +168,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   const SizedBox(height: 20),
 
                   Text(
-                    'Wealth Projection',
+                    'Wealth Chart',
                     style: TextStyle(
                       fontWeight: AppTextStyle.bold,
                       fontSize: FontSizes.heading1,
