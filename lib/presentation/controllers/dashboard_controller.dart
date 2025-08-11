@@ -13,19 +13,32 @@ class DashboardController extends GetxController {
   var totalInvestment = 0.0.obs;
   var netWorth = 0.0.obs;
 
-  RxList<FlSpot> netWorthGraphData = <FlSpot>[
-    FlSpot(0, 0), FlSpot(1, 0), FlSpot(2, 0),
-    FlSpot(3, 0), FlSpot(4, 0), FlSpot(5, 0),
-  ].obs;
+  RxList<FlSpot> netWorthGraphData =
+      <FlSpot>[
+        FlSpot(0, 0),
+        FlSpot(1, 0),
+        FlSpot(2, 0),
+        FlSpot(3, 0),
+        FlSpot(4, 0),
+        FlSpot(5, 0),
+      ].obs;
 
-  RxList<FlSpot> incomeGraphData = <FlSpot>[
-    FlSpot(0, 0), FlSpot(1, 0), FlSpot(2, 0),
-    FlSpot(3, 0), FlSpot(4, 0), FlSpot(5, 0),
-  ].obs;
+  RxList<FlSpot> incomeGraphData =
+      <FlSpot>[
+        FlSpot(0, 0),
+        FlSpot(1, 0),
+        FlSpot(2, 0),
+        FlSpot(3, 0),
+        FlSpot(4, 0),
+        FlSpot(5, 0),
+      ].obs;
 
-  RxList<PieChartSectionData> incomeVsExpensePieData = <PieChartSectionData>[].obs;
-  RxList<PieChartSectionData> assetDistributionPieData = <PieChartSectionData>[].obs;
-  RxList<PieChartSectionData> netWorthBreakdownPieData = <PieChartSectionData>[].obs;
+  RxList<PieChartSectionData> incomeVsExpensePieData =
+      <PieChartSectionData>[].obs;
+  RxList<PieChartSectionData> assetDistributionPieData =
+      <PieChartSectionData>[].obs;
+  RxList<PieChartSectionData> netWorthBreakdownPieData =
+      <PieChartSectionData>[].obs;
 
   final FilterController _filter = Get.find<FilterController>();
   final IncomeController _incomeController = Get.find<IncomeController>();
@@ -59,26 +72,36 @@ class DashboardController extends GetxController {
   }
 
   Future<void> initializeDashboard(String userId, {bool force = false}) async {
-    if (_isInitialized && _userId == userId && !force) return;
+    if (!force && _isInitialized && _userId == userId) {
+      return;
+    }
 
-    _userId = userId;
-    _isInitialized = true;
+    try {
+      _userId = userId;
+      _isInitialized = true;
 
-    await _incomeController.fetchIncomes(userId);
-    await _expenseController.fetchExpenses(userId);
-    await _assetController.fetchAssets(userId);
+      await _incomeController.fetchIncomes(userId);
+      await _expenseController.fetchExpenses(userId);
+      await _assetController.fetchAssets(userId);
 
-    _filter.totalIncome.value = _incomeController.totalIncome.value;
-    _filter.totalExpense.value =
-        _expenseController.expenseList.fold(0.0, (sum, e) => sum + e.amount);
-    _filter.totalAsset.value =
-        _assetController.assetList.fold(0.0, (sum, a) => sum + a.amount);
+      _filter.totalIncome.value = _incomeController.totalIncome.value;
+      _filter.totalExpense.value = _expenseController.expenseList.fold(
+        0.0,
+        (sum, e) => sum + e.amount,
+      );
+      _filter.totalAsset.value = _assetController.assetList.fold(
+        0.0,
+        (sum, a) => sum + a.amount,
+      );
 
-    updateIncomeGraph(_generateIncomeProjection());
-    updateNetWorthGraph(_generateNetWorthProjection());
-
-    _recalcNetWorth();
-    updatePieCharts();
+      updateIncomeGraph(_generateIncomeProjection());
+      updateNetWorthGraph(_generateNetWorthProjection());
+      _recalcNetWorth();
+      updatePieCharts();
+    } catch (e) {
+      _isInitialized = false;
+      rethrow;
+    }
   }
 
   void updateNetWorthGraph(List<FlSpot> spots) =>
@@ -190,8 +213,10 @@ class DashboardController extends GetxController {
         final startYear = DateTime.tryParse(income.startDate)?.year;
         if (startYear != null && startYear <= year) {
           int yearsPassed = year - startYear;
-          double incrementFactor = 1 + (income.expectedAnnualIncrementPercentage / 100);
-          double projectedAmount = income.amount * pow(incrementFactor, yearsPassed);
+          double incrementFactor =
+              1 + (income.expectedAnnualIncrementPercentage / 100);
+          double projectedAmount =
+              income.amount * pow(incrementFactor, yearsPassed);
           totalIncomeForYear += projectedAmount;
         }
       }
@@ -217,7 +242,8 @@ class DashboardController extends GetxController {
         final startYear = DateTime.tryParse(incomeItem.startDate)?.year;
         if (startYear != null && startYear <= year) {
           int yearsPassed = year - startYear;
-          double incrementFactor = 1 + (incomeItem.expectedAnnualIncrementPercentage / 100);
+          double incrementFactor =
+              1 + (incomeItem.expectedAnnualIncrementPercentage / 100);
           income += incomeItem.amount * pow(incrementFactor, yearsPassed);
         }
       }
@@ -226,7 +252,8 @@ class DashboardController extends GetxController {
         final startYear = DateTime.tryParse(expenseItem.startDate)?.year;
         if (startYear != null && startYear <= year) {
           int yearsPassed = year - startYear;
-          double incrementFactor = 1 + (expenseItem.expectedAnnualIncrementPercentage / 100);
+          double incrementFactor =
+              1 + (expenseItem.expectedAnnualIncrementPercentage / 100);
           expense += expenseItem.amount * pow(incrementFactor, yearsPassed);
         }
       }

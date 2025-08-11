@@ -20,7 +20,7 @@ void main() async {
 
   Get.put(ThemeController(), permanent: true);
   Get.put(AuthController(), permanent: true);
-  Get.put(FilterController(), permanent: true);
+  Get.put(FilterController());
   Get.put(NetworkManager(), permanent: true);
   Get.put(IncomeController());
   Get.put(ExpenseController());
