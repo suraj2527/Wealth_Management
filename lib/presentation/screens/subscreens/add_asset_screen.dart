@@ -298,13 +298,16 @@ class _AddAssetScreenState extends State<AddAssetScreen> {
                               "Enter Amount",
                               isNumber: true,
                               validator: (val) {
-                                if (val == null || val.trim().isEmpty)
+                                if (val == null || val.trim().isEmpty) {
                                   return "Required";
+                                }
                                 final number = double.tryParse(val.trim());
-                                if (number == null)
+                                if (number == null) {
                                   return "Enter a valid number";
-                                if (number < 0)
+                                }
+                                if (number < 0) {
                                   return "Amount can't be negative";
+                                }
                                 return null;
                               },
                             ),

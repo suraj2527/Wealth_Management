@@ -81,15 +81,17 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
           _expenseTypes.contains(expense.expenseType)
               ? expense.expenseType
               : 'Other';
-      if (_selectedType == 'Other')
+      if (_selectedType == 'Other') {
         _customTypeController.text = expense.expenseType;
+      }
 
       _selectedSubCategory =
           _subCategories.contains(expense.subCategory)
               ? expense.subCategory
               : 'Other';
-      if (_selectedSubCategory == 'Other')
+      if (_selectedSubCategory == 'Other') {
         _customSubCategoryController.text = expense.subCategory;
+      }
 
       _selectedPeriod =
           _periods.contains(expense.period) ? expense.period : _periods[0];
