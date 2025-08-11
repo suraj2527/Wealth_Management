@@ -4,8 +4,15 @@ import 'package:get/get.dart';
 import 'package:wealth_app/presentation/controllers/dashboard_controller.dart';
 import 'package:wealth_app/extension/theme_extension.dart';
 
-class InteractivePieChart extends StatelessWidget {
+class InteractivePieChart extends StatefulWidget {
   const InteractivePieChart({super.key});
+
+  @override
+  State<InteractivePieChart> createState() => _InteractivePieChartState();
+}
+
+class _InteractivePieChartState extends State<InteractivePieChart> {
+  int? touchedIndex;
 
   @override
   Widget build(BuildContext context) {
@@ -53,44 +60,57 @@ class InteractivePieChart extends StatelessWidget {
                   centerSpaceRadius: 50,
                   pieTouchData: PieTouchData(
                     touchCallback: (event, response) {
-                      if (event is FlTapUpEvent &&
-                          response != null &&
-                          response.touchedSection != null) {
-                        final touchedIndex =
-                            response.touchedSection!.touchedSectionIndex;
-                        final touchedItem = data[touchedIndex];
-                        final percentage = (touchedItem.value / total * 100)
-                            .toStringAsFixed(1);
-
-                        Get.showSnackbar(
-                          GetSnackBar(
-                            title: 'Details',
-                            message:
-                                '${touchedItem.label}: ₹${touchedItem.value.toStringAsFixed(2)} ($percentage%)',
-                            snackPosition: SnackPosition.BOTTOM,
-                            backgroundColor: context.placeholderColor,
-                            duration: const Duration(seconds: 2),
-                          ),
-                        );
-                      }
+                      setState(() {
+                        if (response != null &&
+                            response.touchedSection != null) {
+                          touchedIndex =
+                              response.touchedSection!.touchedSectionIndex;
+                        } else {
+                          touchedIndex = null;
+                        }
+                      });
                     },
                   ),
-                  sections:
-                      data.map((item) {
-                        final percent = (item.value / total * 100)
-                            .toStringAsFixed(1);
-                        return PieChartSectionData(
-                          color: item.color,
-                          value: item.value,
-                          title: '$percent%',
-                          titleStyle: TextStyle(
-                            color: context.mainFontColor,
-                            fontWeight: FontWeight.bold,
-                            fontSize: 14,
-                          ),
-                          radius: 60,
-                        );
-                      }).toList(),
+                  sections: List.generate(data.length, (i) {
+                    final percent =
+                        (data[i].value / total * 100).toStringAsFixed(1);
+                    return PieChartSectionData(
+                      color: data[i].color,
+                      value: data[i].value,
+                      title: '$percent%',
+                      titleStyle: TextStyle(
+                        color: context.mainFontColor,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 14,
+                      ),
+                      radius: 60,
+                      badgeWidget: touchedIndex == i
+                          ? Container(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 8, vertical: 4),
+                              decoration: BoxDecoration(
+                                color: context.backgroundColor,
+                                borderRadius: BorderRadius.circular(6),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.black.withOpacity(0.15),
+                                    blurRadius: 4,
+                                    offset: const Offset(0, 2),
+                                  ),
+                                ],
+                              ),
+                              child: Text(
+                                '${data[i].label}: ₹${data[i].value.toStringAsFixed(2)} ($percent%)',
+                                style: const TextStyle(
+                                  fontSize: 10,
+                                  color: Colors.black,
+                                ),
+                              ),
+                            )
+                          : null,
+                      badgePositionPercentageOffset: 1.2, 
+                    );
+                  }),
                 ),
               ),
             ),
@@ -98,30 +118,29 @@ class InteractivePieChart extends StatelessWidget {
             Wrap(
               spacing: 16,
               runSpacing: 8,
-              children:
-                  data.map((item) {
-                    return Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Container(
-                          width: 12,
-                          height: 12,
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            color: item.color,
-                          ),
-                        ),
-                        const SizedBox(width: 10),
-                        Text(
-                          item.label,
-                          style: TextStyle(
-                            color: context.mainFontColor,
-                            fontSize: 10,
-                          ),
-                        ),
-                      ],
-                    );
-                  }).toList(),
+              children: data.map((item) {
+                return Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Container(
+                      width: 12,
+                      height: 12,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: item.color,
+                      ),
+                    ),
+                    const SizedBox(width: 6),
+                    Text(
+                      item.label,
+                      style: TextStyle(
+                        color: context.mainFontColor,
+                        fontSize: 10,
+                      ),
+                    ),
+                  ],
+                );
+              }).toList(),
             ),
           ],
         ),
@@ -134,6 +153,5 @@ class _PieData {
   final String label;
   final double value;
   final Color color;
-
   _PieData(this.label, this.value, this.color);
 }
