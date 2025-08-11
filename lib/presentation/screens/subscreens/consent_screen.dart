@@ -46,24 +46,6 @@ class _ConsentGatekeeperState extends State<ConsentGatekeeper> {
             'I hereby voluntarily agree to participate in the [Family Wealth Management]... (full text)',
         agreeText: 'I consent',
         disagreeText: 'I do not consent',
-        onAgree: () {
-          Get.back();
-          _showConsent2();
-        },
-        onDisagree: () => _exitApp(),
-      ),
-      barrierDismissible: false,
-    );
-  }
-
-  Future<void> _showConsent2() async {
-    await Get.dialog(
-      ConsentDialog(
-        title: 'Fetch Your Gmail Instantly',
-        content:
-            'I hereby voluntarily agree to participate in the [insert name of project, program, activity, or research]... (full text)',
-        agreeText: 'I agree',
-        disagreeText: 'I disagree',
         onAgree: () async {
           final prefs = await SharedPreferences.getInstance();
           await prefs.setBool('consent_accepted', true);
