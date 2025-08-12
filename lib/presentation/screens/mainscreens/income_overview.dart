@@ -511,7 +511,7 @@ class _IncomeOverviewScreenState extends State<IncomeOverviewScreen> {
                                                     final result =
                                                         await incomeController
                                                             .deleteIncome(
-                                                              income.id,
+                                                              income.id,dbUserId!
                                                             );
                                                     if (result['success'] ==
                                                         true) {

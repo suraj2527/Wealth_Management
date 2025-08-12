@@ -123,12 +123,12 @@ class _InteractivePieChartState extends State<InteractivePieChart> {
                       bottom: 0,
                       child: ConstrainedBox(
                         constraints: BoxConstraints(
-                          maxWidth: MediaQuery.of(context).size.width * 0.7,
+                          maxWidth: MediaQuery.of(context).size.width * 0.8,
                         ),
                         child: Container(
                           padding: const EdgeInsets.symmetric(
-                            horizontal: 10,
-                            vertical: 8,
+                            horizontal: 12,
+                            vertical: 20,
                           ),
                           decoration: BoxDecoration(
                             color: context.backgroundColor,
@@ -162,17 +162,17 @@ class _InteractivePieChartState extends State<InteractivePieChart> {
                                         text: '${data[touchedIndex!].label}: ',
                                         style: TextStyle(
                                           fontWeight: FontWeight.bold,
-                                          fontSize: 12,
+                                          fontSize: 14,
                                           color: context.mainFontColor,
                                         ),
                                       ),
                                       TextSpan(
                                         text:
-                                            '₹${data[touchedIndex!].value.toStringAsFixed(2)} ',
+                                            '₹ ${data[touchedIndex!].value.toStringAsFixed(2)} ',
                                             // '(${(total == 0 ? 0 : (data[touchedIndex!].value / total) * 100).toStringAsFixed(1)}%)',
                                         style: TextStyle(
                                           fontWeight: FontWeight.normal,
-                                          fontSize: 12,
+                                          fontSize: 14,
                                           color: context.mainFontColor,
                                         ),
                                       ),

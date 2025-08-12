@@ -77,7 +77,7 @@ class _MyExpensesScreenState extends State<MyExpensesScreen> {
     );
 
     if (confirmed == true) {
-      final result = await expenseController.deleteExpense(expense.Id);
+      final result = await expenseController.deleteExpense(expense.Id,userId);
       debugPrint('😍😎😎$expense.Id');
 
       if (result['success']) {
