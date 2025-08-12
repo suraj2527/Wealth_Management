@@ -53,7 +53,6 @@ class _InteractivePieChartState extends State<InteractivePieChart> {
             ),
             const SizedBox(height: 20),
 
-            // ✅ Agar total zero hai to placeholder
             if (total <= 0)
               Padding(
                 padding: const EdgeInsets.symmetric(vertical: 40),
