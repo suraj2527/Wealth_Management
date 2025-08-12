@@ -37,7 +37,7 @@ class _SplashScreenState extends State<SplashScreen>
     _setupLogoFade();
     _startTextAnimation();
     checkLoginStatus();
-    // dashboardController.initializeDashboard(userId);
+    dashboardController.initializeDashboard(userId);
 
   }
 
