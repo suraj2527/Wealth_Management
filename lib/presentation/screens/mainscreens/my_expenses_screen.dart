@@ -77,7 +77,7 @@ class _MyExpensesScreenState extends State<MyExpensesScreen> {
     );
 
     if (confirmed == true) {
-      final result = await expenseController.deleteExpense(expense.Id,userId);
+      final result = await expenseController.deleteExpense(expense.Id, userId);
       debugPrint('😍😎😎$expense.Id');
 
       if (result['success']) {
@@ -367,216 +367,218 @@ class _MyExpensesScreenState extends State<MyExpensesScreen> {
           ),
           const SizedBox(height: 8),
 
-          expenses.isEmpty
-              ? SizedBox(
-                height: 100,
-                child: Center(
-                  child: Text(
-                    "No expense found",
-                    style: TextStyle(color: context.mainFontColor),
-                  ),
-                ),
-              )
-              : SizedBox(
-                height: MediaQuery.of(context).size.height * 0.45,
+          SizedBox(
+            height: MediaQuery.of(context).size.height * 0.45,
 
-                child: ListView.builder(
-                  itemCount: expenses.length,
-                  physics: const BouncingScrollPhysics(),
-                  itemBuilder: (context, index) {
-                    final expense = expenses[index];
-                    final isSelected = index == selectedIndex;
+            child:
+                expenses.isEmpty
+                    ? Center(
+                      child: Text(
+                        "No Expense available",
+                        style: TextStyle(color: context.mainFontColor),
+                      ),
+                    )
+                    : ListView.builder(
+                      itemCount: expenses.length,
+                      physics: const BouncingScrollPhysics(),
+                      itemBuilder: (context, index) {
+                        final expense = expenses[index];
+                        final isSelected = index == selectedIndex;
 
-                    return GestureDetector(
-                      onTap:
-                          () => setState(
-                            () => selectedIndex = isSelected ? -1 : index,
-                          ),
-                      child: AnimatedContainer(
-                        duration: const Duration(milliseconds: 300),
-                        margin: const EdgeInsets.only(bottom: 10),
-                        decoration: BoxDecoration(
-                          color:
-                              isSelected
-                                  ? context.buttonColor
-                                  : context.fieldColor,
-                          borderRadius: BorderRadius.circular(10),
-                          border: Border.all(color: context.borderColor),
-                        ),
-                        child: Column(
-                          children: [
-                            Padding(
-                              padding: const EdgeInsets.symmetric(
-                                vertical: 16,
-                                horizontal: 16,
+                        return GestureDetector(
+                          onTap:
+                              () => setState(
+                                () => selectedIndex = isSelected ? -1 : index,
                               ),
-                              child: Row(
-                                children: [
-                                  SvgPicture.asset(
-                                    'assets/icons/rupee.svg',
-                                    height: 20,
-                                    colorFilter: ColorFilter.mode(
-                                      isSelected
-                                          ? Colors.white
-                                          : context.buttonColor,
-                                      BlendMode.srcIn,
-                                    ),
+                          child: AnimatedContainer(
+                            duration: const Duration(milliseconds: 300),
+                            margin: const EdgeInsets.only(bottom: 10),
+                            decoration: BoxDecoration(
+                              color:
+                                  isSelected
+                                      ? context.buttonColor
+                                      : context.fieldColor,
+                              borderRadius: BorderRadius.circular(10),
+                              border: Border.all(color: context.borderColor),
+                            ),
+                            child: Column(
+                              children: [
+                                Padding(
+                                  padding: const EdgeInsets.symmetric(
+                                    vertical: 16,
+                                    horizontal: 16,
                                   ),
-                                  const SizedBox(width: 12),
-                                  Expanded(
+                                  child: Row(
+                                    children: [
+                                      SvgPicture.asset(
+                                        'assets/icons/rupee.svg',
+                                        height: 20,
+                                        colorFilter: ColorFilter.mode(
+                                          isSelected
+                                              ? Colors.white
+                                              : context.buttonColor,
+                                          BlendMode.srcIn,
+                                        ),
+                                      ),
+                                      const SizedBox(width: 12),
+                                      Expanded(
+                                        child: Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            Text(
+                                              expense.expenseType,
+                                              style: TextStyle(
+                                                fontWeight: FontWeight.w600,
+                                                fontSize: 15,
+                                                color:
+                                                    isSelected
+                                                        ? Colors.white
+                                                        : context.mainFontColor,
+                                              ),
+                                            ),
+                                            const SizedBox(height: 4),
+                                            Text(
+                                              () {
+                                                try {
+                                                  final parsedDate =
+                                                      DateTime.parse(
+                                                        expense.startDate,
+                                                      );
+                                                  return DateFormat(
+                                                    'dd MMM yyyy',
+                                                  ).format(parsedDate);
+                                                } catch (_) {
+                                                  return expense
+                                                          .startDate
+                                                          .isNotEmpty
+                                                      ? expense.startDate
+                                                      : 'No Date';
+                                                }
+                                              }(),
+                                              style: TextStyle(
+                                                fontSize: 12,
+                                                color:
+                                                    isSelected
+                                                        ? Colors.white70
+                                                        : context
+                                                            .placeholderColor,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                      Text(
+                                        "₹${expense.amount.toStringAsFixed(2)}",
+                                        style: TextStyle(
+                                          fontWeight: FontWeight.w600,
+                                          fontSize: 15,
+                                          color:
+                                              isSelected
+                                                  ? Colors.white
+                                                  : context.mainFontColor,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                if (isSelected)
+                                  Container(
+                                    width: double.infinity,
+                                    padding: const EdgeInsets.all(12),
+                                    decoration: BoxDecoration(
+                                      color: context.backgroundColor,
+                                      borderRadius: const BorderRadius.vertical(
+                                        bottom: Radius.circular(10),
+                                      ),
+                                    ),
                                     child: Column(
                                       crossAxisAlignment:
                                           CrossAxisAlignment.start,
                                       children: [
-                                        Text(
-                                          expense.expenseType,
-                                          style: TextStyle(
-                                            fontWeight: FontWeight.w600,
-                                            fontSize: 15,
-                                            color:
-                                                isSelected
-                                                    ? Colors.white
-                                                    : context.mainFontColor,
-                                          ),
+                                        _buildDetailRow(
+                                          "Sub Category",
+                                          expense.subCategory,
+                                          context,
                                         ),
-                                        const SizedBox(height: 4),
-                                        Text(
-                                          () {
-                                            try {
-                                              final parsedDate = DateTime.parse(
-                                                expense.startDate,
-                                              );
-                                              return DateFormat(
-                                                'dd MMM yyyy',
-                                              ).format(parsedDate);
-                                            } catch (_) {
-                                              return expense
-                                                      .startDate
-                                                      .isNotEmpty
-                                                  ? expense.startDate
-                                                  : 'No Date';
-                                            }
-                                          }(),
-                                          style: TextStyle(
-                                            fontSize: 12,
-                                            color:
-                                                isSelected
-                                                    ? Colors.white70
-                                                    : context.placeholderColor,
-                                          ),
+                                        _buildDetailRow(
+                                          "Period",
+                                          expense.period,
+                                          context,
                                         ),
-                                      ],
-                                    ),
-                                  ),
-                                  Text(
-                                    "₹${expense.amount.toStringAsFixed(2)}",
-                                    style: TextStyle(
-                                      fontWeight: FontWeight.w600,
-                                      fontSize: 15,
-                                      color:
-                                          isSelected
-                                              ? Colors.white
-                                              : context.mainFontColor,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                            if (isSelected)
-                              Container(
-                                width: double.infinity,
-                                padding: const EdgeInsets.all(12),
-                                decoration: BoxDecoration(
-                                  color: context.backgroundColor,
-                                  borderRadius: const BorderRadius.vertical(
-                                    bottom: Radius.circular(10),
-                                  ),
-                                ),
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    _buildDetailRow(
-                                      "Sub Category",
-                                      expense.subCategory,
-                                      context,
-                                    ),
-                                    _buildDetailRow(
-                                      "Period",
-                                      expense.period,
-                                      context,
-                                    ),
-                                    _buildDetailRow(
-                                      "Annual Increment %",
-                                      "${expense.expectedAnnualIncrementPercentage.toStringAsFixed(2)}%",
-                                      context,
-                                    ),
-                                    _buildDetailRow(
-                                      "Is Recurring",
-                                      expense.isRecurring ? "Yes" : "No",
-                                      context,
-                                    ),
-                                    _buildDetailRow(
-                                      "Date",
-                                      expense.startDate.toString(),
-                                      context,
-                                    ),
+                                        _buildDetailRow(
+                                          "Annual Increment %",
+                                          "${expense.expectedAnnualIncrementPercentage.toStringAsFixed(2)}%",
+                                          context,
+                                        ),
+                                        _buildDetailRow(
+                                          "Is Recurring",
+                                          expense.isRecurring ? "Yes" : "No",
+                                          context,
+                                        ),
+                                        _buildDetailRow(
+                                          "Date",
+                                          expense.startDate.toString(),
+                                          context,
+                                        ),
 
-                                    _buildDetailRow(
-                                      "Year",
-                                      expense.year.toString(),
-                                      context,
-                                    ),
-                                    const SizedBox(height: 12),
+                                        _buildDetailRow(
+                                          "Year",
+                                          expense.year.toString(),
+                                          context,
+                                        ),
+                                        const SizedBox(height: 12),
 
-                                    Row(
-                                      mainAxisAlignment: MainAxisAlignment.end,
-                                      children: [
-                                        // TextButton.icon(
-                                        //   style: TextButton.styleFrom(
-                                        //     foregroundColor:
-                                        //         context.buttonColor,
-                                        //   ),
-                                        //   icon: const Icon(
-                                        //     Icons.edit_outlined,
-                                        //     color: Colors.blue,
-                                        //   ),
-                                        //   label: const Text(
-                                        //     "Edit",
-                                        //     style: TextStyle(
-                                        //       color: Colors.blue,
-                                        //     ),
-                                        //   ),
-                                        //   onPressed: () {
-                                        //     _editExpense(context, expense);
-                                        //   },
-                                        // ),
-                                        // const SizedBox(width: 12),
-                                        TextButton.icon(
-                                          style: TextButton.styleFrom(
-                                            foregroundColor: Colors.red,
-                                          ),
-                                          icon: const Icon(
-                                            Icons.delete_outline,
-                                          ),
-                                          label: const Text("Delete"),
-                                          onPressed:
-                                              () => _showDeleteConfirmation(
-                                                context,
-                                                expense,
+                                        Row(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.end,
+                                          children: [
+                                            // TextButton.icon(
+                                            //   style: TextButton.styleFrom(
+                                            //     foregroundColor:
+                                            //         context.buttonColor,
+                                            //   ),
+                                            //   icon: const Icon(
+                                            //     Icons.edit_outlined,
+                                            //     color: Colors.blue,
+                                            //   ),
+                                            //   label: const Text(
+                                            //     "Edit",
+                                            //     style: TextStyle(
+                                            //       color: Colors.blue,
+                                            //     ),
+                                            //   ),
+                                            //   onPressed: () {
+                                            //     _editExpense(context, expense);
+                                            //   },
+                                            // ),
+                                            // const SizedBox(width: 12),
+                                            TextButton.icon(
+                                              style: TextButton.styleFrom(
+                                                foregroundColor: Colors.red,
                                               ),
+                                              icon: const Icon(
+                                                Icons.delete_outline,
+                                              ),
+                                              label: const Text("Delete"),
+                                              onPressed:
+                                                  () => _showDeleteConfirmation(
+                                                    context,
+                                                    expense,
+                                                  ),
+                                            ),
+                                          ],
                                         ),
                                       ],
                                     ),
-                                  ],
-                                ),
-                              ),
-                          ],
-                        ),
-                      ),
-                    );
-                  },
-                ),
-              ),
+                                  ),
+                              ],
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+          ),
         ],
       ),
     );

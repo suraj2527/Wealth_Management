@@ -20,10 +20,10 @@ class _InteractivePieChartState extends State<InteractivePieChart> {
 
     return Obx(() {
       final List<_PieData> data = [
-        _PieData('Income', controller.totalIncome.value, Colors.green),
-        _PieData('Investment', controller.totalInvestment.value, Colors.orange),
-        _PieData('Net Worth', controller.netWorth.value, Colors.blue),
-        _PieData('Expense', controller.totalExpense.value, Colors.red),
+        _PieData('Income', controller.totalIncome.value.isNaN ? 0 : controller.totalIncome.value, Colors.green),
+        _PieData('Investment', controller.totalInvestment.value.isNaN ? 0 : controller.totalInvestment.value, Colors.orange),
+        _PieData('Net Worth', controller.netWorth.value.isNaN ? 0 : controller.netWorth.value, Colors.blue),
+        _PieData('Expense', controller.totalExpense.value.isNaN ? 0 : controller.totalExpense.value, Colors.red),
       ];
 
       final double total = data.fold(0, (sum, item) => sum + item.value);
@@ -53,78 +53,95 @@ class _InteractivePieChartState extends State<InteractivePieChart> {
             ),
             const SizedBox(height: 20),
 
-            AspectRatio(
-              aspectRatio: 1.3,
-              child: Stack(
-                alignment: Alignment.center,
-                children: [
-                  PieChart(
-                    PieChartData(
-                      sectionsSpace: 2,
-                      centerSpaceRadius: 50,
-                      pieTouchData: PieTouchData(
-                        touchCallback: (event, response) {
-                          if (response == null ||
-                              response.touchedSection == null) {
-                            setState(() {
-                              touchedIndex = null;
-                            });
-                            return;
-                          }
-
-                          if (event is FlTapDownEvent ||
-                              event is FlLongPressStart) {
-                            setState(() {
-                              touchedIndex =
-                                  response.touchedSection!.touchedSectionIndex;
-                            });
-                          }
-
-                          if (event is FlTapUpEvent ||
-                              event is FlPanEndEvent ||
-                              event is FlLongPressEnd ||
-                              event is FlPointerExitEvent) {
-                            setState(() {
-                              touchedIndex = null;
-                            });
-                          }
-                        },
-                      ),
-                      sections: List.generate(data.length, (i) {
-                        double actualPercent =
-                            total == 0 ? 0 : (data[i].value / total) * 100;
-
-                        double displayPercent =
-                            actualPercent < 3 && actualPercent > 0
-                                ? 3
-                                : actualPercent;
-
-                        return PieChartSectionData(
-                          color: data[i].color,
-                          value: displayPercent,
-                          title: '${actualPercent.toStringAsFixed(1)}%',
-                          titleStyle: TextStyle(
-                            color: context.mainFontColor,
-                            fontWeight: FontWeight.bold,
-                            fontSize: 14,
-                          ),
-                          radius: touchedIndex == i ? 70 : 67,
-                        );
-                      }),
+            // ✅ Agar total zero hai to placeholder
+            if (total <= 0)
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 40),
+                child: Column(
+                  children: [
+                    Icon(
+                      Icons.pie_chart_outline,
+                      size: 60,
+                      color: Colors.grey.withOpacity(0.6),
                     ),
-                    swapAnimationDuration: const Duration(milliseconds: 300),
-                    swapAnimationCurve: Curves.easeOutCubic,
-                  ),
+                    const SizedBox(height: 12),
+                    Text(
+                      'No data available',
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: Colors.grey.withOpacity(0.8),
+                      ),
+                    ),
+                  ],
+                ),
+              )
+            else
+              AspectRatio(
+                aspectRatio: 1.3,
+                child: Stack(
+                  alignment: Alignment.center,
+                  children: [
+                    PieChart(
+                      PieChartData(
+                        sectionsSpace: 2,
+                        centerSpaceRadius: 50,
+                        pieTouchData: PieTouchData(
+                          touchCallback: (event, response) {
+                            if (response == null ||
+                                response.touchedSection == null) {
+                              setState(() {
+                                touchedIndex = null;
+                              });
+                              return;
+                            }
 
-                  if (touchedIndex != null &&
-                      touchedIndex! >= 0 &&
-                      touchedIndex! < data.length)
-                    Positioned(
-                      bottom: 0,
-                      child: ConstrainedBox(
-                        constraints: BoxConstraints(
-                          maxWidth: MediaQuery.of(context).size.width * 0.8,
+                            if (event is FlTapDownEvent ||
+                                event is FlLongPressStart) {
+                              setState(() {
+                                touchedIndex = response
+                                    .touchedSection!.touchedSectionIndex;
+                              });
+                            }
+
+                            if (event is FlTapUpEvent ||
+                                event is FlPanEndEvent ||
+                                event is FlLongPressEnd ||
+                                event is FlPointerExitEvent) {
+                              setState(() {
+                                touchedIndex = null;
+                              });
+                            }
+                          },
                         ),
+                        sections: List.generate(data.length, (i) {
+                          double actualPercent =
+                              (total <= 0) ? 0 : (data[i].value / total) * 100;
+
+                          double displayPercent =
+                              actualPercent < 3 && actualPercent > 0
+                                  ? 3
+                                  : actualPercent;
+
+                          return PieChartSectionData(
+                            color: data[i].color,
+                            value: displayPercent,
+                            title: '${actualPercent.toStringAsFixed(1)}%',
+                            titleStyle: TextStyle(
+                              color: context.mainFontColor,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 14,
+                            ),
+                            radius: touchedIndex == i ? 70 : 67,
+                          );
+                        }),
+                      ),
+                    ),
+
+                    if (touchedIndex != null &&
+                        touchedIndex! >= 0 &&
+                        touchedIndex! < data.length)
+                      Positioned(
+                        bottom: 0,
                         child: Container(
                           padding: const EdgeInsets.symmetric(
                             horizontal: 12,
@@ -153,71 +170,50 @@ class _InteractivePieChartState extends State<InteractivePieChart> {
                                 ),
                               ),
                               const SizedBox(width: 6),
-                              Flexible(
-                                child: RichText(
-                                  overflow: TextOverflow.ellipsis,
-                                  text: TextSpan(
-                                    children: [
-                                      TextSpan(
-                                        text: '${data[touchedIndex!].label}: ',
-                                        style: TextStyle(
-                                          fontWeight: FontWeight.bold,
-                                          fontSize: 14,
-                                          color: context.mainFontColor,
-                                        ),
-                                      ),
-                                      TextSpan(
-                                        text:
-                                            '₹ ${data[touchedIndex!].value.toStringAsFixed(2)} ',
-                                            // '(${(total == 0 ? 0 : (data[touchedIndex!].value / total) * 100).toStringAsFixed(1)}%)',
-                                        style: TextStyle(
-                                          fontWeight: FontWeight.normal,
-                                          fontSize: 14,
-                                          color: context.mainFontColor,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
+                              Text(
+                                '${data[touchedIndex!].label}: ₹ ${data[touchedIndex!].value.toStringAsFixed(2)}',
+                                style: TextStyle(
+                                  fontSize: 14,
+                                  color: context.mainFontColor,
                                 ),
                               ),
                             ],
                           ),
                         ),
                       ),
-                    ),
-                ],
+                  ],
+                ),
               ),
-            ),
 
             const SizedBox(height: 20),
 
+            // ✅ Legend hamesha show hoga
             Wrap(
               spacing: 16,
               runSpacing: 8,
-              children:
-                  data.map((item) {
-                    return Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Container(
-                          width: 12,
-                          height: 12,
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            color: item.color,
-                          ),
-                        ),
-                        const SizedBox(width: 6),
-                        Text(
-                          item.label,
-                          style: TextStyle(
-                            color: context.mainFontColor,
-                            fontSize: 10,
-                          ),
-                        ),
-                      ],
-                    );
-                  }).toList(),
+              children: data.map((item) {
+                return Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Container(
+                      width: 12,
+                      height: 12,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: item.color,
+                      ),
+                    ),
+                    const SizedBox(width: 6),
+                    Text(
+                      item.label,
+                      style: TextStyle(
+                        color: context.mainFontColor,
+                        fontSize: 10,
+                      ),
+                    ),
+                  ],
+                );
+              }).toList(),
             ),
           ],
         ),
