@@ -17,11 +17,121 @@ class SplashScreen extends StatefulWidget {
   State<SplashScreen> createState() => _SplashScreenState();
 }
 
+// class _SplashScreenState extends State<SplashScreen>
+//     with TickerProviderStateMixin {
+//   final AuthController authController = Get.put(AuthController());
+//   final DashboardController dashboardController = Get.put(DashboardController());
+//   final userId = Get.find<AuthController>().dbUserId.value;
+
+//   final String fullText = 'Wealth Management';
+//   String animatedText = '';
+//   int charIndex = 0;
+//   bool textFadeIn = false;
+
+//   late AnimationController _logoController;
+//   late Animation<double> _logoOpacity;
+
+//   @override
+//   void initState() {
+//     super.initState();
+//     _setupLogoFade();
+//     _startTextAnimation();
+//     checkLoginStatus();
+//     dashboardController.initializeDashboard(userId);
+
+//   }
+
+//   void _setupLogoFade() {
+//     _logoController = AnimationController(
+//       duration: const Duration(milliseconds: 1200),
+//       vsync: this,
+//     );
+
+//     _logoOpacity = CurvedAnimation(
+//       parent: _logoController,
+//       curve: Curves.easeIn,
+//     );
+
+//     _logoController.forward();
+//   }
+
+//   void _startTextAnimation() async {
+//     while (charIndex < fullText.length) {
+//       await Future.delayed(const Duration(milliseconds: 70));
+//       setState(() {
+//         animatedText += fullText[charIndex];
+//         charIndex++;
+//       });
+//     }
+
+//     await Future.delayed(const Duration(milliseconds: 600));
+//     setState(() {
+//       textFadeIn = true;
+//     });
+//   }
+
+//   void checkLoginStatus() async {
+//     await Future.delayed(const Duration(seconds: 3));
+//     bool success = await authController.trySilentLogin();
+
+//     if (success) {
+//       Get.offAll(() => const DashboardScreen());
+//     } else {
+//       Get.offAll(() => const LoginScreen());
+//     }
+//   }
+
+//   @override
+//   void dispose() {
+//     _logoController.dispose();
+//     super.dispose();
+//   }
+
+//   @override
+//   Widget build(BuildContext context) {
+//     return Scaffold(
+//       backgroundColor: context.backgroundColor,
+//       body: Center(
+//         child: Column(
+//           mainAxisAlignment: MainAxisAlignment.center,
+//           children: [
+//             FadeTransition(
+//               opacity: _logoOpacity,
+//               child: SvgPicture.asset(
+//                 'assets/images/main_logo.svg',
+//                 height: 60,
+//               ),
+//             ),
+//             const SizedBox(height: 30),
+//             AnimatedOpacity(
+//               opacity: textFadeIn ? 1.0 : 0.0,
+//               duration: const Duration(milliseconds: 500),
+//               child: Column(
+//                 children: [
+//                   Text(
+//                     animatedText,
+//                     style: TextStyle(
+//                       fontSize: 26,
+//                       fontWeight: AppTextStyle.bold,
+//                       color: context.mainFontColor,
+//                     ),
+//                   ),
+//                   const SizedBox(height: 20),
+//                   const DotLoader(),
+//                 ],
+//               ),
+//             ),
+//           ],
+//         ),
+//       ),
+//     );
+//   }
+// }
 class _SplashScreenState extends State<SplashScreen>
     with TickerProviderStateMixin {
-  final AuthController authController = Get.put(AuthController());
-  final DashboardController dashboardController = Get.put(DashboardController()); 
-  final userId = Get.find<AuthController>().dbUserId.value;
+  final AuthController authController = Get.find<AuthController>();
+  final DashboardController dashboardController =
+      Get.find<DashboardController>();
 
   final String fullText = 'Wealth Management';
   String animatedText = '';
@@ -37,8 +147,6 @@ class _SplashScreenState extends State<SplashScreen>
     _setupLogoFade();
     _startTextAnimation();
     checkLoginStatus();
-    dashboardController.initializeDashboard(userId);
-
   }
 
   void _setupLogoFade() {
@@ -72,9 +180,14 @@ class _SplashScreenState extends State<SplashScreen>
 
   void checkLoginStatus() async {
     await Future.delayed(const Duration(seconds: 3));
+
     bool success = await authController.trySilentLogin();
 
     if (success) {
+      // Silent login ke baad hi DB id milega
+      final userId = authController.dbUserId.value;
+      await dashboardController.initializeDashboard(userId, force: true);
+
       Get.offAll(() => const DashboardScreen());
     } else {
       Get.offAll(() => const LoginScreen());
