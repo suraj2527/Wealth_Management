@@ -12,27 +12,6 @@ class DashboardController extends GetxController {
   var totalExpense = 0.0.obs;
   var totalInvestment = 0.0.obs;
   var netWorth = 0.0.obs;
-
-  // RxList<FlSpot> netWorthGraphData =
-  //     <FlSpot>[
-  //       FlSpot(0, 0),
-  //       FlSpot(1, 0),
-  //       FlSpot(2, 0),
-  //       FlSpot(3, 0),
-  //       FlSpot(4, 0),
-  //       FlSpot(5, 0),
-  //     ].obs;
-
-  // RxList<FlSpot> incomeGraphData =
-  //     <FlSpot>[
-  //       FlSpot(0, 0),
-  //       FlSpot(1, 0),
-  //       FlSpot(2, 0),
-  //       FlSpot(3, 0),
-  //       FlSpot(4, 0),
-  //       FlSpot(5, 0),
-  //     ].obs;
-
   RxList<PieChartSectionData> incomeVsExpensePieData =
       <PieChartSectionData>[].obs;
   RxList<PieChartSectionData> assetDistributionPieData =
@@ -76,13 +55,13 @@ class DashboardController extends GetxController {
       return;
     }
 
-    try {
-      _userId = userId;
-      _isInitialized = true;
+    _userId = userId;
+    _isInitialized = true;
 
-      await _incomeController.fetchIncomes(userId);
-      await _expenseController.fetchExpenses(userId);
-      await _assetController.fetchAssets(userId);
+    try {
+      _incomeController.loadCachedIncomes(userId);
+      _expenseController.loadExpenseFromCache(userId);
+      _assetController.loadAssetsFromCache(userId);
 
       _filter.totalIncome.value = _incomeController.totalIncome.value;
       _filter.totalExpense.value = _expenseController.expenseList.fold(
@@ -93,22 +72,31 @@ class DashboardController extends GetxController {
         0.0,
         (sum, a) => sum + a.amount,
       );
-
-      // updateIncomeGraph(_generateIncomeProjection());
-      // updateNetWorthGraph(_generateNetWorthProjection());
       _recalcNetWorth();
       updatePieCharts();
+
+      Future.wait([
+        _incomeController.fetchIncomes(userId),
+        _expenseController.fetchExpenses(userId),
+        _assetController.fetchAssets(userId),
+      ]).then((_) {
+        _filter.totalIncome.value = _incomeController.totalIncome.value;
+        _filter.totalExpense.value = _expenseController.expenseList.fold(
+          0.0,
+          (sum, e) => sum + e.amount,
+        );
+        _filter.totalAsset.value = _assetController.assetList.fold(
+          0.0,
+          (sum, a) => sum + a.amount,
+        );
+        _recalcNetWorth();
+        updatePieCharts();
+      });
     } catch (e) {
       _isInitialized = false;
       rethrow;
     }
   }
-
-  // void updateNetWorthGraph(List<FlSpot> spots) =>
-  //     netWorthGraphData.assignAll(spots);
-
-  // void updateIncomeGraph(List<FlSpot> spots) =>
-  //     incomeGraphData.assignAll(spots);
 
   void _recalcNetWorth() {
     netWorth.value =
@@ -198,72 +186,4 @@ class DashboardController extends GetxController {
       100 + random.nextInt(156),
     );
   }
-
-  // ---------------- INCOME PROJECTION ---------------- //
-  // List<FlSpot> _generateIncomeProjection() {
-  //   final now = DateTime.now();
-  //   final years = List.generate(6, (i) => now.year + i);
-  //   final projection = <FlSpot>[];
-
-  //   for (int i = 0; i < years.length; i++) {
-  //     final year = years[i];
-  //     double totalIncomeForYear = 0.0;
-
-  //     for (var income in _filter.filteredIncomeList) {
-  //       final startYear = DateTime.tryParse(income.startDate)?.year;
-  //       if (startYear != null && startYear <= year) {
-  //         int yearsPassed = year - startYear;
-  //         double incrementFactor =
-  //             1 + (income.expectedAnnualIncrementPercentage / 100);
-  //         double projectedAmount =
-  //             income.amount * pow(incrementFactor, yearsPassed);
-  //         totalIncomeForYear += projectedAmount;
-  //       }
-  //     }
-
-  //     projection.add(FlSpot(i.toDouble(), totalIncomeForYear));
-  //   }
-
-  //   return projection;
-  // }
-
-  // ---------------- NET WORTH PROJECTION ---------------- //
-  // List<FlSpot> _generateNetWorthProjection() {
-  //   final now = DateTime.now();
-  //   final years = List.generate(6, (i) => now.year + i);
-  //   final projection = <FlSpot>[];
-
-  //   for (int i = 0; i < years.length; i++) {
-  //     final year = years[i];
-  //     double income = 0.0;
-  //     double expense = 0.0;
-
-  //     for (var incomeItem in _filter.filteredIncomeList) {
-  //       final startYear = DateTime.tryParse(incomeItem.startDate)?.year;
-  //       if (startYear != null && startYear <= year) {
-  //         int yearsPassed = year - startYear;
-  //         double incrementFactor =
-  //             1 + (incomeItem.expectedAnnualIncrementPercentage / 100);
-  //         income += incomeItem.amount * pow(incrementFactor, yearsPassed);
-  //       }
-  //     }
-
-  //     for (var expenseItem in _filter.filteredExpenseList) {
-  //       final startYear = DateTime.tryParse(expenseItem.startDate)?.year;
-  //       if (startYear != null && startYear <= year) {
-  //         int yearsPassed = year - startYear;
-  //         double incrementFactor =
-  //             1 + (expenseItem.expectedAnnualIncrementPercentage / 100);
-  //         expense += expenseItem.amount * pow(incrementFactor, yearsPassed);
-  //       }
-  //     }
-
-  //     final assetValue = _filter.totalAsset.value;
-  //     double netWorth = income + assetValue - expense;
-
-  //     projection.add(FlSpot(i.toDouble(), netWorth));
-  //   }
-
-  //   return projection;
-  // }
 }

@@ -34,6 +34,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
   Future<void> _initializeDashboard() async {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       Get.dialog(DotLoader(), barrierDismissible: false);
+      
     });
     await dashboardController.initializeDashboard(userId, force: true);
     if (Get.isDialogOpen ?? false) {
