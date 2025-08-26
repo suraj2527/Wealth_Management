@@ -27,6 +27,10 @@ class DashboardController extends GetxController {
   String? _userId;
   bool _isInitialized = false;
 
+  bool isInitializedFor(String userId) {
+    return _isInitialized && _userId == userId;
+  }
+
   @override
   void onInit() {
     super.onInit();
@@ -75,23 +79,23 @@ class DashboardController extends GetxController {
       _recalcNetWorth();
       updatePieCharts();
 
-      Future.wait([
+      await Future.wait([
         _incomeController.fetchIncomes(userId),
         _expenseController.fetchExpenses(userId),
         _assetController.fetchAssets(userId),
-      ]).then((_) {
-        _filter.totalIncome.value = _incomeController.totalIncome.value;
-        _filter.totalExpense.value = _expenseController.expenseList.fold(
-          0.0,
-          (sum, e) => sum + e.amount,
-        );
-        _filter.totalAsset.value = _assetController.assetList.fold(
-          0.0,
-          (sum, a) => sum + a.amount,
-        );
-        _recalcNetWorth();
-        updatePieCharts();
-      });
+      ]);
+
+      _filter.totalIncome.value = _incomeController.totalIncome.value;
+      _filter.totalExpense.value = _expenseController.expenseList.fold(
+        0.0,
+        (sum, e) => sum + e.amount,
+      );
+      _filter.totalAsset.value = _assetController.assetList.fold(
+        0.0,
+        (sum, a) => sum + a.amount,
+      );
+      _recalcNetWorth();
+      updatePieCharts();
     } catch (e) {
       _isInitialized = false;
       rethrow;
@@ -102,8 +106,6 @@ class DashboardController extends GetxController {
     netWorth.value =
         totalIncome.value + totalInvestment.value - totalExpense.value;
   }
-
-  // ---------------- PIE CHART UPDATES ---------------- //
 
   void updatePieCharts() {
     incomeVsExpensePieData.assignAll(_generateIncomeVsExpenseData());

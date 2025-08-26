@@ -58,36 +58,43 @@ class AssetController extends GetxController {
     }
   }
 
-  Future<Map<String, dynamic>> fetchAssets(String userId, {bool useCacheFirst = true}) async {
-  try {
-    if (useCacheFirst) {
-      await loadAssetsFromCache(userId); 
+  Future<Map<String, dynamic>> fetchAssets(
+    String userId, {
+    bool useCacheFirst = true,
+  }) async {
+    try {
+      if (useCacheFirst) {
+        await loadAssetsFromCache(userId);
+      }
+
+      final url = '$baseUrl/recent/$userId';
+      debugPrint("💰 Fetching assets for userId: $userId");
+
+      final response = await http.get(
+        Uri.parse(url),
+        headers: {
+          'Content-Type': 'application/json',
+          'Ocp-Apim-Subscription-Key': '507f2afb55654b58b949017a7d8c5f22',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        final List<dynamic> data = json.decode(response.body);
+        assetList.value = data.map((e) => AssetModel.fromJson(e)).toList();
+        await _saveToCache(userId);
+        return {'success': true};
+      }
+
+      return {'success': false, 'message': 'Failed to fetch assets'};
+    } catch (e) {
+      return {'success': false, 'message': e.toString()};
     }
-
-    final url = '$baseUrl/recent/$userId';
-    debugPrint("💰 Fetching assets for userId: $userId");
-
-    final response = await http.get(
-      Uri.parse(url),
-      headers: {
-        'Content-Type': 'application/json',
-        'Ocp-Apim-Subscription-Key': '507f2afb55654b58b949017a7d8c5f22',
-      },
-    );
-
-    if (response.statusCode == 200) {
-      final List<dynamic> data = json.decode(response.body);
-      assetList.value = data.map((e) => AssetModel.fromJson(e)).toList();
-      await _saveToCache(userId);
-      return {'success': true};
-    }
-
-    return {'success': false, 'message': 'Failed to fetch assets'};
-  } catch (e) {
-    return {'success': false, 'message': e.toString()};
   }
-}
-  Future<Map<String, dynamic>> updateAsset(String userId, AssetModel asset) async {
+
+  Future<Map<String, dynamic>> updateAsset(
+    String userId,
+    AssetModel asset,
+  ) async {
     final url = '$baseUrl/${asset.id}';
     final Map<String, dynamic> updatedAssetJson =
         asset.toJson()..addAll({'userId': userId});

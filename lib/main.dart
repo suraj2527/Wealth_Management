@@ -23,7 +23,7 @@ void main() async {
   Get.put(FilterController());
   Get.put(NetworkManager(), permanent: true);
   Get.put(IncomeController());
-  Get.put(ExpenseController());
+  Get.put(ExpenseController(), permanent: true);
   Get.put(AssetController());
   Get.put(DashboardController());
   Get.put(ProfileImageController());

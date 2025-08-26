@@ -5,7 +5,10 @@ import 'package:get/get.dart';
 import 'package:wealth_app/constants/text_styles.dart';
 import 'package:wealth_app/presentation/controllers/auth_controller.dart';
 import 'package:wealth_app/presentation/controllers/dashboard_controller.dart';
-import 'package:wealth_app/presentation/screens/Authentication/login_screen.dart';
+import 'package:wealth_app/presentation/controllers/income_controller.dart';
+import 'package:wealth_app/presentation/controllers/expense_controller.dart';
+import 'package:wealth_app/presentation/controllers/asset_controller.dart';
+// import 'package:wealth_app/presentation/screens/Authentication/login_screen.dart';
 import 'package:wealth_app/presentation/screens/mainscreens/dashboard_screen.dart';
 import 'package:wealth_app/presentation/widgets/dot_loader.dart';
 import 'package:wealth_app/extension/theme_extension.dart';
@@ -22,6 +25,10 @@ class _SplashScreenState extends State<SplashScreen>
   final AuthController authController = Get.find<AuthController>();
   final DashboardController dashboardController =
       Get.find<DashboardController>();
+
+  final IncomeController incomeController = Get.put(IncomeController());
+  final ExpenseController expenseController = Get.put(ExpenseController());
+  final AssetController assetController = Get.put(AssetController());
 
   final String fullText = 'Wealth Management';
   String animatedText = '';
@@ -74,12 +81,15 @@ class _SplashScreenState extends State<SplashScreen>
     bool success = await authController.trySilentLogin();
 
     if (success) {
-      // final userId = authController.dbUserId.value;
-      // await dashboardController.initializeDashboard(userId, force: true);
+      final userId = authController.dbUserId.value;
+
+      await dashboardController.initializeDashboard(userId, force: true);
 
       Get.offAll(() => const DashboardScreen());
     } else {
-      Get.offAll(() => const LoginScreen());
+      Get.offAll(() => const DashboardScreen() );
+
+      // Get.offAll(() => const LoginScreen());
     }
   }
 

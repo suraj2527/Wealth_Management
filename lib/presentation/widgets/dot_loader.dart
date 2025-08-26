@@ -67,7 +67,7 @@ class _DotLoaderState extends State<DotLoader> with TickerProviderStateMixin {
                   width: 6,
                   height: 6,
                   decoration: BoxDecoration(
-                    color: context.buttonColor, 
+                    color: context.buttonColor,
                     shape: BoxShape.circle,
                   ),
                 ),
