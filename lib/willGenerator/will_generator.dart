@@ -36,6 +36,15 @@ class _WillGeneratorPageState extends State<WillGeneratorPage> {
     TextEditingController(),
   ];
 
+  final List<String> _relationshipOptions = [
+    'Son',
+    'Brother',
+    'Wife',
+    'Other',
+  ];
+  final List<String?> _selectedRelationships = [null];
+  final List<TextEditingController?> _customRelationshipControllers = [null];
+
   List<String> generatedFiles = [];
 
   Widget _label(String text) {
@@ -67,13 +76,6 @@ class _WillGeneratorPageState extends State<WillGeneratorPage> {
       ),
     );
   }
-   final List<String> _relationship = [
-    'Son',
-    'Brother',
-    'Wife',
-    'Other',
-  ];
-  String _selectedrelationship = 'Son';
 
   Widget _textField(
     TextEditingController controller,
@@ -100,7 +102,6 @@ class _WillGeneratorPageState extends State<WillGeneratorPage> {
       decoration: _inputDecoration(context, hint),
     );
   }
-
 
   Map<String, pw.Widget Function(pw.Context)> get templates => {
     'Original Will':
@@ -145,9 +146,12 @@ class _WillGeneratorPageState extends State<WillGeneratorPage> {
             ),
             pw.Text("I give, devise, and bequeath my property as follows:"),
             ...List.generate(propertyControllers.length, (i) {
+              final relationship = _selectedRelationships[i] == 'Other'
+                  ? _customRelationshipControllers[i]?.text ?? ''
+                  : _selectedRelationships[i] ?? '';
               return pw.Bullet(
                 text:
-                    "To ${beneficiaryControllers[i].text}, I give ${propertyControllers[i].text}.",
+                    "To ${beneficiaryControllers[i].text} (${relationship}), I give ${propertyControllers[i].text}.",
               );
             }),
 
@@ -217,9 +221,12 @@ class _WillGeneratorPageState extends State<WillGeneratorPage> {
               style: pw.TextStyle(fontWeight: pw.FontWeight.bold),
             ),
             ...List.generate(propertyControllers.length, (i) {
+              final relationship = _selectedRelationships[i] == 'Other'
+                  ? _customRelationshipControllers[i]?.text ?? ''
+                  : _selectedRelationships[i] ?? '';
               return pw.Bullet(
                 text:
-                    "${beneficiaryControllers[i].text} will receive ${propertyControllers[i].text}.",
+                    "${beneficiaryControllers[i].text} (${relationship}) will receive ${propertyControllers[i].text}.",
               );
             }),
 
@@ -292,14 +299,21 @@ class _WillGeneratorPageState extends State<WillGeneratorPage> {
     guardianController.clear();
     propertyControllers.clear();
     beneficiaryControllers.clear();
+    _selectedRelationships.clear();
+    _customRelationshipControllers.clear();
+
     propertyControllers.add(TextEditingController());
     beneficiaryControllers.add(TextEditingController());
+    _selectedRelationships.add(null);
+    _customRelationshipControllers.add(null);
   }
 
   void _addProperty() {
     setState(() {
       propertyControllers.add(TextEditingController());
       beneficiaryControllers.add(TextEditingController());
+      _selectedRelationships.add(null);
+      _customRelationshipControllers.add(null);
     });
   }
 
@@ -310,6 +324,8 @@ class _WillGeneratorPageState extends State<WillGeneratorPage> {
         propertyControllers.removeAt(index);
         beneficiaryControllers[index].dispose();
         beneficiaryControllers.removeAt(index);
+        _selectedRelationships.removeAt(index);
+        _customRelationshipControllers.removeAt(index);
       }
     });
   }
@@ -326,6 +342,9 @@ class _WillGeneratorPageState extends State<WillGeneratorPage> {
     }
     for (var controller in beneficiaryControllers) {
       controller.dispose();
+    }
+    for (var controller in _customRelationshipControllers) {
+      controller?.dispose();
     }
     super.dispose();
   }
@@ -360,7 +379,6 @@ class _WillGeneratorPageState extends State<WillGeneratorPage> {
             child: GestureDetector(
               behavior: HitTestBehavior.translucent,
               onTap: () => FocusScope.of(context).unfocus(),
-
               child: SingleChildScrollView(
                 child: SafeArea(
                   child: Column(
@@ -448,184 +466,112 @@ class _WillGeneratorPageState extends State<WillGeneratorPage> {
                                   ],
                                 ),
                                 SizedBox(height: 5),
-                                // _label("Description"),
                                 _textField(
                                   propertyControllers[index],
                                   "Describe property",
                                 ),
                                 SizedBox(height: 10),
-
-                                // _label("Beneficiary Name"),
                                 _textField(
                                   beneficiaryControllers[index],
                                   "Enter beneficiary name",
                                 ),
                                 const SizedBox(height: 10),
-                     
+                                DropdownButtonFormField<String>(
+                                  value: _selectedRelationships[index],
+                                  decoration: _inputDecoration(
+                                      context, "Select the relationship"),
+                                  items: _relationshipOptions
+                                      .map((rel) => DropdownMenuItem(
+                                            value: rel,
+                                            child: Text(rel),
+                                          ))
+                                      .toList(),
+                                  onChanged: (val) {
+                                    setState(() {
+                                      _selectedRelationships[index] = val;
+                                      if (val == 'Other') {
+                                        _customRelationshipControllers[index] =
+                                            TextEditingController();
+                                      } else {
+                                        _customRelationshipControllers[index] =
+                                            null;
+                                      }
+                                    });
+                                  },
+                                  validator: (val) => val == null
+                                      ? "Required"
+                                      : null,
+                                ),
+                                                                if (_selectedRelationships[index] == 'Other') ...[
+                                  const SizedBox(height: 10),
+                                  _textField(
+                                    _customRelationshipControllers[index]!,
+                                    "Enter custom relationship",
+                                  ),
+                                ],
                               ],
                             ),
                           ),
                         ),
                       ),
 
-                      OutlinedButton.icon(
-                        onPressed: _addProperty,
-                        style: OutlinedButton.styleFrom(
-                          side: BorderSide(
-                            color: context.buttonColor,
-                            width: 1.2,
-                          ),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                          padding: const EdgeInsets.symmetric(vertical: 12),
-                        ),
-                        icon: Icon(Icons.add, color: context.buttonColor),
-                        label: Text(
-                          "Add More",
-                          style: TextStyle(
-                            color: context.buttonColor,
-                            fontSize: 15,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                      ),
-
+                      const SizedBox(height: 12),
                       _label("Executor Name"),
-                      _textField(executorController, "Enter executor's name"),
+                      _textField(executorController, "Enter executor name"),
 
-                      _label("Guardian Name (Optional)"),
+                      _label("Guardian Name (optional)"),
                       _textField(
                         guardianController,
-                        "Enter guardian's name if applicable",
-                        validator: (value) => null,
+                        "Enter guardian name (if any)",
+                        validator: (val) => null,
                       ),
 
-                     
-                      const SizedBox(height: 10),
+                      const SizedBox(height: 20),
                       _label("Select Template"),
-                      _dropdownField(
-                        templates.keys.toList(),
-                        selectedTemplate,
-                        (val) => setState(() => selectedTemplate = val),
-                        context,
+                      DropdownButtonFormField<String>(
+                        value: selectedTemplate,
+                        items: templates.keys
+                            .map((template) => DropdownMenuItem(
+                                  value: template,
+                                  child: Text(template),
+                                ))
+                            .toList(),
+                        onChanged: (val) {
+                          setState(() {
+                            selectedTemplate = val;
+                          });
+                        },
+                        decoration:
+                            _inputDecoration(context, "Choose template"),
                       ),
-                      const SizedBox(height: 24),
 
+                      const SizedBox(height: 20),
                       ElevatedButton(
                         onPressed: _generatePdf,
                         style: ElevatedButton.styleFrom(
-                          padding: const EdgeInsets.symmetric(vertical: 16),
                           backgroundColor: context.buttonColor,
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 30,
+                            vertical: 15,
+                          ),
                           shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                          elevation: 2,
-                        ),
-                        child: const Text(
-                          "Generate Will",
-                          style: TextStyle(
-                            fontSize: 16,
-                            color: Colors.white,
-                            fontWeight: FontWeight.bold,
+                            borderRadius: BorderRadius.circular(8),
                           ),
                         ),
+                        child: const Text("Generate Will"),
                       ),
 
                       if (generatedFiles.isNotEmpty) ...[
-                        const SizedBox(height: 24),
-                        const Text(
-                          "Generated Wills",
-                          style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 16,
-                          ),
-                        ),
-                        const SizedBox(height: 8),
-                        ListView.builder(
-                          shrinkWrap: true,
-                          physics: const NeverScrollableScrollPhysics(),
-                          itemCount: generatedFiles.length,
-                          itemBuilder: (context, index) {
-                            final path = generatedFiles[index];
-                            return Container(
-                              margin: const EdgeInsets.symmetric(vertical: 6),
-                              padding: const EdgeInsets.all(12),
-                              decoration: BoxDecoration(
-                                border: Border.all(color: Colors.grey.shade400),
-                                borderRadius: BorderRadius.circular(12),
+                        const SizedBox(height: 20),
+                        _label("Generated Files"),
+                        ...generatedFiles.map((path) => ListTile(
+                              title: Text(path.split('/').last),
+                              trailing: IconButton(
+                                icon: const Icon(Icons.open_in_new),
+                                onPressed: () => OpenFile.open(path),
                               ),
-                              child: Row(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  const Padding(
-                                    padding: EdgeInsets.only(
-                                      top: 8.0,
-                                      right: 8,
-                                    ),
-                                    child: Icon(
-                                      Icons.circle,
-                                      size: 10,
-                                      color: Colors.black87,
-                                    ),
-                                  ),
-                                  Expanded(
-                                    child: Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        Text(
-                                          "Will ${index + 1}",
-                                          style: const TextStyle(
-                                            fontWeight: FontWeight.w600,
-                                            fontSize: 15,
-                                          ),
-                                        ),
-                                        const SizedBox(height: 4),
-                                        Text(
-                                          path,
-                                          maxLines: 1,
-                                          overflow: TextOverflow.ellipsis,
-                                          style: TextStyle(
-                                            color: Colors.grey.shade600,
-                                            fontSize: 13,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                  Row(
-                                    children: [
-                                      IconButton(
-                                        icon: const Icon(
-                                          Icons.visibility,
-                                          color: Colors.blue,
-                                        ),
-                                        onPressed: () => OpenFile.open(path),
-                                      ),
-                                      IconButton(
-                                        icon: const Icon(
-                                          Icons.delete,
-                                          color: Colors.red,
-                                        ),
-                                        onPressed: () async {
-                                          final file = File(path);
-                                          if (await file.exists()) {
-                                            await file.delete();
-                                          }
-                                          setState(
-                                            () =>
-                                                generatedFiles.removeAt(index),
-                                          );
-                                        },
-                                      ),
-                                    ],
-                                  ),
-                                ],
-                              ),
-                            );
-                          },
-                        ),
+                            )),
                       ],
                     ],
                   ),
@@ -639,56 +585,4 @@ class _WillGeneratorPageState extends State<WillGeneratorPage> {
   }
 }
 
-Widget _dropdownField(
-  List<String> items,
-  String? currentValue,
-  void Function(String?) onChanged,
-  BuildContext context,
-) {
-  final bool isDarkMode = Theme.of(context).brightness == Brightness.dark;
-
-  return DropdownButtonFormField2<String>(
-    value: currentValue,
-    isExpanded: true,
-    style: TextStyle(
-      fontSize: 15,
-      color: isDarkMode ? context.mainFontColor : Colors.black,
-    ),
-    decoration: InputDecoration(
-      filled: true,
-      fillColor: context.fieldColor,
-      contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
-      border: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(10),
-        borderSide: BorderSide(color: context.borderColor.withOpacity(0.1)),
-      ),
-      enabledBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(10),
-        borderSide: BorderSide(color: context.borderColor.withOpacity(0.1)),
-      ),
-      focusedBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(10),
-        borderSide: BorderSide(color: context.borderColor),
-      ),
-    ),
-    dropdownStyleData: DropdownStyleData(
-      maxHeight: 250,
-      elevation: 3,
-      decoration: BoxDecoration(
-        color: context.fieldColor,
-        borderRadius: BorderRadius.circular(10),
-        boxShadow: const [
-          BoxShadow(color: Colors.black26, blurRadius: 8, offset: Offset(0, 4)),
-        ],
-      ),
-    ),
-    items:
-        items
-            .map(
-              (val) => DropdownMenuItem<String>(value: val, child: Text(val)),
-            )
-            .toList(),
-    onChanged: onChanged,
-    validator: (val) => val == null || val.isEmpty ? "Required" : null,
-  );
-}
+                                
