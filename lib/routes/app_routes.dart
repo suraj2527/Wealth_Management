@@ -8,6 +8,7 @@ import 'package:wealth_app/presentation/screens/mainscreens/profile_screen.dart'
 import 'package:wealth_app/presentation/screens/mainscreens/splash_screen.dart';
 import 'package:wealth_app/presentation/screens/subscreens/consent_screen.dart';
 import 'package:wealth_app/presentation/screens/subscreens/upload_document_screen.dart';
+import 'package:wealth_app/willGenerator/will_generator.dart';
 
 class AppRoutes {
   static final routes = [
@@ -20,6 +21,8 @@ class AppRoutes {
     GetPage(name: '/login', page: () => const LoginScreen()),
     GetPage(name: '/upload', page: () => const UploadDocumentScreen()),
     GetPage(name: '/splash', page: () => const SplashScreen()),
+    GetPage(name: '/will', page: () => const WillGeneratorPage()),
+
   ];
   
 }

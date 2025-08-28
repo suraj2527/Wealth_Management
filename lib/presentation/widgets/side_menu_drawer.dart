@@ -296,7 +296,6 @@ class SideMenuDrawer extends StatelessWidget {
                       iconPath: 'assets/icons/assets.svg',
                       isDarkMode: isDarkMode,
                     ),
-                    // Example extra menu (can be enabled later)
                     // buildMenuTile(
                     //   context: context,
                     //   title: "Upload Document",
@@ -304,6 +303,14 @@ class SideMenuDrawer extends StatelessWidget {
                     //   iconPath: 'assets/icons/document_icon.svg',
                     //   isDarkMode: isDarkMode,
                     // ),
+
+                     buildMenuTile(
+                      context: context,
+                      title: "Will Management",
+                      route: '/will',
+                      iconPath: 'assets/icons/assets.svg',
+                      isDarkMode: isDarkMode,
+                    ),
                   ],
                 ),
               ),
