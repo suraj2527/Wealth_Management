@@ -4,6 +4,7 @@ import 'package:pdf/widgets.dart' as pw;
 import 'package:path_provider/path_provider.dart';
 import 'package:open_file/open_file.dart';
 import 'package:intl/intl.dart';
+import 'package:wealth_app/presentation/widgets/calendar_input_field.dart';
 import 'package:wealth_app/presentation/widgets/universal_scaffold.dart';
 
 class WillGeneratorPage extends StatefulWidget {
@@ -18,13 +19,12 @@ class _WillGeneratorPageState extends State<WillGeneratorPage> {
   final addressController = TextEditingController();
   final dateController = TextEditingController(
     text: DateFormat('MMMM d, yyyy').format(DateTime.now()),
-  ); // Default to August 27, 2025
+  ); 
   final executorController = TextEditingController();
   final guardianController = TextEditingController();
   String? generatedFilePath;
   String? selectedTemplate = 'Original Will';
 
-  // Lists to hold multiple property and beneficiary controllers
   final List<TextEditingController> propertyControllers = [
     TextEditingController(),
   ];
@@ -264,7 +264,7 @@ class _WillGeneratorPageState extends State<WillGeneratorPage> {
     if (!mounted) return;
 
     setState(() {
-      generatedFilePath = null; // Reset file path during generation
+      generatedFilePath = null; 
     });
 
     try {
@@ -281,7 +281,7 @@ class _WillGeneratorPageState extends State<WillGeneratorPage> {
       await file.writeAsBytes(await pdf.save());
 
       setState(() {
-        generatedFilePath = file.path; // Update file path on success
+        generatedFilePath = file.path; 
       });
 
       ScaffoldMessenger.of(context).showSnackBar(
@@ -291,20 +291,6 @@ class _WillGeneratorPageState extends State<WillGeneratorPage> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text("❌ Error generating document: $e")),
       );
-    }
-  }
-
-  Future<void> _selectDate() async {
-    final DateTime? picked = await showDatePicker(
-      context: context,
-      initialDate: DateTime.now(),
-      firstDate: DateTime(1900),
-      lastDate: DateTime(2100),
-    );
-    if (picked != null && mounted) {
-      setState(() {
-        dateController.text = DateFormat('MMMM d, yyyy').format(picked);
-      });
     }
   }
 
@@ -369,16 +355,7 @@ class _WillGeneratorPageState extends State<WillGeneratorPage> {
                 ),
               ),
               const SizedBox(height: 16),
-              OutlinedButton(
-                onPressed: _selectDate,
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(dateController.text, style: TextStyle(fontSize: 16)),
-                    const Icon(Icons.calendar_today),
-                  ],
-                ),
-              ),
+              CalendarInputField(label: "Date", controller: dateController),
               const SizedBox(height: 16),
               ...List.generate(
                 propertyControllers.length,
