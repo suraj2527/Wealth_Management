@@ -1,5 +1,4 @@
 import 'dart:io';
-import 'package:dropdown_button2/dropdown_button2.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:pdf/widgets.dart' as pw;
@@ -36,12 +35,7 @@ class _WillGeneratorPageState extends State<WillGeneratorPage> {
     TextEditingController(),
   ];
 
-  final List<String> _relationshipOptions = [
-    'Son',
-    'Brother',
-    'Wife',
-    'Other',
-  ];
+  final List<String> _relationshipOptions = ['Son', 'Brother', 'Wife', 'Other'];
   final List<String?> _selectedRelationships = [null];
   final List<TextEditingController?> _customRelationshipControllers = [null];
 
@@ -103,142 +97,219 @@ class _WillGeneratorPageState extends State<WillGeneratorPage> {
     );
   }
 
-  Map<String, pw.Widget Function(pw.Context)> get templates => {
-    'Original Will':
-        (context) => pw.Column(
-          crossAxisAlignment: pw.CrossAxisAlignment.start,
+Map<String, pw.Widget Function(pw.Context)> get templates {
+  String getRelationship(int i) {
+    if (_selectedRelationships[i] == 'Other') {
+      final custom = _customRelationshipControllers[i]?.text.trim() ?? '';
+      return custom.isNotEmpty ? custom : 'Other';
+    }
+    return _selectedRelationships[i] ?? '';
+  }
+
+  return {
+    'Original Will': (context) => pw.Column(
+      crossAxisAlignment: pw.CrossAxisAlignment.start,
+      children: [
+        pw.Center(
+          child: pw.Text(
+            "LAST WILL AND TESTAMENT",
+            style: pw.TextStyle(
+              fontSize: 24,
+              fontWeight: pw.FontWeight.bold,
+              decoration: pw.TextDecoration.underline,
+            ),
+          ),
+        ),
+        pw.SizedBox(height: 30),
+        pw.Text(
+          "I, ${nameController.text.trim()}, residing at ${addressController.text.trim()}, being of sound mind and memory, and not acting under duress or undue influence, do hereby declare this to be my Last Will and Testament, and I revoke any and all wills and codicils heretofore made by me.",
+          style: pw.TextStyle(fontSize: 12),
+        ),
+        pw.SizedBox(height: 20),
+        pw.Text(
+          "ARTICLE I: PERSONAL INFORMATION",
+          style: pw.TextStyle(fontSize: 14, fontWeight: pw.FontWeight.bold),
+        ),
+        pw.SizedBox(height: 10),
+        pw.Text(
+          "1.1 I am ${nameController.text.trim()}, of ${addressController.text.trim()}, and this Will is made on ${dateController.text.trim()}.",
+          style: pw.TextStyle(fontSize: 12),
+        ),
+        pw.SizedBox(height: 20),
+        pw.Text(
+          "ARTICLE II: BEQUESTS AND DEVISES",
+          style: pw.TextStyle(fontSize: 14, fontWeight: pw.FontWeight.bold),
+        ),
+        pw.SizedBox(height: 10),
+        for (int i = 0; i < propertyControllers.length; i++)
+          pw.Text(
+            "2.${i + 1} I give, devise, and bequeath ${propertyControllers[i].text.trim()} to ${beneficiaryControllers[i].text.trim()} (${getRelationship(i)}).",
+            style: pw.TextStyle(fontSize: 12),
+          ),
+        pw.SizedBox(height: 20),
+        pw.Text(
+          "ARTICLE III: APPOINTMENT OF EXECUTOR",
+          style: pw.TextStyle(fontSize: 14, fontWeight: pw.FontWeight.bold),
+        ),
+        pw.SizedBox(height: 10),
+        pw.Text(
+          "3.1 I appoint ${executorController.text.trim()} as the Executor of this Will, to serve without bond, to manage and distribute my estate according to the terms herein.",
+          style: pw.TextStyle(fontSize: 12),
+        ),
+        pw.SizedBox(height: 20),
+        if (guardianController.text.trim().isNotEmpty) ...[
+          pw.Text(
+            "ARTICLE IV: APPOINTMENT OF GUARDIAN",
+            style: pw.TextStyle(fontSize: 14, fontWeight: pw.FontWeight.bold),
+          ),
+          pw.SizedBox(height: 10),
+          pw.Text(
+            "4.1 I appoint ${guardianController.text.trim()} as the Guardian of any minor children, should the need arise.",
+            style: pw.TextStyle(fontSize: 12),
+          ),
+          pw.SizedBox(height: 20),
+        ],
+        pw.Text(
+          "IN WITNESS WHEREOF, I have hereunto set my hand and seal on this ${dateController.text.trim()} day.",
+          style: pw.TextStyle(fontSize: 12, fontWeight: pw.FontWeight.bold),
+        ),
+        pw.SizedBox(height: 20),
+        pw.Row(
+          mainAxisAlignment: pw.MainAxisAlignment.center,
           children: [
-            pw.Center(
-              child: pw.Text(
-                "LAST WILL AND TESTAMENT",
-                style: pw.TextStyle(
-                  fontSize: 20,
-                  fontWeight: pw.FontWeight.bold,
-                ),
-              ),
-            ),
-            pw.SizedBox(height: 20),
             pw.Text(
-              "I, ${nameController.text}, residing at ${addressController.text}, "
-              "being of sound mind, do hereby declare this to be my Last Will and Testament.",
+              "___________________________",
+              style: pw.TextStyle(fontSize: 12),
             ),
-            pw.SizedBox(height: 20),
-
-            pw.Text(
-              "ARTICLE I: REVOCATION OF PRIOR WILLS",
-              style: pw.TextStyle(fontWeight: pw.FontWeight.bold),
-            ),
-            pw.Text("I hereby revoke all prior Wills and Codicils made by me."),
-
-            pw.SizedBox(height: 20),
-            pw.Text(
-              "ARTICLE II: APPOINTMENT OF EXECUTOR",
-              style: pw.TextStyle(fontWeight: pw.FontWeight.bold),
-            ),
-            pw.Text(
-              "I appoint ${executorController.text} as Executor of this Will.",
-            ),
-
-            pw.SizedBox(height: 20),
-            pw.Text(
-              "ARTICLE III: DISPOSITION OF PROPERTY",
-              style: pw.TextStyle(fontWeight: pw.FontWeight.bold),
-            ),
-            pw.Text("I give, devise, and bequeath my property as follows:"),
-            ...List.generate(propertyControllers.length, (i) {
-              final relationship = _selectedRelationships[i] == 'Other'
-                  ? _customRelationshipControllers[i]?.text ?? ''
-                  : _selectedRelationships[i] ?? '';
-              return pw.Bullet(
-                text:
-                    "To ${beneficiaryControllers[i].text} (${relationship}), I give ${propertyControllers[i].text}.",
-              );
-            }),
-
-            pw.SizedBox(height: 20),
-            pw.Text(
-              "ARTICLE IV: GUARDIANSHIP",
-              style: pw.TextStyle(fontWeight: pw.FontWeight.bold),
-            ),
-            pw.Text(
-              guardianController.text.isNotEmpty
-                  ? "I appoint ${guardianController.text} as Guardian of my minor children."
-                  : "No guardian specified.",
-            ),
-
-            pw.SizedBox(height: 20),
-            pw.Text(
-              "ARTICLE V: GENERAL PROVISIONS",
-              style: pw.TextStyle(fontWeight: pw.FontWeight.bold),
-            ),
-            pw.Text(
-              "1. My Executor shall have full authority to settle my estate.\n"
-              "2. All debts, expenses, and taxes shall be paid from my estate.",
-            ),
-
-            pw.SizedBox(height: 20),
-            pw.Text(
-              "IN WITNESS WHEREOF, I have hereunto set my hand this ${dateController.text}.",
-            ),
-            pw.SizedBox(height: 40),
-            pw.Text("Signature: __________________________"),
-            pw.SizedBox(height: 20),
-            pw.Text("Witness 1: __________________________"),
-            pw.SizedBox(height: 10),
-            pw.Text("Witness 2: __________________________"),
           ],
         ),
-
-    'Simple Will':
-        (context) => pw.Column(
-          crossAxisAlignment: pw.CrossAxisAlignment.start,
+        pw.Row(
+          mainAxisAlignment: pw.MainAxisAlignment.center,
           children: [
-            pw.Center(
-              child: pw.Text(
-                "SIMPLE WILL",
-                style: pw.TextStyle(
-                  fontSize: 20,
-                  fontWeight: pw.FontWeight.bold,
-                ),
-              ),
-            ),
-            pw.SizedBox(height: 20),
             pw.Text(
-              "I, ${nameController.text}, declare this as my Will. "
-              "I revoke all prior Wills.",
+              "${nameController.text.trim()} (Testator)",
+              style: pw.TextStyle(fontSize: 10),
             ),
-            pw.SizedBox(height: 20),
-
-            pw.Text(
-              "Executor:",
-              style: pw.TextStyle(fontWeight: pw.FontWeight.bold),
-            ),
-            pw.Text("I appoint ${executorController.text} as Executor."),
-
-            pw.SizedBox(height: 20),
-            pw.Text(
-              "Beneficiaries:",
-              style: pw.TextStyle(fontWeight: pw.FontWeight.bold),
-            ),
-            ...List.generate(propertyControllers.length, (i) {
-              final relationship = _selectedRelationships[i] == 'Other'
-                  ? _customRelationshipControllers[i]?.text ?? ''
-                  : _selectedRelationships[i] ?? '';
-              return pw.Bullet(
-                text:
-                    "${beneficiaryControllers[i].text} (${relationship}) will receive ${propertyControllers[i].text}.",
-              );
-            }),
-
-            pw.SizedBox(height: 20),
-            pw.Text("Date: ${dateController.text}"),
-            pw.SizedBox(height: 20),
-            pw.Text("Signature: __________________________"),
-            pw.SizedBox(height: 20),
-            pw.Text("Witness: __________________________"),
           ],
         ),
+        pw.SizedBox(height: 20),
+        pw.Text(
+          "SIGNED, SEALED, PUBLISHED, AND DECLARED by the above-named Testator as and for his/her Last Will and Testament, in our presence, who, at his/her request, in his/her presence, and in the presence of each other, have hereunto subscribed our names as witnesses.",
+          style: pw.TextStyle(fontSize: 12),
+        ),
+        pw.SizedBox(height: 20),
+        pw.Row(
+          mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+          children: [
+            pw.Column(
+              crossAxisAlignment: pw.CrossAxisAlignment.start,
+              children: [
+                pw.Text(
+                  "___________________________",
+                  style: pw.TextStyle(fontSize: 12),
+                ),
+                pw.Text(
+                  "Witness 1 Signature",
+                  style: pw.TextStyle(fontSize: 10),
+                ),
+                pw.Text(
+                  "Address: _______________",
+                  style: pw.TextStyle(fontSize: 10),
+                ),
+                pw.Text(
+                  "Date: ${dateController.text.trim()}",
+                  style: pw.TextStyle(fontSize: 10),
+                ),
+              ],
+            ),
+            pw.Column(
+              crossAxisAlignment: pw.CrossAxisAlignment.start,
+              children: [
+                pw.Text(
+                  "___________________________",
+                  style: pw.TextStyle(fontSize: 12),
+                ),
+                pw.Text(
+                  "Witness 2 Signature",
+                  style: pw.TextStyle(fontSize: 10),
+                ),
+                pw.Text(
+                  "Address: _______________",
+                  style: pw.TextStyle(fontSize: 10),
+                ),
+                pw.Text(
+                  "Date: ${dateController.text.trim()}",
+                  style: pw.TextStyle(fontSize: 10),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ],
+    ),
+    'Simple Will': (context) => pw.Column(
+      crossAxisAlignment: pw.CrossAxisAlignment.start,
+      children: [
+        pw.Center(
+          child: pw.Text(
+            "LAST WILL AND TESTAMENT",
+            style: pw.TextStyle(
+              fontSize: 24,
+              fontWeight: pw.FontWeight.bold,
+              decoration: pw.TextDecoration.underline,
+            ),
+          ),
+        ),
+        pw.SizedBox(height: 20),
+        pw.Text(
+          "I, ${nameController.text.trim()}, of ${addressController.text.trim()}, being of sound mind and body, do hereby declare this to be my Last Will and Testament, made on ${dateController.text.trim()}.",
+          style: pw.TextStyle(fontSize: 12),
+        ),
+        pw.SizedBox(height: 20),
+        pw.Text(
+          "I give my property as follows:",
+          style: pw.TextStyle(fontSize: 12, fontWeight: pw.FontWeight.bold),
+        ),
+        for (int i = 0; i < propertyControllers.length; i++)
+          pw.Text(
+            "${propertyControllers[i].text.trim()} to ${beneficiaryControllers[i].text.trim()} (${getRelationship(i)}).",
+            style: pw.TextStyle(fontSize: 12),
+          ),
+        pw.SizedBox(height: 20),
+        pw.Text(
+          "I appoint ${executorController.text.trim()} as the Executor of this Will.",
+          style: pw.TextStyle(fontSize: 12),
+        ),
+        pw.SizedBox(height: 20),
+        pw.Text(
+          "IN WITNESS WHEREOF, I have signed this Will on the date mentioned above.",
+          style: pw.TextStyle(fontSize: 12),
+        ),
+        pw.SizedBox(height: 10),
+        pw.Row(
+          mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+          children: [
+            pw.Text(
+              "___________________________",
+              style: pw.TextStyle(fontSize: 12),
+            ),
+            pw.Text(
+              "___________________________",
+              style: pw.TextStyle(fontSize: 12),
+            ),
+          ],
+        ),
+        pw.Row(
+          mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+          children: [
+            pw.Text("Signature of Testator", style: pw.TextStyle(fontSize: 10)),
+            pw.Text("Signature of Witness", style: pw.TextStyle(fontSize: 10)),
+          ],
+        ),
+      ],
+    ),
   };
+}
 
   Future<void> _generatePdf() async {
     FocusScope.of(context).unfocus();
@@ -251,6 +322,7 @@ class _WillGeneratorPageState extends State<WillGeneratorPage> {
         snackPosition: SnackPosition.BOTTOM,
         backgroundColor: context.failedColor,
         colorText: Colors.white,
+        duration: const Duration(milliseconds: 800), 
       );
       return;
     }
@@ -279,6 +351,7 @@ class _WillGeneratorPageState extends State<WillGeneratorPage> {
         snackPosition: SnackPosition.BOTTOM,
         backgroundColor: context.successColor,
         colorText: Colors.white,
+        duration: const Duration(milliseconds: 800), 
       );
     } catch (e) {
       Get.snackbar(
@@ -287,6 +360,7 @@ class _WillGeneratorPageState extends State<WillGeneratorPage> {
         snackPosition: SnackPosition.BOTTOM,
         backgroundColor: context.failedColor,
         colorText: Colors.white,
+        duration: const Duration(milliseconds: 800), 
       );
     }
   }
@@ -308,14 +382,14 @@ class _WillGeneratorPageState extends State<WillGeneratorPage> {
     _customRelationshipControllers.add(null);
   }
 
-  void _addProperty() {
-    setState(() {
-      propertyControllers.add(TextEditingController());
-      beneficiaryControllers.add(TextEditingController());
-      _selectedRelationships.add(null);
-      _customRelationshipControllers.add(null);
-    });
-  }
+  // void _addProperty() {
+  //   setState(() {
+  //     propertyControllers.add(TextEditingController());
+  //     beneficiaryControllers.add(TextEditingController());
+  //     _selectedRelationships.add(null);
+  //     _customRelationshipControllers.add(null);
+  //   });
+  // }
 
   void _removeProperty(int index) {
     setState(() {
@@ -479,13 +553,18 @@ class _WillGeneratorPageState extends State<WillGeneratorPage> {
                                 DropdownButtonFormField<String>(
                                   value: _selectedRelationships[index],
                                   decoration: _inputDecoration(
-                                      context, "Select the relationship"),
-                                  items: _relationshipOptions
-                                      .map((rel) => DropdownMenuItem(
-                                            value: rel,
-                                            child: Text(rel),
-                                          ))
-                                      .toList(),
+                                    context,
+                                    "Select the relationship",
+                                  ),
+                                  items:
+                                      _relationshipOptions
+                                          .map(
+                                            (rel) => DropdownMenuItem(
+                                              value: rel,
+                                              child: Text(rel),
+                                            ),
+                                          )
+                                          .toList(),
                                   onChanged: (val) {
                                     setState(() {
                                       _selectedRelationships[index] = val;
@@ -495,14 +574,19 @@ class _WillGeneratorPageState extends State<WillGeneratorPage> {
                                       } else {
                                         _customRelationshipControllers[index] =
                                             null;
+                                        if (val == 'Other') {
+                                          _customRelationshipControllers[index] =
+                                              TextEditingController();
+                                        } else {
+                                          _customRelationshipControllers[index] =
+                                              null;
+                                        }
                                       }
                                     });
                                   },
-                                  validator: (val) => val == null
-                                      ? "Required"
-                                      : null,
                                 ),
-                                                                if (_selectedRelationships[index] == 'Other') ...[
+                                if (_selectedRelationships[index] ==
+                                    'Other') ...[
                                   const SizedBox(height: 10),
                                   _textField(
                                     _customRelationshipControllers[index]!,
@@ -530,19 +614,24 @@ class _WillGeneratorPageState extends State<WillGeneratorPage> {
                       _label("Select Template"),
                       DropdownButtonFormField<String>(
                         value: selectedTemplate,
-                        items: templates.keys
-                            .map((template) => DropdownMenuItem(
-                                  value: template,
-                                  child: Text(template),
-                                ))
-                            .toList(),
+                        items:
+                            templates.keys
+                                .map(
+                                  (template) => DropdownMenuItem(
+                                    value: template,
+                                    child: Text(template),
+                                  ),
+                                )
+                                .toList(),
                         onChanged: (val) {
                           setState(() {
                             selectedTemplate = val;
                           });
                         },
-                        decoration:
-                            _inputDecoration(context, "Choose template"),
+                        decoration: _inputDecoration(
+                          context,
+                          "Choose template",
+                        ),
                       ),
 
                       const SizedBox(height: 20),
@@ -564,14 +653,64 @@ class _WillGeneratorPageState extends State<WillGeneratorPage> {
 
                       if (generatedFiles.isNotEmpty) ...[
                         const SizedBox(height: 20),
-                        _label("Generated Files"),
-                        ...generatedFiles.map((path) => ListTile(
-                              title: Text(path.split('/').last),
-                              trailing: IconButton(
-                                icon: const Icon(Icons.open_in_new),
-                                onPressed: () => OpenFile.open(path),
-                              ),
-                            )),
+                        _label("Generated Wills"),
+                        SizedBox(
+                          height:
+                              200, // scrollable area ki height fix kar rahe hain
+                          child: ListView.builder(
+                            itemCount: generatedFiles.length,
+                            itemBuilder: (context, index) {
+                              final path = generatedFiles[index];
+                              final fileName = path.split('/').last;
+                              return Card(
+                                margin: const EdgeInsets.symmetric(vertical: 6),
+                                child: ListTile(
+                                  leading: const Text(
+                                    "•",
+                                    style: TextStyle(fontSize: 22),
+                                  ), // bullet
+                                  title: Text(fileName),
+                                  trailing: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      IconButton(
+                                        icon: const Icon(
+                                          Icons.visibility,
+                                          color: Colors.blue,
+                                        ),
+                                        onPressed: () => OpenFile.open(path),
+                                      ),
+                                      IconButton(
+                                        icon: const Icon(
+                                          Icons.delete,
+                                          color: Colors.red,
+                                        ),
+                                        onPressed: () async {
+                                          final file = File(path);
+                                          if (await file.exists()) {
+                                            await file.delete();
+                                          }
+                                          setState(() {
+                                            generatedFiles.removeAt(index);
+                                          });
+                                          Get.snackbar(
+                                            "Deleted",
+                                            "🗑️ Will deleted successfully",
+                                            snackPosition: SnackPosition.BOTTOM,
+                                            backgroundColor:
+                                                context.failedColor,
+                                            colorText: Colors.white,
+                                            duration: const Duration(milliseconds: 800), 
+                                          );
+                                        },
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              );
+                            },
+                          ),
+                        ),
                       ],
                     ],
                   ),
@@ -584,5 +723,3 @@ class _WillGeneratorPageState extends State<WillGeneratorPage> {
     );
   }
 }
-
-                                
