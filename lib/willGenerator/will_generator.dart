@@ -94,9 +94,136 @@ class _WillGeneratorPageState extends State<WillGeneratorPage> {
     );
   }
 
+
   Map<String, pw.Widget Function(pw.Context)> get templates => {
-    'Original Will': (context) => pw.Text("Original Will Template PDF"),
-    'Simple Will': (context) => pw.Text("Simple Will Template PDF"),
+    'Original Will':
+        (context) => pw.Column(
+          crossAxisAlignment: pw.CrossAxisAlignment.start,
+          children: [
+            pw.Center(
+              child: pw.Text(
+                "LAST WILL AND TESTAMENT",
+                style: pw.TextStyle(
+                  fontSize: 20,
+                  fontWeight: pw.FontWeight.bold,
+                ),
+              ),
+            ),
+            pw.SizedBox(height: 20),
+            pw.Text(
+              "I, ${nameController.text}, residing at ${addressController.text}, "
+              "being of sound mind, do hereby declare this to be my Last Will and Testament.",
+            ),
+            pw.SizedBox(height: 20),
+
+            pw.Text(
+              "ARTICLE I: REVOCATION OF PRIOR WILLS",
+              style: pw.TextStyle(fontWeight: pw.FontWeight.bold),
+            ),
+            pw.Text("I hereby revoke all prior Wills and Codicils made by me."),
+
+            pw.SizedBox(height: 20),
+            pw.Text(
+              "ARTICLE II: APPOINTMENT OF EXECUTOR",
+              style: pw.TextStyle(fontWeight: pw.FontWeight.bold),
+            ),
+            pw.Text(
+              "I appoint ${executorController.text} as Executor of this Will.",
+            ),
+
+            pw.SizedBox(height: 20),
+            pw.Text(
+              "ARTICLE III: DISPOSITION OF PROPERTY",
+              style: pw.TextStyle(fontWeight: pw.FontWeight.bold),
+            ),
+            pw.Text("I give, devise, and bequeath my property as follows:"),
+            ...List.generate(propertyControllers.length, (i) {
+              return pw.Bullet(
+                text:
+                    "To ${beneficiaryControllers[i].text}, I give ${propertyControllers[i].text}.",
+              );
+            }),
+
+            pw.SizedBox(height: 20),
+            pw.Text(
+              "ARTICLE IV: GUARDIANSHIP",
+              style: pw.TextStyle(fontWeight: pw.FontWeight.bold),
+            ),
+            pw.Text(
+              guardianController.text.isNotEmpty
+                  ? "I appoint ${guardianController.text} as Guardian of my minor children."
+                  : "No guardian specified.",
+            ),
+
+            pw.SizedBox(height: 20),
+            pw.Text(
+              "ARTICLE V: GENERAL PROVISIONS",
+              style: pw.TextStyle(fontWeight: pw.FontWeight.bold),
+            ),
+            pw.Text(
+              "1. My Executor shall have full authority to settle my estate.\n"
+              "2. All debts, expenses, and taxes shall be paid from my estate.",
+            ),
+
+            pw.SizedBox(height: 20),
+            pw.Text(
+              "IN WITNESS WHEREOF, I have hereunto set my hand this ${dateController.text}.",
+            ),
+            pw.SizedBox(height: 40),
+            pw.Text("Signature: __________________________"),
+            pw.SizedBox(height: 20),
+            pw.Text("Witness 1: __________________________"),
+            pw.SizedBox(height: 10),
+            pw.Text("Witness 2: __________________________"),
+          ],
+        ),
+
+    'Simple Will':
+        (context) => pw.Column(
+          crossAxisAlignment: pw.CrossAxisAlignment.start,
+          children: [
+            pw.Center(
+              child: pw.Text(
+                "SIMPLE WILL",
+                style: pw.TextStyle(
+                  fontSize: 20,
+                  fontWeight: pw.FontWeight.bold,
+                ),
+              ),
+            ),
+            pw.SizedBox(height: 20),
+            pw.Text(
+              "I, ${nameController.text}, declare this as my Will. "
+              "I revoke all prior Wills.",
+            ),
+            pw.SizedBox(height: 20),
+
+            pw.Text(
+              "Executor:",
+              style: pw.TextStyle(fontWeight: pw.FontWeight.bold),
+            ),
+            pw.Text("I appoint ${executorController.text} as Executor."),
+
+            pw.SizedBox(height: 20),
+            pw.Text(
+              "Beneficiaries:",
+              style: pw.TextStyle(fontWeight: pw.FontWeight.bold),
+            ),
+            ...List.generate(propertyControllers.length, (i) {
+              return pw.Bullet(
+                text:
+                    "${beneficiaryControllers[i].text} will receive ${propertyControllers[i].text}.",
+              );
+            }),
+
+            pw.SizedBox(height: 20),
+            pw.Text("Date: ${dateController.text}"),
+            pw.SizedBox(height: 20),
+            pw.Text("Signature: __________________________"),
+            pw.SizedBox(height: 20),
+            pw.Text("Witness: __________________________"),
+          ],
+        ),
   };
 
   Future<void> _generatePdf() async {
@@ -326,6 +453,13 @@ class _WillGeneratorPageState extends State<WillGeneratorPage> {
                                   beneficiaryControllers[index],
                                   "Enter beneficiary name",
                                 ),
+                                const SizedBox(height: 10),
+                      _dropdownField(
+                        templates.keys.toList(),
+                        selectedTemplate,
+                        (val) => setState(() => selectedTemplate = val),
+                        context,
+                      ),
                               ],
                             ),
                           ),
@@ -365,8 +499,8 @@ class _WillGeneratorPageState extends State<WillGeneratorPage> {
                         validator: (value) => null,
                       ),
 
-                      const SizedBox(height: 16),
-
+                     
+                      const SizedBox(height: 10),
                       _label("Select Template"),
                       _dropdownField(
                         templates.keys.toList(),
@@ -374,7 +508,6 @@ class _WillGeneratorPageState extends State<WillGeneratorPage> {
                         (val) => setState(() => selectedTemplate = val),
                         context,
                       ),
-
                       const SizedBox(height: 24),
 
                       ElevatedButton(
