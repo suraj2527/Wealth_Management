@@ -192,7 +192,9 @@ class _AddAssetScreenState extends State<AddAssetScreen> {
         child: UniversalScaffold(
           body: SafeArea(
             child: GestureDetector(
+              behavior: HitTestBehavior.translucent,
               onTap: () => FocusScope.of(context).unfocus(),
+
               child: Column(
                 children: [
                   Expanded(

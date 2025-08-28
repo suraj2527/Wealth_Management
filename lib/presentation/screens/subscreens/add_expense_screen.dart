@@ -219,6 +219,7 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
         child: UniversalScaffold(
           body: SafeArea(
             child: GestureDetector(
+              behavior: HitTestBehavior.translucent,
               onTap: () => FocusScope.of(context).unfocus(),
               child: Column(
                 children: [

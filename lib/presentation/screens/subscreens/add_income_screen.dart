@@ -110,7 +110,7 @@ class _AddIncomeScreenState extends State<AddIncomeScreen> {
       if (isEdit) {
         result = await incomeController.updateIncome(incomeModel, dbUserId!);
       } else {
-        result = await incomeController.addIncome(incomeModel,dbUserId!);
+        result = await incomeController.addIncome(incomeModel, dbUserId!);
       }
       if (Get.isDialogOpen ?? false) Get.back();
 
@@ -166,6 +166,7 @@ class _AddIncomeScreenState extends State<AddIncomeScreen> {
       child: NetworkAwareWidget(
         child: UniversalScaffold(
           body: GestureDetector(
+            behavior: HitTestBehavior.translucent,
             onTap: () => FocusScope.of(context).unfocus(),
             child: SafeArea(
               child: SingleChildScrollView(
