@@ -67,6 +67,13 @@ class _WillGeneratorPageState extends State<WillGeneratorPage> {
       ),
     );
   }
+   final List<String> _relationship = [
+    'Son',
+    'Brother',
+    'Wife',
+    'Other',
+  ];
+  String _selectedrelationship = 'Son';
 
   Widget _textField(
     TextEditingController controller,
@@ -454,12 +461,7 @@ class _WillGeneratorPageState extends State<WillGeneratorPage> {
                                   "Enter beneficiary name",
                                 ),
                                 const SizedBox(height: 10),
-                      _dropdownField(
-                        templates.keys.toList(),
-                        selectedTemplate,
-                        (val) => setState(() => selectedTemplate = val),
-                        context,
-                      ),
+                     
                               ],
                             ),
                           ),
