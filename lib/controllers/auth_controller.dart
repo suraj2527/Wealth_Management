@@ -3,6 +3,7 @@ import 'package:flutter_appauth/flutter_appauth.dart';
 import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:wealth_app/Helper/api_helper.dart';
 import 'dart:convert';
 import 'dart:io';
 
@@ -18,7 +19,7 @@ class AuthController extends GetxController {
   var dbUserId = ''.obs;
 
   static const String _clientId = 'e4753ccc-04a3-429e-9a71-93526fd33922';
-  static const String _redirectUri = 'com.example.wealthapp://oauthredirect';
+  static const String _redirectUri = 'com.example.wealthapp://oauthredirect/';
   static const List<String> _scopes = [
     'openid',
     'offline_access',
@@ -38,31 +39,6 @@ class AuthController extends GetxController {
     return json.decode(decodedPayload);
   }
 
-  Future<void> printTokenData() async {
-    try {
-      final idToken = await getIdToken();
-      if (idToken == null) {
-        debugPrint("❌ No token found");
-        return;
-      }
-
-      final payload = decodeJWT(idToken);
-      debugPrint("🧾 Decoded JWT Payload:");
-      payload.forEach((key, value) {
-        debugPrint("🔑 $key: $value");
-      });
-
-      if (payload.containsKey('exp')) {
-        final expiry = DateTime.fromMillisecondsSinceEpoch(
-          payload['exp'] * 1000,
-        );
-        debugPrint("⏰ Token expires at: $expiry");
-      }
-    } catch (e) {
-      debugPrint("❌ Failed to decode JWT: $e");
-    }
-  }
-
   Future<void> login() async {
     if (isLoggingIn.value) return;
     isLoggingIn.value = true;
@@ -73,8 +49,7 @@ class AuthController extends GetxController {
         AuthorizationTokenRequest(
           _clientId,
           _redirectUri,
-          externalUserAgent:
-              ExternalUserAgent.ephemeralAsWebAuthenticationSession,
+          externalUserAgent: ExternalUserAgent.ephemeralAsWebAuthenticationSession,
           promptValues: ['login'],
           discoveryUrl: _discoveryUrl,
           scopes: _scopes,
@@ -84,10 +59,9 @@ class AuthController extends GetxController {
       if (result.idToken != null) {
         final payload = decodeJWT(result.idToken!);
         final name = payload['name'] ?? '';
-        final userEmail =
-            payload['emails'] is List
-                ? payload['emails'][0]
-                : payload['email'] ?? '';
+        final userEmail = payload['emails'] is List
+            ? payload['emails'][0]
+            : payload['email'] ?? '';
         final userIdValue = payload['sub'] ?? payload['oid'] ?? '';
 
         fullName.value = name;
@@ -103,21 +77,20 @@ class AuthController extends GetxController {
         await prefs.setString('userId', userIdValue);
 
         debugPrint("✅ Azure login successful");
+        isLoggedIn.value = true;
+        // final backendSuccess = await sendUserDataToBackend(
+        //   name: name,
+        //   email: userEmail,
+        //   userId: userIdValue,
+        //   idToken: result.idToken!,
+        // );
 
-        final backendSuccess = await sendUserDataToBackend(
-          name: name,
-          email: userEmail,
-          userId: userIdValue,
-          idToken: result.idToken ?? '',
-        );
-
-        if (backendSuccess) {
-          isLoggedIn.value = true;
-          await printTokenData();
-        } else {
-          isLoggedIn.value = false;
-          throw Exception("Backend registration failed");
-        }
+        // if (backendSuccess) {
+        //   isLoggedIn.value = true;
+        // } else {
+        //   isLoggedIn.value = false;
+        //   throw Exception("Backend registration failed");
+        // }
       } else {
         throw Exception("No id token received");
       }
@@ -136,27 +109,19 @@ class AuthController extends GetxController {
     required String userId,
     required String idToken,
   }) async {
-    final url = Uri.parse(
-      'https://dynamicsmonk-api.azure-api.net/wealthdev/users',
-    );
-
-    final headers = {
-      'Content-Type': 'application/json',
-      'Ocp-Apim-Subscription-Key': '507f2afb55654b58b949017a7d8c5f22',
-    };
-
-    final body = {
-      'firstName': name,
-      'lastname': "",
-      'email': email,
-      'phone': "",
-    };
-
     try {
       final response = await http.post(
-        url,
-        headers: headers,
-        body: jsonEncode(body),
+        Uri.parse(ApiHelper.addUser()), 
+        headers: {
+          'Content-Type': 'application/json',
+          'Ocp-Apim-Subscription-Key': ApiHelper.subscriptionKey,
+        },
+        body: jsonEncode({
+          'firstName': name,
+          'lastname': '',
+          'email': email,
+          'phone': '',
+        }),
       );
 
       if (response.statusCode == 200 || response.statusCode == 201) {
@@ -190,9 +155,7 @@ class AuthController extends GetxController {
         return;
       }
 
-      debugPrint("🟢 Found refreshToken. Forcing silent login...");
-      // ignore: unnecessary_nullable_for_final_variable_declarations
-      final TokenResponse? result = await _appAuth.token(
+      final result = await _appAuth.token(
         TokenRequest(
           _clientId,
           _redirectUri,
@@ -204,22 +167,13 @@ class AuthController extends GetxController {
       );
 
       if (result != null && result.accessToken != null) {
-        debugPrint("✅ Silent login success!");
-
-        final storedEmail = prefs.getString('userEmail') ?? '';
-        final storedName = prefs.getString('userName') ?? '';
-        final storedUserId = prefs.getString('userId') ?? '';
-
-        email.value = storedEmail;
-        fullName.value = storedName;
-        userId.value = storedUserId;
-
         await prefs.setString('accessToken', result.accessToken ?? '');
         if (result.refreshToken != null && result.refreshToken!.isNotEmpty) {
           await prefs.setString('refreshToken', result.refreshToken!);
         }
 
         isLoggedIn.value = true;
+        debugPrint("✅ Silent login success!");
       } else {
         isLoggedIn.value = false;
       }
@@ -267,54 +221,26 @@ class AuthController extends GetxController {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString('userName', newName);
     debugPrint("📝 Name updated locally to: $newName");
-
-    final idToken = await getIdToken();
-    if (idToken == null) return;
-
-    try {
-      final url = Uri.parse('');
-      final response = await http.put(
-        url,
-        headers: {
-          'Authorization': 'Bearer $idToken',
-          'Content-Type': 'application/json',
-        },
-        body: jsonEncode({'name': newName}),
-      );
-
-      if (response.statusCode == 200) {
-        debugPrint("✅ Name updated on backend");
-      } else {
-        debugPrint(
-          "❌ Failed to update name on backend: ${response.statusCode}",
-        );
-      }
-    } catch (e) {
-      debugPrint("❌ Error updating name on backend: $e");
-    }
   }
 
   Future<void> fetchUserProfile() async {
     final prefs = await SharedPreferences.getInstance();
     final idToken = prefs.getString('idToken');
     final dbId = prefs.getString('DBid');
-
     if (idToken == null || dbId == null) return;
-
-    final url = Uri.parse('http://192.168.1.24:7173/api/users/$dbId');
 
     try {
       final response = await http.get(
-        url,
+        Uri.parse('ApiHelper.getUserProfile(dbId)'),
         headers: {'Authorization': 'Bearer $idToken'},
       );
 
       if (response.statusCode == 200) {
-        debugPrint("👼 Fetch user success 👼");
         final data = jsonDecode(response.body);
         fullName.value = data['firstName'] ?? '';
         email.value = data['email'] ?? '';
         userId.value = data['userId'] ?? '';
+        debugPrint("👼 User profile fetched successfully");
       } else {
         debugPrint("❌ Fetch failed: ${response.statusCode} ${response.body}");
       }
@@ -352,8 +278,6 @@ class AuthController extends GetxController {
         isLoggedIn.value = true;
 
         debugPrint("✅ Silent login successful from Splash");
-        debugPrint("🪪 Stored DBid loaded: $storedDbId");
-
         return true;
       } else {
         debugPrint("⚠️ No stored credentials found");

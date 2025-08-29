@@ -3,12 +3,11 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
-import '../../models/expense_model.dart';
+import 'package:wealth_app/Helper/api_helper.dart';
+import '../models/expense_model.dart';
 
 class ExpenseController extends GetxController {
   var expenseList = <ExpenseModel>[].obs;
-  final String baseUrl =
-      'https://dynamicsmonk-api.azure-api.net/wealthdev/expense';
 
   Future<void> _saveToCache(String userId) async {
     final prefs = await SharedPreferences.getInstance();
@@ -29,57 +28,53 @@ class ExpenseController extends GetxController {
     }
   }
 
-Future<Map<String, dynamic>> fetchExpenses(String userId, {bool useCacheFirst = true}) async {
-  try {
-    if (useCacheFirst) {
-      await loadExpenseFromCache(userId); 
-    }
+  Future<Map<String, dynamic>> fetchExpenses(String userId, {bool useCacheFirst = true}) async {
+    try {
+      if (useCacheFirst) await loadExpenseFromCache(userId);
 
-    debugPrint("🌐 Fetching expenses for userId: $userId");
+      final url = ApiHelper.getExpenses(userId);
+      debugPrint("🌐 Fetching expenses for userId: $userId");
 
-    final response = await http.get(
-      Uri.parse('$baseUrl/user/$userId'),
-      headers: {
-        'Content-Type': 'application/json',
-        'Ocp-Apim-Subscription-Key': '507f2afb55654b58b949017a7d8c5f22',
-      },
-    );
+      final response = await http.get(
+        Uri.parse(url),
+        headers: {
+          'Content-Type': 'application/json',
+          'Ocp-Apim-Subscription-Key': ApiHelper.subscriptionKey,
+        },
+      );
 
-    if (response.statusCode == 200) {
-      final jsonResponse = json.decode(response.body);
+      if (response.statusCode == 200) {
+        final jsonResponse = json.decode(response.body);
 
-      if (jsonResponse.containsKey('Expenses')) {
-        final List<dynamic> expensesList = jsonResponse['Expenses'];
-        expenseList.value = expensesList.map((e) => ExpenseModel.fromJson(e)).toList();
-        await _saveToCache(userId);
-        return {'success': true};
+        if (jsonResponse.containsKey('Expenses')) {
+          final List<dynamic> expensesList = jsonResponse['Expenses'];
+          expenseList.value = expensesList.map((e) => ExpenseModel.fromJson(e)).toList();
+          await _saveToCache(userId);
+          return {'success': true};
+        }
+        return {'success': false, 'message': 'No Expenses key in response'};
       }
-      return {'success': false, 'message': 'No Expenses key in response'};
-    }
 
-    return {'success': false, 'message': 'Server error'};
-  } catch (e) {
-    return {'success': false, 'message': e.toString()};
+      return {'success': false, 'message': 'Server error'};
+    } catch (e) {
+      return {'success': false, 'message': e.toString()};
+    }
   }
-}
-  Future<Map<String, dynamic>> submitExpenseAndRefresh(
-    String userId,
-    ExpenseModel expense,
-  ) async {
+
+  Future<Map<String, dynamic>> submitExpenseAndRefresh(String userId, ExpenseModel expense) async {
     final fullExpenseJson = expense.toJson()..addAll({'userId': userId});
-    final url = Uri.parse(baseUrl);
 
     try {
       final response = await http.post(
-        url,
+        Uri.parse(ApiHelper.addExpense()),
         headers: {
           'Content-Type': 'application/json',
-          'Ocp-Apim-Subscription-Key': '507f2afb55654b58b949017a7d8c5f22',
+          'Ocp-Apim-Subscription-Key': ApiHelper.subscriptionKey,
         },
         body: jsonEncode(fullExpenseJson),
       );
 
-      if (response.statusCode == 201 || response.statusCode == 200) {
+      if (response.statusCode == 200 || response.statusCode == 201) {
         await fetchExpenses(userId, useCacheFirst: false);
         await _saveToCache(userId);
         return {'success': true};
@@ -90,24 +85,17 @@ Future<Map<String, dynamic>> fetchExpenses(String userId, {bool useCacheFirst = 
         };
       }
     } catch (e) {
-      return {
-        'success': false,
-        'message': 'Something went wrong. Please try again.',
-      };
+      return {'success': false, 'message': 'Something went wrong. Please try again.'};
     }
   }
 
   Future<Map<String, dynamic>> deleteExpense(String expenseId, String userId) async {
-    final url = Uri.parse('$baseUrl/$expenseId');
-
     try {
-      debugPrint("🗑️ Deleting expense with ID: $expenseId");
-
       final response = await http.delete(
-        url,
+        Uri.parse(ApiHelper.deleteExpense(expenseId)),
         headers: {
           'Content-Type': 'application/json',
-          'Ocp-Apim-Subscription-Key': '507f2afb55654b58b949017a7d8c5f22',
+          'Ocp-Apim-Subscription-Key': ApiHelper.subscriptionKey,
         },
       );
 
@@ -122,27 +110,19 @@ Future<Map<String, dynamic>> fetchExpenses(String userId, {bool useCacheFirst = 
         };
       }
     } catch (e) {
-      return {
-        'success': false,
-        'message': 'Something went wrong. Please try again.',
-      };
+      return {'success': false, 'message': 'Something went wrong. Please try again.'};
     }
   }
 
-  Future<Map<String, dynamic>> updateExpense(
-    String userId,
-    ExpenseModel expense,
-  ) async {
+  Future<Map<String, dynamic>> updateExpense(String userId, ExpenseModel expense) async {
     final expenseId = expense.Id;
 
     try {
-      debugPrint("✏️ Updating expense with ID: ${expense.Id}");
-      debugPrint("➡️ Body: ${json.encode(expense.toJson())}");
       final response = await http.put(
-        Uri.parse('$baseUrl/$expenseId'),
+        Uri.parse(ApiHelper.updateExpense(expenseId)),
         headers: {
           'Content-Type': 'application/json',
-          'Ocp-Apim-Subscription-Key': '507f2afb55654b58b949017a7d8c5f22',
+          'Ocp-Apim-Subscription-Key': ApiHelper.subscriptionKey,
         },
         body: jsonEncode(expense.toJson()..addAll({'userId': userId})),
       );
@@ -167,17 +147,9 @@ Future<Map<String, dynamic>> fetchExpenses(String userId, {bool useCacheFirst = 
     }
   }
 
-  void addExpense(ExpenseModel expense) {
-    expenseList.add(expense);
-  }
-
+  void addExpense(ExpenseModel expense) => expenseList.add(expense);
   void removeExpense(int index) {
-    if (index >= 0 && index < expenseList.length) {
-      expenseList.removeAt(index);
-    }
+    if (index >= 0 && index < expenseList.length) expenseList.removeAt(index);
   }
-
-  void clearExpenses() {
-    expenseList.clear();
-  }
+  void clearExpenses() => expenseList.clear();
 }

@@ -5,7 +5,7 @@ import 'package:get/get.dart';
 import 'package:wealth_app/extension/theme_extension.dart';
 import 'package:wealth_app/presentation/screens/mainscreens/profile_screen.dart';
 import 'package:wealth_app/presentation/screens/subscreens/notification_screen.dart';
-import 'package:wealth_app/presentation/controllers/profile_image_controller.dart';
+import 'package:wealth_app/controllers/profile_image_controller.dart';
 
 class UniversalAppBar extends StatelessWidget implements PreferredSizeWidget {
   const UniversalAppBar({super.key});

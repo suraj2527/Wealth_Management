@@ -1,7 +1,7 @@
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:wealth_app/presentation/controllers/dashboard_controller.dart';
+import 'package:wealth_app/controllers/dashboard_controller.dart';
 import 'package:wealth_app/extension/theme_extension.dart';
 
 class InteractivePieChart extends StatefulWidget {

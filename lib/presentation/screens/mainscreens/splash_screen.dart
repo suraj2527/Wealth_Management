@@ -3,12 +3,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
 import 'package:wealth_app/constants/text_styles.dart';
-import 'package:wealth_app/presentation/controllers/auth_controller.dart';
-import 'package:wealth_app/presentation/controllers/dashboard_controller.dart';
-import 'package:wealth_app/presentation/controllers/income_controller.dart';
-import 'package:wealth_app/presentation/controllers/expense_controller.dart';
-import 'package:wealth_app/presentation/controllers/asset_controller.dart';
-// import 'package:wealth_app/presentation/screens/Authentication/login_screen.dart';
+import 'package:wealth_app/controllers/auth_controller.dart';
+import 'package:wealth_app/controllers/dashboard_controller.dart';
+import 'package:wealth_app/controllers/income_controller.dart';
+import 'package:wealth_app/controllers/expense_controller.dart';
+import 'package:wealth_app/controllers/asset_controller.dart';
+import 'package:wealth_app/presentation/screens/Authentication/login_screen.dart';
 import 'package:wealth_app/presentation/screens/mainscreens/dashboard_screen.dart';
 import 'package:wealth_app/presentation/widgets/dot_loader.dart';
 import 'package:wealth_app/extension/theme_extension.dart';
@@ -87,9 +87,9 @@ class _SplashScreenState extends State<SplashScreen>
 
       Get.offAll(() => const DashboardScreen());
     } else {
-      Get.offAll(() => const DashboardScreen() );
+      // Get.offAll(() => const DashboardScreen() );
 
-      // Get.offAll(() => const LoginScreen());
+      Get.offAll(() => const LoginScreen());
     }
   }
 

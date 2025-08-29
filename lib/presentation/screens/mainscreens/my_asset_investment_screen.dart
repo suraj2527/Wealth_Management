@@ -5,9 +5,9 @@ import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:wealth_app/constants/text_styles.dart';
-import 'package:wealth_app/presentation/controllers/auth_controller.dart';
-import 'package:wealth_app/presentation/controllers/asset_controller.dart';
-import 'package:wealth_app/presentation/controllers/filter_controller.dart';
+import 'package:wealth_app/controllers/auth_controller.dart';
+import 'package:wealth_app/controllers/asset_controller.dart';
+import 'package:wealth_app/controllers/filter_controller.dart';
 import 'package:wealth_app/extension/theme_extension.dart';
 import 'package:wealth_app/models/asset_model.dart';
 import 'package:wealth_app/presentation/screens/subscreens/add_asset_screen.dart';
@@ -171,95 +171,106 @@ class _MyAssetsAndInvestmentsScreenState
   }
 
   Widget _buildTopSection() {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              "My Assets &",
-              style: TextStyle(
-                fontSize: 22,
-                fontWeight: AppTextStyle.bold,
-                color: context.mainFontColor,
-              ),
-            ),
-            Text(
-              "Investments",
-              style: TextStyle(
-                fontSize: 22,
-                fontWeight: AppTextStyle.bold,
-                color: context.mainFontColor,
-              ),
-            ),
-            const SizedBox(height: 4),
-            Text(
-              "Your Overall Assets Summary",
-              style: TextStyle(fontSize: 12, color: context.mainFontColor),
-            ),
-            const SizedBox(height: 40),
-            Text(
-              "Current Year Investments",
-              style: TextStyle(
-                fontWeight: AppTextStyle.semiBold,
-                fontSize: 18,
-                color: context.mainFontColor,
-              ),
-            ),
-            const SizedBox(height: 4),
-            Text(
-              "This Year Investments",
-              style: TextStyle(fontSize: 12, color: context.mainFontColor),
-            ),
-          ],
-        ),
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.end,
-          children: [
-            OutlinedButton.icon(
-              onPressed: _fetchData,
-              icon: Icon(Icons.refresh, color: context.buttonColor),
-              label: Text(
-                "Refresh",
-                style: TextStyle(color: context.buttonColor),
-              ),
-              style: OutlinedButton.styleFrom(
-                side: BorderSide(color: context.buttonColor),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8),
+  return LayoutBuilder(
+    builder: (context, constraints) {
+      final maxRightWidth = 140.0; // max width for right buttons
+      final availableWidth = constraints.maxWidth - maxRightWidth - 8; // 8 for spacing
+
+      return Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Left Column
+          SizedBox(
+            width: availableWidth > 0 ? availableWidth : constraints.maxWidth * 0.6,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  "My Assets &",
+                  style: TextStyle(
+                    fontSize: 22,
+                    fontWeight: AppTextStyle.bold,
+                    color: context.mainFontColor,
+                  ),
                 ),
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 10,
+                Text(
+                  "Investments",
+                  style: TextStyle(
+                    fontSize: 22,
+                    fontWeight: AppTextStyle.bold,
+                    color: context.mainFontColor,
+                  ),
                 ),
-              ),
+                const SizedBox(height: 4),
+                Text(
+                  "Your Overall Assets Summary",
+                  style: TextStyle(fontSize: 12, color: context.mainFontColor),
+                ),
+                const SizedBox(height: 40),
+                Text(
+                  "Current Year Investments",
+                  style: TextStyle(
+                    fontWeight: AppTextStyle.semiBold,
+                    fontSize: 18,
+                    color: context.mainFontColor,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  "This Year Investments",
+                  style: TextStyle(fontSize: 12, color: context.mainFontColor),
+                ),
+              ],
             ),
-            const SizedBox(height: 8),
-            ElevatedButton(
-              onPressed: navigateToAddAsset,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: context.buttonColor,
-                foregroundColor: context.buttonTextColor,
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 13,
-                  vertical: 10,
+          ),
+
+          const SizedBox(width: 8), // spacing between columns
+
+          // Right Column (buttons)
+          ConstrainedBox(
+            constraints: BoxConstraints(maxWidth: maxRightWidth),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                OutlinedButton.icon(
+                  onPressed: _fetchData,
+                  icon: Icon(Icons.refresh, color: context.buttonColor),
+                  label: Text(
+                    "Refresh",
+                    style: TextStyle(color: context.buttonColor),
+                  ),
+                  style: OutlinedButton.styleFrom(
+                    side: BorderSide(color: context.buttonColor),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                  ),
                 ),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8),
+                const SizedBox(height: 8),
+                ElevatedButton(
+                  onPressed: navigateToAddAsset,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: context.buttonColor,
+                    foregroundColor: context.buttonTextColor,
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                  ),
+                  child: const Text(
+                    "Add Investment",
+                    style: TextStyle(fontSize: 14),
+                  ),
                 ),
-              ),
-              child: const Text(
-                "Add Investment",
-                style: TextStyle(fontSize: 14),
-              ),
+              ],
             ),
-          ],
-        ),
-      ],
-    );
-  }
+          ),
+        ],
+      );
+    },
+  );
+}
 
   Widget _buildHeaderWithFilter() {
     return Row(

@@ -3,12 +3,11 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
-import '../../models/asset_model.dart';
+import 'package:wealth_app/Helper/api_helper.dart';
+import '../models/asset_model.dart';
 
 class AssetController extends GetxController {
   final RxList<AssetModel> assetList = <AssetModel>[].obs;
-  final String baseUrl =
-      'https://dynamicsmonk-api.azure-api.net/wealthdev/investments';
 
   Future<void> _saveToCache(String userId) async {
     final prefs = await SharedPreferences.getInstance();
@@ -38,10 +37,10 @@ class AssetController extends GetxController {
 
     try {
       final response = await http.post(
-        Uri.parse(baseUrl),
+        Uri.parse(ApiHelper.addAsset()),
         headers: {
           'Content-Type': 'application/json',
-          'Ocp-Apim-Subscription-Key': '507f2afb55654b58b949017a7d8c5f22',
+          'Ocp-Apim-Subscription-Key': ApiHelper.subscriptionKey,
         },
         body: jsonEncode(fullAssetJson),
       );
@@ -67,14 +66,14 @@ class AssetController extends GetxController {
         await loadAssetsFromCache(userId);
       }
 
-      final url = '$baseUrl/recent/$userId';
+      final url = ApiHelper.getAssets(userId);
       debugPrint("💰 Fetching assets for userId: $userId");
 
       final response = await http.get(
         Uri.parse(url),
         headers: {
           'Content-Type': 'application/json',
-          'Ocp-Apim-Subscription-Key': '507f2afb55654b58b949017a7d8c5f22',
+          'Ocp-Apim-Subscription-Key': ApiHelper.subscriptionKey,
         },
       );
 
@@ -95,7 +94,7 @@ class AssetController extends GetxController {
     String userId,
     AssetModel asset,
   ) async {
-    final url = '$baseUrl/${asset.id}';
+    final url = ApiHelper.deleteAsset(asset.id); 
     final Map<String, dynamic> updatedAssetJson =
         asset.toJson()..addAll({'userId': userId});
 
@@ -104,7 +103,7 @@ class AssetController extends GetxController {
         Uri.parse(url),
         headers: {
           'Content-Type': 'application/json',
-          'Ocp-Apim-Subscription-Key': '507f2afb55654b58b949017a7d8c5f22',
+          'Ocp-Apim-Subscription-Key': ApiHelper.subscriptionKey,
         },
         body: jsonEncode(updatedAssetJson),
       );
@@ -127,13 +126,13 @@ class AssetController extends GetxController {
   }
 
   Future<Map<String, dynamic>> deleteAsset(String id, String userId) async {
-    final url = '$baseUrl/$id';
+    final url = ApiHelper.deleteAsset(id);
     try {
       final response = await http.delete(
         Uri.parse(url),
         headers: {
           'Content-Type': 'application/json',
-          'Ocp-Apim-Subscription-Key': '507f2afb55654b58b949017a7d8c5f22',
+          'Ocp-Apim-Subscription-Key': ApiHelper.subscriptionKey,
         },
       );
 

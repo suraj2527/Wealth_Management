@@ -1,7 +1,7 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:wealth_app/presentation/controllers/network_controller.dart';
+import 'package:wealth_app/controllers/network_controller.dart';
 
 class NetworkAwareWidget extends StatelessWidget {
   final Widget child;

@@ -2,7 +2,7 @@ import 'package:dropdown_button2/dropdown_button2.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
-import 'package:wealth_app/presentation/controllers/auth_controller.dart';
+import 'package:wealth_app/controllers/auth_controller.dart';
 import 'package:wealth_app/presentation/widgets/calendar_input_field.dart';
 import 'package:wealth_app/presentation/widgets/dot_loader.dart';
 import 'package:wealth_app/presentation/widgets/network_widget.dart';
@@ -10,7 +10,7 @@ import 'package:wealth_app/presentation/widgets/universal_scaffold.dart';
 import 'package:wealth_app/extension/theme_extension.dart';
 
 import '../../../models/asset_model.dart';
-import '../../controllers/asset_controller.dart';
+import '../../../controllers/asset_controller.dart';
 
 class AddAssetScreen extends StatefulWidget {
   final AssetModel? assetToEdit;

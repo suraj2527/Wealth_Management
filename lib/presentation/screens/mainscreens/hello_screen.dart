@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
 import 'package:wealth_app/constants/text_styles.dart';
-import 'package:wealth_app/presentation/controllers/auth_controller.dart';
+import 'package:wealth_app/controllers/auth_controller.dart';
 
 class HelloScreen extends StatefulWidget {
   const HelloScreen({super.key});

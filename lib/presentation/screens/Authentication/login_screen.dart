@@ -3,7 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
 import 'package:wealth_app/constants/text_styles.dart';
-import 'package:wealth_app/presentation/controllers/auth_controller.dart';
+import 'package:wealth_app/controllers/auth_controller.dart';
 import 'package:wealth_app/extension/theme_extension.dart';
 import 'package:wealth_app/presentation/screens/mainscreens/hello_screen.dart';
 import 'package:wealth_app/presentation/widgets/custom_button.dart';

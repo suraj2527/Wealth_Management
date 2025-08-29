@@ -2,10 +2,10 @@ import 'dart:math';
 import 'package:get/get.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
-import 'package:wealth_app/presentation/controllers/filter_controller.dart';
-import 'package:wealth_app/presentation/controllers/income_controller.dart';
-import 'package:wealth_app/presentation/controllers/expense_controller.dart';
-import 'package:wealth_app/presentation/controllers/asset_controller.dart';
+import 'package:wealth_app/controllers/filter_controller.dart';
+import 'package:wealth_app/controllers/income_controller.dart';
+import 'package:wealth_app/controllers/expense_controller.dart';
+import 'package:wealth_app/controllers/asset_controller.dart';
 
 class DashboardController extends GetxController {
   var totalIncome = 0.0.obs;
