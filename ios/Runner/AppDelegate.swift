@@ -4,6 +4,8 @@ import AppAuth
 
 @main
 @objc class AppDelegate: FlutterAppDelegate {
+  var currentAuthorizationFlow: OIDExternalUserAgentSession?
+
   override func application(
     _ application: UIApplication,
     didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?
@@ -17,8 +19,10 @@ import AppAuth
     open url: URL,
     options: [UIApplication.OpenURLOptionsKey : Any] = [:]
   ) -> Bool {
-    if OIDAuthorizationService.canHandle(url) {
-      return OIDAuthorizationService.handle(url)
+    if let authFlow = currentAuthorizationFlow,
+       authFlow.resumeExternalUserAgentFlow(with: url) {
+      currentAuthorizationFlow = nil
+      return true
     }
     return super.application(app, open: url, options: options)
   }

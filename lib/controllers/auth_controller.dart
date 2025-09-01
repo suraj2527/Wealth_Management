@@ -78,19 +78,19 @@ class AuthController extends GetxController {
 
         debugPrint("✅ Azure login successful");
         isLoggedIn.value = true;
-        // final backendSuccess = await sendUserDataToBackend(
-        //   name: name,
-        //   email: userEmail,
-        //   userId: userIdValue,
-        //   idToken: result.idToken!,
-        // );
+        final backendSuccess = await sendUserDataToBackend(
+          name: name,
+          email: userEmail,
+          userId: userIdValue,
+          idToken: result.idToken!,
+        );
 
-        // if (backendSuccess) {
-        //   isLoggedIn.value = true;
-        // } else {
-        //   isLoggedIn.value = false;
-        //   throw Exception("Backend registration failed");
-        // }
+        if (backendSuccess) {
+          isLoggedIn.value = true;
+        } else {
+          isLoggedIn.value = false;
+          throw Exception("Backend registration failed");
+        }
       } else {
         throw Exception("No id token received");
       }
@@ -231,7 +231,7 @@ class AuthController extends GetxController {
 
     try {
       final response = await http.get(
-        Uri.parse('ApiHelper.getUserProfile(dbId)'),
+        Uri.parse(''),
         headers: {'Authorization': 'Bearer $idToken'},
       );
 
