@@ -4,7 +4,7 @@ class ApiHelper {
   static String get baseUrl {
     return currentFlavor == 'prod'
     ? 'https://dynamicsmonk-api.azure-api.net/wealthdev'
-        : 'https://192.168.1.24:7173/api';
+        : 'http://192.168.1.12:7173/api';
   }
 
 
