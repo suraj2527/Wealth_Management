@@ -47,8 +47,8 @@ class _AddAssetScreenState extends State<AddAssetScreen> {
     'Others',
   ];
 
-  String _selectedCategory = 'Mutual funds';
-  String _selectedSubCategory = 'Equity Mutual fund';
+  String? _selectedCategory ;
+  String? _selectedSubCategory ;
 
   final ScrollController _scrollController = ScrollController();
   late final String userId;
@@ -110,11 +110,11 @@ class _AddAssetScreenState extends State<AddAssetScreen> {
         investmentCategory:
             _selectedCategory == 'Others'
                 ? _customCategoryController.text.trim()
-                : _selectedCategory,
+                : _selectedCategory!,
         investmentSubCategory:
             _selectedSubCategory == 'Others'
                 ? _customSubCategoryController.text.trim()
-                : _selectedSubCategory,
+                : _selectedSubCategory!,
         investmentFundName: _fundNameController.text.trim(),
         amount: double.tryParse(_amountController.text.trim()) ?? 0.0,
       );
@@ -257,7 +257,9 @@ class _AddAssetScreenState extends State<AddAssetScreen> {
                                   _customCategoryController.clear();
                                 }
                               });
-                            }, context),
+                            }, context,
+                            hint: "Select Investment Category"
+                            ),
                             if (_selectedCategory == 'Others') ...[
                               const SizedBox(height: 10),
                               _textField(
@@ -280,6 +282,7 @@ class _AddAssetScreenState extends State<AddAssetScreen> {
                                 });
                               },
                               context,
+                              hint: "Enter Sub Category"
                             ),
                             if (_selectedSubCategory == 'Others') ...[
                               const SizedBox(height: 10),
@@ -380,49 +383,75 @@ class _AddAssetScreenState extends State<AddAssetScreen> {
   }
 
   Widget _dropdownField(
-    List<String> items,
-    String? currentValue,
-    void Function(String?) onChanged,
-    BuildContext context,
-  ) {
-    final bool isDarkMode = Theme.of(context).brightness == Brightness.dark;
+  List<String> items,
+  String? currentValue,
+  void Function(String?) onChanged,
+  BuildContext context,
+  {String hint = ""} 
+) {
+  final isDarkMode = Theme.of(context).brightness == Brightness.dark;
 
-    return DropdownButtonFormField2<String>(
-      value: currentValue,
-      isExpanded: true,
+  return DropdownButtonFormField2<String>(
+    value: currentValue,
+    isExpanded: true,
+    hint: Text(
+      hint,
       style: TextStyle(
         fontSize: 16,
-        color: isDarkMode ? context.mainFontColor : Colors.black,
+        color: context.hintColor,
       ),
-      decoration: const InputDecoration(
-        isDense: true,
-        contentPadding: EdgeInsets.symmetric(horizontal: -4, vertical: 16),
+    ),
+    style: TextStyle(
+      fontSize: 16,
+      color: isDarkMode ? context.mainFontColor : Colors.black,
+    ),
+    decoration: InputDecoration(
+      isDense: true,
+      contentPadding: const EdgeInsets.symmetric(horizontal: -4, vertical: 16),
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(10),
+        borderSide: BorderSide(color: context.borderColor.withOpacity(0.1)),
       ),
-      dropdownStyleData: DropdownStyleData(
-        maxHeight: 250,
-        elevation: 3,
-        decoration: BoxDecoration(
-          color: context.fieldColor,
-          borderRadius: BorderRadius.circular(8),
-          boxShadow: const [
-            BoxShadow(
-              color: Colors.black26,
-              blurRadius: 8,
-              offset: Offset(0, 4),
+      enabledBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(10),
+        borderSide: BorderSide(color: context.borderColor.withOpacity(0.1)),
+      ),
+      focusedBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(10),
+        borderSide: BorderSide(color: context.borderColor, width: 1.2),
+      ),
+    ),
+    dropdownStyleData: DropdownStyleData(
+      maxHeight: 250,
+      elevation: 3,
+      decoration: BoxDecoration(
+        color: context.fieldColor,
+        borderRadius: BorderRadius.circular(8),
+        boxShadow: const [
+          BoxShadow(
+            color: Colors.black26,
+            blurRadius: 8,
+            offset: Offset(0, 4),
+          ),
+        ],
+      ),
+    ),
+    items: items
+        .map(
+          (val) => DropdownMenuItem<String>(
+            value: val,
+            child: Text(
+              val,
+              style: TextStyle(
+                color: isDarkMode ? context.mainFontColor : Colors.black,
+              ),
             ),
-          ],
-        ),
-      ),
-      items:
-          items
-              .map(
-                (val) => DropdownMenuItem<String>(value: val, child: Text(val)),
-              )
-              .toList(),
-      onChanged: onChanged,
-      validator: (val) => val == null || val.isEmpty ? "Required" : null,
-    );
-  }
+          ),
+        )
+        .toList(),
+    onChanged: onChanged,
+    validator: (val) => val == null || val.isEmpty ? "Required" : null,
+  );
 }
 
 InputDecoration _inputDecoration(BuildContext context, String hint) {
@@ -430,6 +459,7 @@ InputDecoration _inputDecoration(BuildContext context, String hint) {
     filled: true,
     fillColor: context.fieldColor,
     hintText: hint,
+    hintStyle:  TextStyle(color: context.hintColor),
     border: OutlineInputBorder(
       borderRadius: BorderRadius.circular(8),
       borderSide: BorderSide(color: context.borderColor.withOpacity(0.1)),
@@ -443,4 +473,5 @@ InputDecoration _inputDecoration(BuildContext context, String hint) {
       borderSide: BorderSide(color: context.borderColor),
     ),
   );
+}
 }

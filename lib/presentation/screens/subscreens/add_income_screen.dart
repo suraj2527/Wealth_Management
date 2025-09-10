@@ -28,7 +28,7 @@ class _AddIncomeScreenState extends State<AddIncomeScreen> {
   final IncomeController incomeController = Get.find();
   final TextEditingController _startDateController = TextEditingController();
   final TextEditingController _endDateController = TextEditingController();
-  String _selectedType = 'Monthly';
+  String? _selectedType ;
   String? _selectedIncomeCategory;
   String? dbUserId;
 
@@ -97,7 +97,7 @@ class _AddIncomeScreenState extends State<AddIncomeScreen> {
         userId: dbUserId!,
         incomeType: _sourceController.text.trim(),
         amount: amountValue,
-        period: _selectedType,
+        period: _selectedType!,
         startDate: _startDateController.text,
         endDate: _endDateController.text,
         expectedAnnualIncrementPercentage:
@@ -194,39 +194,27 @@ class _AddIncomeScreenState extends State<AddIncomeScreen> {
                       const SizedBox(height: 16),
                       _label("Source"),
                       const SizedBox(height: 6),
-                      DropdownButtonFormField2<String>(
-                        value: _selectedIncomeCategory,
-                        isExpanded: true,
-                        decoration: _inputDecoration(
-                          context,
-                          "Select income source",
-                        ),
-                        items:
-                            _incomeCategories
-                                .map(
-                                  (category) => DropdownMenuItem(
-                                    value: category,
-                                    child: Align(
-                                      alignment: Alignment.centerLeft,
-                                      child: Text(category),
-                                    ),
-                                  ),
-                                )
-                                .toList(),
-                        onChanged: (val) {
+                      _dropdownField(
+                        _incomeCategories,
+                        _selectedIncomeCategory,
+                        (val) {
                           setState(() {
-                            _selectedIncomeCategory = val!;
+                            _selectedIncomeCategory = val;
                             if (val != 'Other') {
-                              _sourceController.text = val;
+                              _sourceController.text = val ?? '';
                             } else {
                               _sourceController.clear();
                             }
                           });
                         },
-                        validator:
-                            (val) =>
-                                val == null || val.isEmpty ? "Required" : null,
+                        context,
+                        hint: "Select income source",
                       ),
+                      if (_selectedIncomeCategory == 'Other') ...[
+                        const SizedBox(height: 12),
+                        _textField(_sourceController, "Enter custom source"),
+                      ],
+
                       if (_selectedIncomeCategory == 'Other') ...[
                         const SizedBox(height: 12),
                         _textField(_sourceController, "Enter custom source"),
@@ -305,6 +293,7 @@ class _AddIncomeScreenState extends State<AddIncomeScreen> {
       filled: true,
       fillColor: context.fieldColor,
       hintText: hint,
+      hintStyle: TextStyle(color: context.hintColor),
       border: _outlineBorder(context, false),
       enabledBorder: _outlineBorder(context, false),
       focusedBorder: _outlineBorder(context, true),
@@ -326,6 +315,77 @@ class _AddIncomeScreenState extends State<AddIncomeScreen> {
   Widget _label(String text) {
     return Text(text, style: const TextStyle(fontWeight: FontWeight.bold));
   }
+    Widget _dropdownField(
+  List<String> items,
+  String? currentValue,
+  void Function(String?) onChanged,
+  BuildContext context,
+  {String hint = ""} 
+) {
+  final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+
+  return DropdownButtonFormField2<String>(
+    value: currentValue,
+    isExpanded: true,
+    hint: Text(
+      hint,
+      style: TextStyle(
+        fontSize: 16,
+        color: context.hintColor,
+      ),
+    ),
+    style: TextStyle(
+      fontSize: 16,
+      color: isDarkMode ? context.mainFontColor : Colors.black,
+    ),
+    decoration: InputDecoration(
+      isDense: true,
+      contentPadding: const EdgeInsets.symmetric(horizontal: -4, vertical: 16),
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(10),
+        borderSide: BorderSide(color: context.borderColor.withOpacity(0.1)),
+      ),
+      enabledBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(10),
+        borderSide: BorderSide(color: context.borderColor.withOpacity(0.1)),
+      ),
+      focusedBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(10),
+        borderSide: BorderSide(color: context.borderColor, width: 1.2),
+      ),
+    ),
+    dropdownStyleData: DropdownStyleData(
+      maxHeight: 250,
+      elevation: 3,
+      decoration: BoxDecoration(
+        color: context.fieldColor,
+        borderRadius: BorderRadius.circular(8),
+        boxShadow: const [
+          BoxShadow(
+            color: Colors.black26,
+            blurRadius: 8,
+            offset: Offset(0, 4),
+          ),
+        ],
+      ),
+    ),
+    items: items
+        .map(
+          (val) => DropdownMenuItem<String>(
+            value: val,
+            child: Text(
+              val,
+              style: TextStyle(
+                color: isDarkMode ? context.mainFontColor : Colors.black,
+              ),
+            ),
+          ),
+        )
+        .toList(),
+    onChanged: onChanged,
+    validator: (val) => val == null || val.isEmpty ? "Required" : null,
+  );
+}
 
   Widget _textField(
     TextEditingController controller,

@@ -30,7 +30,7 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
   );
   final TextEditingController _startDateController = TextEditingController();
   final TextEditingController _incrementPercentageController =
-      TextEditingController(text: '0');
+      TextEditingController();
   final TextEditingController _customTypeController = TextEditingController();
   final TextEditingController _customSubCategoryController =
       TextEditingController();
@@ -51,10 +51,10 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
   final List<String> _periods = ['Monthly', 'Yearly'];
   final List<String> _natureTypes = ['Fixed', 'Variable'];
 
-  String? _selectedType = 'Housing';
-  String? _selectedSubCategory = 'Rent';
-  String? _selectedPeriod = 'Monthly';
-  String? _selectedNature = 'Fixed';
+  String? _selectedType;
+  String? _selectedSubCategory ;
+  String? _selectedPeriod ;
+  String? _selectedNature ;
   bool _isRecurring = false;
 
   final userId = Get.find<AuthController>().dbUserId.value;
@@ -306,6 +306,7 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
         _selectedType,
         (val) => setState(() => _selectedType = val),
         context,
+        hint: "Select Expense Type"
       ),
       if (_selectedType == 'Other') ...[
         SizedBox(height: mediaHeight * 0.01),
@@ -318,6 +319,7 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
         _selectedSubCategory,
         (val) => setState(() => _selectedSubCategory = val),
         context,
+        hint: "Select Sub Category"
       ),
       if (_selectedSubCategory == 'Other') ...[
         SizedBox(height: mediaHeight * 0.01),
@@ -330,6 +332,7 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
         _selectedPeriod,
         (val) => setState(() => _selectedPeriod = val),
         context,
+        hint: "Select Period"
       ),
       SizedBox(height: mediaHeight * 0.015),
       _label("Nature Type"),
@@ -338,6 +341,7 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
         _selectedNature,
         (val) => setState(() => _selectedNature = val),
         context,
+        hint: "Select Nature"
       ),
       SizedBox(height: mediaHeight * 0.015),
       _label("Amount"),
@@ -400,57 +404,75 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
   }
 
   Widget _dropdownField(
-    List<String> items,
-    String? currentValue,
-    void Function(String?) onChanged,
-    BuildContext context,
-  ) {
-    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+  List<String> items,
+  String? currentValue,
+  void Function(String?) onChanged,
+  BuildContext context,
+  {String hint = ""} 
+) {
+  final isDarkMode = Theme.of(context).brightness == Brightness.dark;
 
-    return DropdownButtonFormField2<String>(
-      value: currentValue,
-      isExpanded: true,
+  return DropdownButtonFormField2<String>(
+    value: currentValue,
+    isExpanded: true,
+    hint: Text(
+      hint,
       style: TextStyle(
         fontSize: 16,
-        color: isDarkMode ? context.mainFontColor : Colors.black,
+        color: context.hintColor,
       ),
-      decoration: const InputDecoration(
-        isDense: true,
-        contentPadding: EdgeInsets.symmetric(horizontal: -4, vertical: 16),
+    ),
+    style: TextStyle(
+      fontSize: 16,
+      color: isDarkMode ? context.mainFontColor : Colors.black,
+    ),
+    decoration: InputDecoration(
+      isDense: true,
+      contentPadding: const EdgeInsets.symmetric(horizontal: -4, vertical: 16),
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(10),
+        borderSide: BorderSide(color: context.borderColor.withOpacity(0.1)),
       ),
-      dropdownStyleData: DropdownStyleData(
-        maxHeight: 250,
-        elevation: 3,
-        decoration: BoxDecoration(
-          color: context.fieldColor,
-          borderRadius: BorderRadius.circular(8),
-          boxShadow: const [
-            BoxShadow(
-              color: Colors.black26,
-              blurRadius: 8,
-              offset: Offset(0, 4),
+      enabledBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(10),
+        borderSide: BorderSide(color: context.borderColor.withOpacity(0.1)),
+      ),
+      focusedBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(10),
+        borderSide: BorderSide(color: context.borderColor, width: 1.2),
+      ),
+    ),
+    dropdownStyleData: DropdownStyleData(
+      maxHeight: 250,
+      elevation: 3,
+      decoration: BoxDecoration(
+        color: context.fieldColor,
+        borderRadius: BorderRadius.circular(8),
+        boxShadow: const [
+          BoxShadow(
+            color: Colors.black26,
+            blurRadius: 8,
+            offset: Offset(0, 4),
+          ),
+        ],
+      ),
+    ),
+    items: items
+        .map(
+          (val) => DropdownMenuItem<String>(
+            value: val,
+            child: Text(
+              val,
+              style: TextStyle(
+                color: isDarkMode ? context.mainFontColor : Colors.black,
+              ),
             ),
-          ],
-        ),
-      ),
-      items:
-          items
-              .map(
-                (val) => DropdownMenuItem<String>(
-                  value: val,
-                  child: Text(
-                    val,
-                    style: TextStyle(
-                      color: isDarkMode ? context.mainFontColor : Colors.black,
-                    ),
-                  ),
-                ),
-              )
-              .toList(),
-      onChanged: onChanged,
-      validator: (val) => val == null || val.isEmpty ? "Required" : null,
-    );
-  }
+          ),
+        )
+        .toList(),
+    onChanged: onChanged,
+    validator: (val) => val == null || val.isEmpty ? "Required" : null,
+  );
 }
 
 InputDecoration _inputDecoration(BuildContext context, String hint) {
@@ -458,6 +480,7 @@ InputDecoration _inputDecoration(BuildContext context, String hint) {
     filled: true,
     fillColor: context.fieldColor,
     hintText: hint,
+    hintStyle:  TextStyle(color: context.hintColor),
     border: OutlineInputBorder(
       borderRadius: BorderRadius.circular(8),
       borderSide: BorderSide(color: context.borderColor.withOpacity(0.1)),
@@ -471,4 +494,5 @@ InputDecoration _inputDecoration(BuildContext context, String hint) {
       borderSide: BorderSide(color: context.borderColor),
     ),
   );
+}
 }

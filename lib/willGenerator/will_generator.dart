@@ -1,6 +1,7 @@
 // ignore_for_file: library_private_types_in_public_api, use_super_parameters
 
 import 'dart:io';
+import 'package:dropdown_button2/dropdown_button2.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:pdf/widgets.dart' as pw;
@@ -24,12 +25,12 @@ class _WillGeneratorPageState extends State<WillGeneratorPage> {
   final nameController = TextEditingController();
   final addressController = TextEditingController();
   final dateController = TextEditingController(
-    text: DateFormat('MMMM d, yyyy').format(DateTime.now()),
+    // text: DateFormat('MMMM d, yyyy').format(DateTime.now()),
   );
   final executorController = TextEditingController();
   final guardianController = TextEditingController();
 
-  String? selectedTemplate = 'Original Will';
+  String? selectedTemplate;
   final List<TextEditingController> propertyControllers = [
     TextEditingController(),
   ];
@@ -56,10 +57,10 @@ class _WillGeneratorPageState extends State<WillGeneratorPage> {
   InputDecoration _inputDecoration(BuildContext context, String hint) {
     return InputDecoration(
       filled: true,
-      
+
       fillColor: context.fieldColor,
-      hintText: hint ,
-      hintStyle: TextStyle(color: context.placeholderColor),
+      hintText: hint,
+      hintStyle: TextStyle(color: context.hintColor),
       border: OutlineInputBorder(
         borderRadius: BorderRadius.circular(10),
         borderSide: BorderSide(color: context.borderColor.withOpacity(0.1)),
@@ -72,6 +73,79 @@ class _WillGeneratorPageState extends State<WillGeneratorPage> {
         borderRadius: BorderRadius.circular(10),
         borderSide: BorderSide(color: context.borderColor, width: 1.2),
       ),
+    );
+  }
+
+  Widget _dropdownField(
+    List<String> items,
+    String? currentValue,
+    void Function(String?) onChanged,
+    BuildContext context, {
+    String hint = "",
+  }) {
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+
+    return DropdownButtonFormField2<String>(
+      value: currentValue,
+      isExpanded: true,
+      hint: Text(
+        hint,
+        style: TextStyle(fontSize: 16, color: context.hintColor),
+      ),
+      style: TextStyle(
+        fontSize: 16,
+        color: isDarkMode ? context.mainFontColor : Colors.black,
+      ),
+      decoration: InputDecoration(
+        isDense: true,
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: -4,
+          vertical: 16,
+        ),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(10),
+          borderSide: BorderSide(color: context.borderColor.withOpacity(0.1)),
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(10),
+          borderSide: BorderSide(color: context.borderColor.withOpacity(0.1)),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(10),
+          borderSide: BorderSide(color: context.borderColor, width: 1.2),
+        ),
+      ),
+      dropdownStyleData: DropdownStyleData(
+        maxHeight: 250,
+        elevation: 3,
+        decoration: BoxDecoration(
+          color: context.fieldColor,
+          borderRadius: BorderRadius.circular(8),
+          boxShadow: const [
+            BoxShadow(
+              color: Colors.black26,
+              blurRadius: 8,
+              offset: Offset(0, 4),
+            ),
+          ],
+        ),
+      ),
+      items:
+          items
+              .map(
+                (val) => DropdownMenuItem<String>(
+                  value: val,
+                  child: Text(
+                    val,
+                    style: TextStyle(
+                      color: isDarkMode ? context.mainFontColor : Colors.black,
+                    ),
+                  ),
+                ),
+              )
+              .toList(),
+      onChanged: onChanged,
+      validator: (val) => val == null || val.isEmpty ? "Required" : null,
     );
   }
 
@@ -524,102 +598,6 @@ class _WillGeneratorPageState extends State<WillGeneratorPage> {
                       ),
 
                       const SizedBox(height: 12),
-                      // _label("Property Details"),
-                      // ...List.generate(
-                      //   propertyControllers.length,
-                      //   (index) => Card(
-                      //     elevation: 2,
-                      //     margin: const EdgeInsets.symmetric(vertical: 8),
-                      //     shape: RoundedRectangleBorder(
-                      //       borderRadius: BorderRadius.circular(12),
-                      //       side: BorderSide(color: Colors.grey.shade300),
-                      //     ),
-                      //     child: Padding(
-                      //       padding: const EdgeInsets.all(12.0),
-                      //       child: Column(
-                      //         crossAxisAlignment: CrossAxisAlignment.stretch,
-                      //         children: [
-                      //           Row(
-                      //             mainAxisAlignment:
-                      //                 MainAxisAlignment.spaceBetween,
-                      //             children: [
-                      //               Text(
-                      //                 "Property ${index + 1}",
-                      //                 style: const TextStyle(
-                      //                   fontWeight: FontWeight.bold,
-                      //                   fontSize: 14,
-                      //                 ),
-                      //               ),
-                      //               if (propertyControllers.length > 1)
-                      //                 IconButton(
-                      //                   icon: const Icon(
-                      //                     Icons.cancel_outlined,
-                      //                     color: Colors.red,
-                      //                   ),
-                      //                   onPressed: () => _removeProperty(index),
-                      //                 ),
-                      //             ],
-                      //           ),
-                      //           SizedBox(height: 5),
-                      //           _textField(
-                      //             propertyControllers[index],
-                      //             "Describe property",
-                      //           ),
-                      //           SizedBox(height: 10),
-                      //           _textField(
-                      //             beneficiaryControllers[index],
-                      //             "Enter beneficiary name",
-                      //           ),
-                      //           const SizedBox(height: 10),
-                      //           DropdownButtonFormField<String>(
-                      //             value: _selectedRelationships[index],
-                      //             decoration: _inputDecoration(
-                      //               context,
-                      //               "Select the relationship",
-                      //             ),
-                      //             items:
-                      //                 _relationshipOptions
-                      //                     .map(
-                      //                       (rel) => DropdownMenuItem(
-                      //                         value: rel,
-                      //                         child: Text(rel),
-                      //                       ),
-                      //                     )
-                      //                     .toList(),
-                      //             onChanged: (val) {
-                      //               setState(() {
-                      //                 _selectedRelationships[index] = val;
-                      //                 if (val == 'Other') {
-                      //                   _customRelationshipControllers[index] =
-                      //                       TextEditingController();
-                      //                 } else {
-                      //                   _customRelationshipControllers[index] =
-                      //                       null;
-                      //                   if (val == 'Other') {
-                      //                     _customRelationshipControllers[index] =
-                      //                         TextEditingController();
-                      //                   } else {
-                      //                     _customRelationshipControllers[index] =
-                      //                         null;
-                      //                   }
-                      //                 }
-                      //               });
-                      //             },
-                      //           ),
-                      //           if (_selectedRelationships[index] ==
-                      //               'Other') ...[
-                      //             const SizedBox(height: 10),
-                      //             _textField(
-                      //               _customRelationshipControllers[index]!,
-                      //               "Enter custom relationship",
-                      //             ),
-                      //           ],
-                      //         ],
-                      //       ),
-                      //     ),
-                      //   ),
-                      // ),
-                      // Property Details aur Add More Button wala section
                       _label("Property Details"),
                       ...List.generate(
                         propertyControllers.length,
@@ -656,33 +634,21 @@ class _WillGeneratorPageState extends State<WillGeneratorPage> {
                                       ),
                                   ],
                                 ),
-                                SizedBox(height: 5),
+                                const SizedBox(height: 5),
                                 _textField(
                                   propertyControllers[index],
                                   "Describe property",
                                 ),
-                                SizedBox(height: 10),
+                                const SizedBox(height: 10),
                                 _textField(
                                   beneficiaryControllers[index],
                                   "Enter beneficiary name",
                                 ),
-                                SizedBox(height: 10),
-                                DropdownButtonFormField<String>(
-                                  value: _selectedRelationships[index],
-                                  decoration: _inputDecoration(
-                                    context,
-                                    "Select the relationship",
-                                  ),
-                                  items:
-                                      _relationshipOptions
-                                          .map(
-                                            (rel) => DropdownMenuItem(
-                                              value: rel,
-                                              child: Text(rel),
-                                            ),
-                                          )
-                                          .toList(),
-                                  onChanged: (val) {
+                                const SizedBox(height: 10),
+                                _dropdownField(
+                                  _relationshipOptions,
+                                  _selectedRelationships[index],
+                                  (val) {
                                     setState(() {
                                       _selectedRelationships[index] = val;
                                       if (val == 'Other') {
@@ -694,6 +660,8 @@ class _WillGeneratorPageState extends State<WillGeneratorPage> {
                                       }
                                     });
                                   },
+                                  context,
+                                  hint: "Select Relationship",
                                 ),
                                 if (_selectedRelationships[index] ==
                                     'Other') ...[
@@ -709,7 +677,6 @@ class _WillGeneratorPageState extends State<WillGeneratorPage> {
                         ),
                       ),
 
-                      // Add More Property Button
                       OutlinedButton.icon(
                         onPressed: () {
                           setState(() {
@@ -753,28 +720,17 @@ class _WillGeneratorPageState extends State<WillGeneratorPage> {
 
                       const SizedBox(height: 20),
                       _label("Select Template"),
-                      DropdownButtonFormField<String>(
-                        value: selectedTemplate,
-                        items:
-                            templates.keys
-                                .map(
-                                  (template) => DropdownMenuItem(
-                                    value: template,
-                                    child: Text(template),
-                                  ),
-                                )
-                                .toList(),
-                        onChanged: (val) {
+                      _dropdownField(
+                        templates.keys.toList(),
+                        selectedTemplate,
+                        (val) {
                           setState(() {
                             selectedTemplate = val;
                           });
                         },
-                        decoration: _inputDecoration(
-                          context,
-                          "Choose template",
-                        ),
+                        context,
+                        hint: "Choose template",
                       ),
-
                       const SizedBox(height: 20),
                       ElevatedButton(
                         onPressed: _generatePdf,

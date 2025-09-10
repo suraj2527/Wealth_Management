@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 class AppColors {
   // Light Theme
   static const Color scaffoldLight = Color.fromRGBO(245, 247, 249, 1);
-  static const Color hintLight = Color.fromRGBO(170, 170, 170, 1);
+  static const Color hintLight = Color.fromRGBO(117, 117, 117, 1);
   static const Color dividerLight = Colors.grey;
   static const Color fieldLight = Color.fromRGBO(245, 247, 249, 1);
   static const Color cardLight = Colors.white;

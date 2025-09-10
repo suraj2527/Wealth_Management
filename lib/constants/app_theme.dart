@@ -7,7 +7,7 @@ class AppTheme {
     useMaterial3: true,
     brightness: Brightness.light,
     scaffoldBackgroundColor: AppColors.scaffoldLight,
-    hintColor: AppColors.hintLight,
+    hintColor: const Color.fromRGBO(117, 117, 117, 1),
     dividerColor: AppColors.dividerLight,
     inputDecorationTheme: InputDecorationTheme(
       fillColor: AppColors.fieldLight,

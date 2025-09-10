@@ -65,7 +65,8 @@ class _CalendarInputFieldState extends State<CalendarInputField> {
           decoration: InputDecoration(
             filled: true,
             fillColor: context.fieldColor,
-            hintText: "dd-mm-yyyy",
+            hintText: "Choose Date",
+            hintStyle: TextStyle(color: context.hintColor),
             suffixIcon: Padding(
               padding: const EdgeInsets.all(12),
               child: SvgPicture.asset(
