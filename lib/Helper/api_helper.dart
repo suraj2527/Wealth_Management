@@ -1,5 +1,4 @@
-import 'package:wealth_app/main.dart';
-
+String currentFlavor = 'prod';
 class ApiHelper {
   static String get baseUrl {
     return currentFlavor == 'prod'

@@ -149,7 +149,7 @@ class SideMenuDrawer extends StatelessWidget {
                     // ),
                     buildMenuTile(
                       context: context,
-                      title: "Will Management",
+                      title: "Will Generator",
                       route: '/will',
                       iconPath: 'assets/icons/document_icon.svg',
                       isDarkMode: isDarkMode,

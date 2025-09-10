@@ -4,6 +4,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:wealth_app/Helper/api_helper.dart';
 import 'package:wealth_app/constants/text_styles.dart';
 import 'package:wealth_app/controllers/auth_controller.dart';
 import 'package:wealth_app/controllers/asset_controller.dart';
@@ -33,8 +34,6 @@ class _MyAssetsAndInvestmentsScreenState
   final FilterController filterController = Get.find<FilterController>();
   String? dbUserId;
 
-  final String apiUrl =
-      'https://dynamicsmonk-api.azure-api.net/wealthdev/investments/recent';
 
   @override
   void initState() {
@@ -118,10 +117,10 @@ class _MyAssetsAndInvestmentsScreenState
 
     if (result is AssetModel) {
       await http.post(
-        Uri.parse(apiUrl),
+        Uri.parse(ApiHelper.addAsset()),
         headers: {
           'Content-Type': 'application/json',
-          'Ocp-Apim-Subscription-Key': '507f2afb55654b58b949017a7d8c5f22',
+          'Ocp-Apim-Subscription-Key': ApiHelper.subscriptionKey,
         },
         body: jsonEncode(result.toJson()..addAll({'userId': userId})),
       );

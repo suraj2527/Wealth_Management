@@ -15,7 +15,7 @@ import 'package:wealth_app/controllers/theme_controller.dart';
 import 'package:wealth_app/routes/app_routes.dart';
 import 'package:wealth_app/presentation/screens/subscreens/consent_screen.dart';
 
-String currentFlavor = 'dev';
+String currentFlavor = 'prod';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
