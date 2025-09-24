@@ -2,7 +2,7 @@ import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:wealth_app/presentation/Dashboard/controller/dashboard_controller.dart';
-import 'package:wealth_app/extension/theme_extension.dart';
+import 'package:wealth_app/utils/Theme/theme_extension.dart';
 
 class InteractivePieChart extends StatefulWidget {
   const InteractivePieChart({super.key});

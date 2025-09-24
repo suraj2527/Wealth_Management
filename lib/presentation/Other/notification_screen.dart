@@ -1,6 +1,6 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
-import 'package:wealth_app/extension/theme_extension.dart';
+import 'package:wealth_app/utils/Theme/theme_extension.dart';
 
 void showNotificationDialog(BuildContext context) {
   final List<Map<String, String>> notifications = List.generate(

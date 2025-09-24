@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
 import 'package:wealth_app/utils/constants/text_styles.dart';
-import 'package:wealth_app/extension/theme_extension.dart';
+import 'package:wealth_app/utils/Theme/theme_extension.dart';
 
 class SideMenuDrawer extends StatelessWidget {
   const SideMenuDrawer({super.key});

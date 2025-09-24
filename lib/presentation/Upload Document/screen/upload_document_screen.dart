@@ -5,7 +5,7 @@ import 'package:dotted_border/dotted_border.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
 import 'package:path_provider/path_provider.dart';
-import 'package:wealth_app/extension/theme_extension.dart';
+import 'package:wealth_app/utils/Theme/theme_extension.dart';
 import 'package:wealth_app/widgets/universal_scaffold.dart';
 
 class UploadDocumentScreen extends StatefulWidget {

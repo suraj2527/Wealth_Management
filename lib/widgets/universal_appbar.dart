@@ -2,7 +2,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
-import 'package:wealth_app/extension/theme_extension.dart';
+import 'package:wealth_app/utils/Theme/theme_extension.dart';
 import 'package:wealth_app/presentation/Other/notification_screen.dart';
 import 'package:wealth_app/presentation/Profile/profile_image_controller.dart';
 import 'package:wealth_app/presentation/Profile/profile_screen.dart';

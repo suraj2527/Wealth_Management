@@ -9,7 +9,7 @@ import 'package:wealth_app/widgets/calendar_input_field.dart';
 import 'package:wealth_app/widgets/dot_loader.dart';
 import 'package:wealth_app/presentation/screens/Network/network_widget.dart';
 import 'package:wealth_app/widgets/universal_scaffold.dart';
-import 'package:wealth_app/extension/theme_extension.dart';
+import 'package:wealth_app/utils/Theme/theme_extension.dart';
 
 class AddIncomeScreen extends StatefulWidget {
   final IncomeModel? incomeToEdit;

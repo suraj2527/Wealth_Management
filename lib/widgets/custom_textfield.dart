@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:wealth_app/utils/constants/text_styles.dart';
-import 'package:wealth_app/extension/theme_extension.dart';
+import 'package:wealth_app/utils/Theme/theme_extension.dart';
 
 class CustomTextField extends StatelessWidget {
   final TextEditingController controller;

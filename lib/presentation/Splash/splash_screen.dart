@@ -11,7 +11,7 @@ import 'package:wealth_app/presentation/Expense/controller/expense_controller.da
 import 'package:wealth_app/presentation/Income/controller/income_controller.dart';
 import 'package:wealth_app/utils/constants/text_styles.dart';
 import 'package:wealth_app/widgets/dot_loader.dart';
-import 'package:wealth_app/extension/theme_extension.dart';
+import 'package:wealth_app/utils/Theme/theme_extension.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});

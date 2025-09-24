@@ -6,7 +6,7 @@ import 'package:wealth_app/presentation/Authentication/controller/auth_controlle
 import 'package:wealth_app/presentation/Dashboard/controller/dashboard_controller.dart';
 import 'package:wealth_app/utils/constants/font_sizes.dart';
 import 'package:wealth_app/utils/constants/text_styles.dart';
-import 'package:wealth_app/extension/theme_extension.dart';
+import 'package:wealth_app/utils/Theme/theme_extension.dart';
 import 'package:wealth_app/widgets/dot_loader.dart';
 import 'package:wealth_app/presentation/screens/Network/network_widget.dart';
 import 'package:wealth_app/widgets/pie_chart.dart';

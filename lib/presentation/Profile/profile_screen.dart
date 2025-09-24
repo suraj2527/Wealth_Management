@@ -9,7 +9,7 @@ import 'package:wealth_app/utils/constants/text_styles.dart';
 import 'package:wealth_app/utils/Theme/theme_controller.dart';
 import 'package:wealth_app/presentation/screens/Network/network_widget.dart';
 import 'package:wealth_app/widgets/universal_scaffold.dart';
-import 'package:wealth_app/extension/theme_extension.dart';
+import 'package:wealth_app/utils/Theme/theme_extension.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});

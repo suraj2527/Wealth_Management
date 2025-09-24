@@ -6,7 +6,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:wealth_app/presentation/Consent/consent_dialog.dart';
 import 'package:wealth_app/presentation/Splash/splash_screen.dart';
 import 'package:wealth_app/utils/constants/text_styles.dart';
-import 'package:wealth_app/extension/theme_extension.dart';
+import 'package:wealth_app/utils/Theme/theme_extension.dart';
 import 'package:wealth_app/widgets/dot_loader.dart';
 
 class ConsentGatekeeper extends StatefulWidget {
