@@ -1,18 +1,17 @@
 String currentFlavor = 'prod';
+
 class ApiHelper {
   static String get baseUrl {
     return currentFlavor == 'prod'
-    ? 'https://dynamicsmonk-api.azure-api.net/wealthdev'
+        ? 'https://dynamicsmonk-api.azure-api.net/wealthdev'
         : 'http://192.168.1.12:7173/api';
   }
 
-
-
-  static String  subscriptionKey =  '507f2afb55654b58b949017a7d8c5f22';
-  
+  static String subscriptionKey = '507f2afb55654b58b949017a7d8c5f22';
 
   // Asset endpoints
-  static String getAssets(String userId) => '$baseUrl/investments/recent/$userId';
+  static String getAssets(String userId) =>
+      '$baseUrl/investments/recent/$userId';
   static String addAsset() => '$baseUrl/investments';
   static String deleteAsset(String id) => '$baseUrl/investments/$id';
 
